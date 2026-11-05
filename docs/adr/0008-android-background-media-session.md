@@ -9,17 +9,17 @@ Flutter UI and just_audio already stream encrypted authenticated WebDAV audio us
 
 ## Decision
 
-Use the official just_audio_background adapter (pinned 0.0.1-beta.17) with audio_service (pinned 0.18.19) for the single just_audio player instance. The Android activity extends AudioServiceActivity. The manifest declares WAKE_LOCK, foreground mediaPlayback permissions, an AudioService and media button receiver. Initialize the background service before starting the Flutter app.
+Use audio_service 0.18.19 with a custom BaseAudioHandler. Unlike the simple just_audio_background adapter, the custom handler dispatches Play, Pause, Stop, Seek, Next and Previous to the existing PlaybackController, so the Android system notification can expose the actual application queue even though the native just_audio engine currently loads one stream at a time.
 
-Only code in lib/platform/android imports audio_service or just_audio_background. A platform-injected MediaTagFactory creates Android MediaItem metadata from the local track title, album, artist, duration and relative path ID, then passes it as an opaque tag to the shared StreamAudioSource. No cloud login, password, Authorization header or signed credential URL is ever passed to the OS media session.
+The Android activity extends AudioServiceActivity. The manifest declares WAKE_LOCK, foreground mediaPlayback permissions, AudioService and a media button receiver. Initialize the handler before constructing the Flutter app. A platform-only Riverpod bridge forwards playback state and media metadata to the handler and installs guarded callbacks; no second decoder, WebDAV client or audio player is created.
 
-Keep WebDAV Range transport, cache and FLAC decoder selection unchanged. Windows and Linux continue to use the established media_kit backend, without Android media session initialization.
+Only code in lib/platform/android imports audio_service. A platform-injected MediaTagFactory creates MediaItem metadata (relative path ID, album, artist, title and duration), never Basic Auth, app passwords, authenticated URLs or redirect targets. Windows/Linux continue using their existing audio backends.
 
 ## Alternatives
 
-- Direct Kotlin Media3 MediaSessionService plus a bidirectional Flutter channel: more control but duplicates playback command dispatch, lifecycle state and queue; defer unless the adapter proves inadequate.
+- Direct Kotlin Media3 MediaSessionService plus a bidirectional Flutter channel: more native control, but duplicates playback command dispatch, lifecycle state and queue; defer unless the audio_service handler proves inadequate.
 - A generic persistent notification alone: rejected because the user explicitly requires system media controls.
-- audio_service with a custom AudioHandler immediately: more flexible but unnecessary complexity for one player at the current vertical slice stage; consider if queue commands are not correctly exposed by the adapter.
+- just_audio_background for the single player: simpler but its system Next/Previous buttons are enabled from the just_audio source sequence; our logical queue lives in PlaybackController and is not a native playlist, so it cannot show the full required controls reliably.
 
 ## Validation gates
 
