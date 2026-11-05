@@ -188,6 +188,28 @@ void main() {
     );
   });
 
+  test('multiply encoded traversal hrefs are rejected', () async {
+    for (final segment in ['%252e%252e', '%2525252e%2525252e']) {
+      handleRequest = (request) async => _reply(
+        request,
+        207,
+        body: _multistatus(
+          _response('/AllMusic/$segment/private.mp3', '<z:resourcetype/>'),
+        ),
+      );
+      await expectLater(
+        client.propfind(_credentials, depth: 1),
+        throwsA(
+          isA<CloudMailException>().having(
+            (error) => error.code,
+            'code',
+            CloudMailErrorCode.invalidPath,
+          ),
+        ),
+      );
+    }
+  });
+
   test(
     'Range GET validates Cloud Mail.ru Content-Range and byte count',
     () async {

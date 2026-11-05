@@ -594,16 +594,26 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
           candidate.runes.any((rune) => rune < 0x20 || rune == 0x7f)) {
         throw const CloudMailException(CloudMailErrorCode.invalidPath);
       }
+      if (!candidate.contains('%')) return;
       late final String decoded;
       try {
-        decoded = Uri.decodeComponent(candidate);
+        // Dart's URI decoder expects non-ASCII characters to be escaped. Keep
+        // already-decoded file names intact while checking nested escapes.
+        final escaped = candidate.replaceAllMapped(
+          RegExp(r'[^%]+'),
+          (match) => Uri.encodeComponent(match.group(0)!),
+        );
+        decoded = Uri.decodeComponent(escaped);
       } on FormatException {
-        return;
+        throw const CloudMailException(CloudMailErrorCode.invalidPath);
+      } on ArgumentError {
+        throw const CloudMailException(CloudMailErrorCode.invalidPath);
       }
       if (decoded == candidate) return;
       candidate = decoded;
     }
-    if (candidate == '.' ||
+    if (candidate.contains('%') ||
+        candidate == '.' ||
         candidate == '..' ||
         candidate.contains('/') ||
         candidate.contains('\\')) {

@@ -177,12 +177,13 @@ void main() {
           .obscureText,
       isTrue,
     );
+    await tester.ensureVisible(find.byKey(const ValueKey('connect-button')));
     await tester.tap(find.byKey(const ValueKey('connect-button')));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Подключение проверено'), findsOneWidget);
     expect(service.savedUsername, 'fake@example.invalid');
     expect(service.savedPassword, 'test-app-password');
+    expect(find.textContaining('Подключение проверено'), findsOneWidget);
     expect(
       tester
           .widget<TextField>(find.byKey(const ValueKey('cloud-password-field')))
