@@ -79,9 +79,13 @@ class CoverThumbnailCache {
           rethrow;
         }
       }
-      _maintenance = _maintenance
-          .catchError((Object _) {})
-          .then((_) => _trimToBudget());
+      _maintenance = _maintenance.catchError((Object _) {}).then((_) async {
+        try {
+          await _trimToBudget();
+        } on FileSystemException {
+          // The OS or a disconnect can remove the directory while trimming.
+        }
+      });
       unawaited(_maintenance);
       return bytes;
     } on FileSystemException {
