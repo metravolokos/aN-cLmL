@@ -92,8 +92,8 @@ class _WindowsMediaControlsBridgeState
     final duration = view.duration.inMilliseconds;
     final changedPosition = (position - _lastPositionMs).abs() >= 1000;
     final changedDuration = duration != _lastDurationMs;
-    if (!changedTrack && !changedStatus && !changedPosition &&
-        !changedDuration) return;
+    if (!changedTrack && !changedStatus && !changedPosition && !changedDuration)
+      return;
 
     _trackIdentity = identity;
     _wasPlaying = view.playing;

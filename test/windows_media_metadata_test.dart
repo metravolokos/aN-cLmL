@@ -21,7 +21,10 @@ void main() {
   });
 
   test('Windows SMTC metadata uses filename fallback for missing tags', () {
-    const track = RemoteTrack(path: 'Неизвестная композиция.flac', sizeBytes: 1);
+    const track = RemoteTrack(
+      path: 'Неизвестная композиция.flac',
+      sizeBytes: 1,
+    );
     final metadata = windowsMetadataForTrack(track);
     expect(metadata.title, 'Неизвестная композиция');
     expect(metadata.artist, 'Неизвестный исполнитель');
