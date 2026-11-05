@@ -80,7 +80,7 @@ class CloudMusicService {
   Future<List<RemoteTrack>> readCachedCatalog() async {
     try {
       final catalog = await _getCatalog();
-      return catalog.readTracks();
+      return await catalog.readTracks();
     } on CloudMailException catch (error) {
       if (error.code == CloudMailErrorCode.credentialsRequired) {
         return const <RemoteTrack>[];
