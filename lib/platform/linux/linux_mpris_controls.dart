@@ -31,10 +31,10 @@ Future<void> initializeLinuxMprisControls() async {
 /// Do not expose authenticated remote paths as MPRIS track identifiers.
 MediaItem linuxMediaItemForTrack(RemoteTrack track) {
   final opaqueId = sha256
-      .convert(utf8.encode('${track.path}| ${track.etag ?? ''}|${track.sizeBytes}'))
+      .convert(utf8.encode('${track.path}|${track.etag ?? ''}|${track.sizeBytes}'))
       .toString();
   return MediaItem(
-    id: '/com/cloudmail_player/track/${opaqueId}',
+    id: '/com/cloudmail_player/track/t$opaqueId',
     title: track.displayTitle,
     artist: track.displayArtist,
     album: track.displayAlbum,
