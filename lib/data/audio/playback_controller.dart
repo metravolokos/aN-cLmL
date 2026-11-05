@@ -59,12 +59,14 @@ class PlaybackController extends Notifier<PlaybackView> {
   final List<StreamSubscription<dynamic>> _subscriptions = [];
   bool _closed = false;
   bool _changingTrack = false;
+  RemoteTrack? _pendingTrack;
   int _operationGeneration = 0;
 
   @override
   PlaybackView build() {
     ref.onDispose(() {
       _closed = true;
+      _pendingTrack = null;
       _operationGeneration++;
       for (final subscription in _subscriptions) {
         unawaited(subscription.cancel());
@@ -125,7 +127,19 @@ class PlaybackController extends Notifier<PlaybackView> {
   }
 
   Future<void> _open(RemoteTrack track) async {
-    if (_closed || _changingTrack) return;
+    if (_closed) return;
+    if (_changingTrack) {
+      // The most recent user selection wins while an earlier source opens.
+      _pendingTrack = track;
+      _operationGeneration++;
+      state = PlaybackView(
+        track: track,
+        loading: true,
+        shuffled: _queue?.shuffled ?? false,
+        repeatMode: _queue?.repeatMode ?? PlayerRepeatMode.off,
+      );
+      return;
+    }
     _changingTrack = true;
     final generation = ++_operationGeneration;
     state = PlaybackView(
@@ -190,6 +204,11 @@ class PlaybackController extends Notifier<PlaybackView> {
       }
     } finally {
       _changingTrack = false;
+      final pending = _pendingTrack;
+      _pendingTrack = null;
+      if (!_closed && pending != null && _queue != null) {
+        unawaited(_open(pending));
+      }
     }
   }
 
@@ -204,7 +223,7 @@ class PlaybackController extends Notifier<PlaybackView> {
   }
 
   Future<void> next({bool manual = true}) async {
-    if (_changingTrack || _closed) return;
+    if (_closed) return;
     final newTrack = _queue?.next(manual: manual);
     if (newTrack != null) {
       await _open(newTrack);
@@ -214,7 +233,7 @@ class PlaybackController extends Notifier<PlaybackView> {
   }
 
   Future<void> previous() async {
-    if (_changingTrack || _closed) return;
+    if (_closed) return;
     final newTrack = _queue?.previous();
     if (newTrack != null) {
       await _open(newTrack);
@@ -248,6 +267,7 @@ class PlaybackController extends Notifier<PlaybackView> {
   Future<void> stop() async {
     // Invalidate any pending setAudioSource before waiting for I/O.
     _operationGeneration++;
+    _pendingTrack = null;
     _queue = null;
     await _player?.stop();
     final cacheFuture = _cacheFuture;
