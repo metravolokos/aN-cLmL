@@ -124,14 +124,17 @@ class CloudAndroidAudioHandler extends BaseAudioHandler {
     switch (button) {
       case MediaButton.next:
         await skipToNext();
+        return;
       case MediaButton.previous:
         await skipToPrevious();
+        return;
       case MediaButton.media:
         if (_view.playing) {
           await pause();
         } else {
           await play();
         }
+        return;
     }
   }
 
