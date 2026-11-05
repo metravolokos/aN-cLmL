@@ -115,14 +115,22 @@ final cloudMusicServiceProvider = Provider<CloudMusicService>((ref) {
 
 class CloudCatalogController extends AsyncNotifier<List<RemoteTrack>> {
   @override
-  Future<List<RemoteTrack>> build() async =>
-      ref.read(cloudMusicServiceProvider).readCachedCatalog();
+  // Do not block the first UI frame on native secure-store plugin startup.
+  // The refresh path restores the per-account SQLite snapshot, then syncs.
+  Future<List<RemoteTrack>> build() async => const <RemoteTrack>[];
 
   Future<void> refresh() async {
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(
-      () => ref.read(cloudMusicServiceProvider).loadCatalog(),
-    );
+    state = await AsyncValue.guard(() async {
+      final service = ref.read(cloudMusicServiceProvider);
+      final cached = await service.readCachedCatalog();
+      try {
+        return await service.loadCatalog();
+      } catch (_) {
+        if (cached.isNotEmpty) return cached;
+        rethrow;
+      }
+    });
   }
 }
 
