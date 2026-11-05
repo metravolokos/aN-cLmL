@@ -5,8 +5,7 @@ import 'package:cloudmail_player/domain/track_queue.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 final tracks = [
-  for (var i = 0; i < 5; i++)
-    RemoteTrack(path: '$i.flac', sizeBytes: 100),
+  for (var i = 0; i < 5; i++) RemoteTrack(path: '$i.flac', sizeBytes: 100),
 ];
 
 void main() {

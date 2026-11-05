@@ -43,9 +43,8 @@ class TrackQueue {
   }
 
   PlayerRepeatMode cycleRepeat() {
-    repeatMode = PlayerRepeatMode.values[
-      (repeatMode.index + 1) % PlayerRepeatMode.values.length
-    ];
+    repeatMode = PlayerRepeatMode
+        .values[(repeatMode.index + 1) % PlayerRepeatMode.values.length];
     return repeatMode;
   }
 

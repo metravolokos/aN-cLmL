@@ -73,30 +73,41 @@ class PlaybackController extends Notifier<PlaybackView> {
   AudioPlayer _ensurePlayer() {
     if (_player != null) return _player!;
     final audio = AudioPlayer();
-    _subscriptions.add(audio.positionStream.listen((position) {
-      if (!_closed) state = state.withUpdates(position: position);
-    }));
-    _subscriptions.add(audio.durationStream.listen((duration) {
-      if (!_closed && duration != null) {
-        state = state.withUpdates(duration: duration);
-      }
-    }));
-    _subscriptions.add(audio.playingStream.listen((playing) {
-      if (!_closed) state = state.withUpdates(playing: playing);
-    }));
-    _subscriptions.add(audio.processingStateStream.listen((processing) {
-      if (_closed) return;
-      state = state.withUpdates(
-        loading: processing == ProcessingState.loading ||
-            processing == ProcessingState.buffering,
-      );
-      if (processing == ProcessingState.completed && !_changingTrack) {
-        unawaited(next(manual: false));
-      }
-    }));
-    _subscriptions.add(audio.errorStream.listen((_) {
-      if (!_closed) state = state.withUpdates(failed: true, loading: false);
-    }));
+    _subscriptions.add(
+      audio.positionStream.listen((position) {
+        if (!_closed) state = state.withUpdates(position: position);
+      }),
+    );
+    _subscriptions.add(
+      audio.durationStream.listen((duration) {
+        if (!_closed && duration != null) {
+          state = state.withUpdates(duration: duration);
+        }
+      }),
+    );
+    _subscriptions.add(
+      audio.playingStream.listen((playing) {
+        if (!_closed) state = state.withUpdates(playing: playing);
+      }),
+    );
+    _subscriptions.add(
+      audio.processingStateStream.listen((processing) {
+        if (_closed) return;
+        state = state.withUpdates(
+          loading:
+              processing == ProcessingState.loading ||
+              processing == ProcessingState.buffering,
+        );
+        if (processing == ProcessingState.completed && !_changingTrack) {
+          unawaited(next(manual: false));
+        }
+      }),
+    );
+    _subscriptions.add(
+      audio.errorStream.listen((_) {
+        if (!_closed) state = state.withUpdates(failed: true, loading: false);
+      }),
+    );
     return _player = audio;
   }
 

@@ -197,9 +197,12 @@ class _TrackTile extends ConsumerWidget {
         overflow: TextOverflow.ellipsis,
       ),
       trailing: const Icon(Icons.play_arrow),
-      onTap: () =>
-          ref.read(playbackControllerProvider.notifier)
-              .playFromList(queue, queue.indexWhere((item) => item.path == track.path)),
+      onTap: () => ref
+          .read(playbackControllerProvider.notifier)
+          .playFromList(
+            queue,
+            queue.indexWhere((item) => item.path == track.path),
+          ),
     );
   }
 }

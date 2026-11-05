@@ -77,14 +77,14 @@ class MiniPlayer extends ConsumerWidget {
               IconButton(
                 tooltip: strings.prev,
                 icon: const Icon(Icons.skip_previous),
-                onPressed: () => ref
-                    .read(playbackControllerProvider.notifier).previous(),
+                onPressed: () =>
+                    ref.read(playbackControllerProvider.notifier).previous(),
               ),
               IconButton(
                 tooltip: strings.next,
                 icon: const Icon(Icons.skip_next),
-                onPressed: () => ref
-                    .read(playbackControllerProvider.notifier).next(),
+                onPressed: () =>
+                    ref.read(playbackControllerProvider.notifier).next(),
               ),
               IconButton(
                 tooltip: strings.stop,
@@ -98,11 +98,14 @@ class MiniPlayer extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               IconButton(
-                tooltip: playback.shuffled ? strings.shuffleOn : strings.shuffleOff,
+                tooltip: playback.shuffled
+                    ? strings.shuffleOn
+                    : strings.shuffleOff,
                 icon: Icon(
                   playback.shuffled ? Icons.shuffle_on_outlined : Icons.shuffle,
                 ),
-                onPressed: () => ref.read(playbackControllerProvider.notifier)
+                onPressed: () => ref
+                    .read(playbackControllerProvider.notifier)
                     .setShuffle(!playback.shuffled),
               ),
               IconButton(
@@ -113,7 +116,8 @@ class MiniPlayer extends ConsumerWidget {
                 },
                 icon: Icon(
                   playback.repeatMode == PlayerRepeatMode.one
-                      ? Icons.repeat_one : Icons.repeat,
+                      ? Icons.repeat_one
+                      : Icons.repeat,
                 ),
                 onPressed: () =>
                     ref.read(playbackControllerProvider.notifier).cycleRepeat(),
