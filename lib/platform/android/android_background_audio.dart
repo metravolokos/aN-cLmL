@@ -18,7 +18,7 @@ Future<void> initializeAndroidPlaybackControls() async {
       androidNotificationChannelId:
           'com.cloudmailplayer.cloudmail_player.audio',
       androidNotificationChannelName: 'Воспроизведение музыки',
-      androidNotificationOngoing: true,
+      androidNotificationOngoing: false,
       androidStopForegroundOnPause: false,
     ),
   );
