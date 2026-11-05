@@ -72,14 +72,17 @@ void main() {
     expect((await temp.list().toList()).whereType<File>(), hasLength(2));
   });
 
-  test('Cyrillic track key is UTF-8 and cached seek makes no new GET', () async {
-    await cache.configure(trackB, null);
-    await waitFor(trackB);
-    final before = requests.length;
-    final bytes = await cache.read(trackB.path, 128, 1024);
-    expect(bytes.length, 1024);
-    expect(requests.length, before);
-  });
+  test(
+    'Cyrillic track key is UTF-8 and cached seek makes no new GET',
+    () async {
+      await cache.configure(trackB, null);
+      await waitFor(trackB);
+      final before = requests.length;
+      final bytes = await cache.read(trackB.path, 128, 1024);
+      expect(bytes.length, 1024);
+      expect(requests.length, before);
+    },
+  );
 
   test('oversized track is streamable but cannot occupy cache', () async {
     const huge = RemoteTrack(

@@ -49,7 +49,8 @@ class TwoTrackAudioCache {
   }
 
   String _key(RemoteTrack track) {
-    final source = '${track.path}\u0000${track.etag ?? ''}\u0000${track.sizeBytes}';
+    final source =
+        '${track.path}\u0000${track.etag ?? ''}\u0000${track.sizeBytes}';
     return sha256.convert(utf8.encode(source)).toString();
   }
 

@@ -80,7 +80,10 @@ class NowPlayingPage extends ConsumerWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 8),
-                          Text(track.displayArtist, textAlign: TextAlign.center),
+                          Text(
+                            track.displayArtist,
+                            textAlign: TextAlign.center,
+                          ),
                           const SizedBox(height: 4),
                           Text(
                             track.displayAlbum,
@@ -109,7 +112,9 @@ class NowPlayingPage extends ConsumerWidget {
                             onChanged: totalMs > 0
                                 ? (value) => ref
                                       .read(playbackControllerProvider.notifier)
-                                      .seek(Duration(milliseconds: value.round()))
+                                      .seek(
+                                        Duration(milliseconds: value.round()),
+                                      )
                                 : null,
                           ),
                           Row(
@@ -132,7 +137,9 @@ class NowPlayingPage extends ConsumerWidget {
                                       ? Icons.shuffle_on_outlined
                                       : Icons.shuffle,
                                 ),
-                                color: playback.shuffled ? colors.primary : null,
+                                color: playback.shuffled
+                                    ? colors.primary
+                                    : null,
                                 onPressed: () => ref
                                     .read(playbackControllerProvider.notifier)
                                     .setShuffle(!playback.shuffled),
@@ -178,7 +185,8 @@ class NowPlayingPage extends ConsumerWidget {
                                       ? Icons.repeat_one
                                       : Icons.repeat,
                                 ),
-                                color: playback.repeatMode != PlayerRepeatMode.off
+                                color:
+                                    playback.repeatMode != PlayerRepeatMode.off
                                     ? colors.primary
                                     : null,
                                 onPressed: () => ref
