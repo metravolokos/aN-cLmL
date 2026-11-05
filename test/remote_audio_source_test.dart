@@ -5,6 +5,16 @@ import 'package:cloudmail_player/domain/remote_track.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('platform media tag is carried by the authenticated stream source', () {
+    final metadata = Object();
+    final source = CloudRangeAudioSource(
+      const RemoteTrack(path: 'metadata.flac', sizeBytes: 4),
+      (_, _, length) async => Uint8List(length),
+      mediaTag: metadata,
+    );
+    expect(source.tag, same(metadata));
+  });
+
   test(
     'FLAC remote source requests exact 64 KiB chunks and accepts seek',
     () async {
