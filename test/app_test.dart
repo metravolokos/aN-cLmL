@@ -33,7 +33,9 @@ class _FakeProbe implements CloudProbe {
   }
 }
 
-Future<void> launch(WidgetTester tester, Size size, {
+Future<void> launch(
+  WidgetTester tester,
+  Size size, {
   CredentialVault? vault,
   CloudProbe? probe,
 }) async {
