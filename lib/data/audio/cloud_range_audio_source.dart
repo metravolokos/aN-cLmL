@@ -1,3 +1,7 @@
+// Dart's upstream just_audio StreamAudioSource is explicitly marked
+// experimental. This narrowly scoped opt-in is documented in ADR-0003.
+// ignore_for_file: experimental_member_use
+
 import 'dart:math' as math;
 import 'dart:typed_data';
 

@@ -32,7 +32,10 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
       AppDestination.artists => strings.artists,
       AppDestination.settings => strings.settings,
     };
-    final tracks = tracksAsync.valueOrNull ?? const <RemoteTrack>[];
+    final tracks = switch (tracksAsync) {
+      AsyncData<List<RemoteTrack>>(:final value) => value,
+      _ => const <RemoteTrack>[],
+    };
     final filtered = tracks.where((track) =>
         track.displayTitle.toLowerCase().contains(_filter.toLowerCase())).toList();
     final groups = <String, List<RemoteTrack>>{};
@@ -90,7 +93,7 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
                 Text(strings.libraryLoading),
               ],
             )),
-            error: (_, __) => Center(child: Column(
+            error: (_, _) => Center(child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(strings.libraryError),

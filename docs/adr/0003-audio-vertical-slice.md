@@ -20,7 +20,7 @@ Considered: media_kit on all platforms; just_audio Android backed by Media3 plus
 
 ## Rationale and trade-offs
 
-just_audio is maintained and implements Media3 on Android; desktop audio depends on libmpv and licensing obligations of the distributed native codecs. StreamAudioSource is labelled experimental upstream. A 64 KiB chunk can incur expensive round-trip latency, so this prototype is **not yet an accepted audio cache**. The 2-track disk cache and prefetch mechanism still need implementation and measured performance. It is incorrect to claim the final gapless or start-under-three-seconds requirement has been achieved.
+just_audio is maintained and implements Media3 on Android; desktop audio depends on libmpv and licensing obligations of the distributed native codecs. StreamAudioSource is labelled experimental upstream. Its three compiler warnings are narrowly and explicitly opted into at lib/data/audio/cloud_range_audio_source.dart; this is a tracked compatibility risk, not a declaration that the API is stable. A 64 KiB chunk can incur expensive round-trip latency, so this prototype is **not yet an accepted audio cache**. The 2-track disk cache and prefetch mechanism still need implementation and measured performance. It is incorrect to claim the final gapless or start-under-three-seconds requirement has been achieved.
 
 A native media_kit-only alternative must be compared if this bridge shows instability, and the native libmpv licensing profile verified before public binaries. The versioned dependencies were checked against pub.dev and are resolved into pubspec.lock by actual Flutter tooling.
 

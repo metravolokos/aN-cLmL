@@ -28,7 +28,7 @@ void main() {
   test('StreamAudioSource prevents offsets outside file size', () async {
     final source = CloudRangeAudioSource(
       const RemoteTrack(path: 'file.mp3', sizeBytes: 8),
-      (_, __, length) async => Uint8List(length),
+      (_, _, length) async => Uint8List(length),
     );
     expect(() => source.request(9, 10), throwsRangeError);
     final bytes = <int>[];
