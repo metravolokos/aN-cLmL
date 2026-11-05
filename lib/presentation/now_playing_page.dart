@@ -213,11 +213,7 @@ class NowPlayingPage extends ConsumerWidget {
 }
 
 class _TrackArtwork extends ConsumerStatefulWidget {
-  const _TrackArtwork({
-    required this.track,
-    required this.size,
-    super.key,
-  });
+  const _TrackArtwork({required this.track, required this.size, super.key});
 
   final RemoteTrack track;
   final double size;

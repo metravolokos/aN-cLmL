@@ -109,10 +109,8 @@ class CloudMusicService {
   /// Embedded artwork is loaded lazily for the displayed track only.
   Future<Uint8List?> readArtwork(RemoteTrack track) async {
     if (!track.isFlac) return null;
-    final artwork = await FlacArtworkReader(readRange).read(
-      track.path,
-      track.sizeBytes,
-    );
+    final artwork = await FlacArtworkReader(readRange)
+        .read(track.path, track.sizeBytes);
     return artwork?.bytes;
   }
 
