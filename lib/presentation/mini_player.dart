@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/audio/playback_controller.dart';
+import '../domain/track_queue.dart';
 import '../l10n/app_localizations.dart';
 
 class MiniPlayer extends ConsumerWidget {
@@ -67,6 +68,12 @@ class MiniPlayer extends ConsumerWidget {
                 ),
               ),
               IconButton(
+                tooltip: strings.prev,
+                icon: const Icon(Icons.skip_previous),
+                onPressed: () =>
+                    ref.read(playbackControllerProvider.notifier).previous(),
+              ),
+              IconButton(
                 tooltip: playback.playing ? strings.pause : strings.play,
                 icon: Icon(playback.playing ? Icons.pause : Icons.play_arrow),
                 onPressed: () => ref
@@ -74,10 +81,48 @@ class MiniPlayer extends ConsumerWidget {
                     .pauseOrResume(),
               ),
               IconButton(
+                tooltip: strings.next,
+                icon: const Icon(Icons.skip_next),
+                onPressed: () =>
+                    ref.read(playbackControllerProvider.notifier).next(),
+              ),
+              IconButton(
                 tooltip: 'Стоп',
                 icon: const Icon(Icons.stop),
                 onPressed: () =>
                     ref.read(playbackControllerProvider.notifier).stop(),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                tooltip: 'Перемешать',
+                color: playback.shuffle
+                    ? Theme.of(context).colorScheme.primary
+                    : null,
+                icon: const Icon(Icons.shuffle),
+                onPressed: () => ref
+                    .read(playbackControllerProvider.notifier)
+                    .setShuffle(!playback.shuffle),
+              ),
+              IconButton(
+                tooltip: 'Повтор',
+                color: playback.repeat != QueueRepeat.off
+                    ? Theme.of(context).colorScheme.primary
+                    : null,
+                icon: Icon(playback.repeat == QueueRepeat.one
+                    ? Icons.repeat_one
+                    : Icons.repeat),
+                onPressed: () {
+                  final nextMode = switch (playback.repeat) {
+                    QueueRepeat.off => QueueRepeat.all,
+                    QueueRepeat.all => QueueRepeat.one,
+                    QueueRepeat.one => QueueRepeat.off,
+                  };
+                  ref.read(playbackControllerProvider.notifier).setRepeat(nextMode);
+                },
               ),
             ],
           ),

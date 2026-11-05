@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../../domain/remote_track.dart';
+import '../../domain/track_queue.dart';
 import '../library/cloud_music_service.dart';
 import 'cloud_range_audio_source.dart';
 
@@ -15,6 +16,8 @@ class PlaybackView {
     this.playing = false,
     this.loading = false,
     this.failed = false,
+    this.shuffle = false,
+    this.repeat = QueueRepeat.off,
   });
 
   final RemoteTrack? track;
@@ -23,6 +26,8 @@ class PlaybackView {
   final bool playing;
   final bool loading;
   final bool failed;
+  final bool shuffle;
+  final QueueRepeat repeat;
 
   PlaybackView withUpdates({
     RemoteTrack? track,
@@ -31,6 +36,8 @@ class PlaybackView {
     bool? playing,
     bool? loading,
     bool? failed,
+    bool? shuffle,
+    QueueRepeat? repeat,
   }) => PlaybackView(
     track: track ?? this.track,
     position: position ?? this.position,
@@ -38,6 +45,8 @@ class PlaybackView {
     playing: playing ?? this.playing,
     loading: loading ?? this.loading,
     failed: failed ?? this.failed,
+    shuffle: shuffle ?? this.shuffle,
+    repeat: repeat ?? this.repeat,
   );
 }
 
@@ -45,6 +54,7 @@ class PlaybackController extends Notifier<PlaybackView> {
   AudioPlayer? _player;
   final List<StreamSubscription<dynamic>> _subscriptions = [];
   bool _closed = false;
+  final TrackQueue _queue = TrackQueue();
 
   @override
   PlaybackView build() {
@@ -81,6 +91,9 @@ class PlaybackController extends Notifier<PlaybackView> {
     );
     _subscriptions.add(
       audio.processingStateStream.listen((processing) {
+        if (!_closed && processing == ProcessingState.completed) {
+          unawaited(next(automatic: true));
+        }
         if (!_closed) {
           state = state.withUpdates(
             loading:
@@ -98,18 +111,61 @@ class PlaybackController extends Notifier<PlaybackView> {
     return _player = audio;
   }
 
-  Future<void> playTrack(RemoteTrack track) async {
-    state = PlaybackView(track: track, loading: true);
+  Future<void> playTrack(RemoteTrack track) =>
+      playFromQueue([track]);
+
+  Future<void> playFromQueue(
+    List<RemoteTrack> tracks, {
+    int startIndex = 0,
+  }) async {
+    _queue.load(tracks, startIndex: startIndex);
+    final track = _queue.current;
+    if (track != null) await _playCurrent(track);
+  }
+
+  Future<void> _playCurrent(RemoteTrack track) async {
+    state = PlaybackView(
+      track: track,
+      loading: true,
+      shuffle: _queue.shuffle,
+      repeat: _queue.repeat,
+    );
     try {
       final reader = ref.read(cloudMusicServiceProvider);
       final player = _ensurePlayer();
       await player.setAudioSource(
         CloudRangeAudioSource(track, reader.readRange),
       );
-      unawaited(player.play());
+      if (!_closed) unawaited(player.play());
     } catch (_) {
-      state = state.withUpdates(failed: true, loading: false);
+      if (!_closed) {
+        state = state.withUpdates(failed: true, loading: false);
+      }
     }
+  }
+
+  Future<void> next({bool automatic = false}) async {
+    final track = _queue.next(automatic: automatic);
+    if (track == null) {
+      if (automatic) await _player?.stop();
+      return;
+    }
+    await _playCurrent(track);
+  }
+
+  Future<void> previous() async {
+    final track = _queue.previous();
+    if (track != null) await _playCurrent(track);
+  }
+
+  void setShuffle(bool enabled) {
+    _queue.setShuffle(enabled);
+    state = state.withUpdates(shuffle: enabled);
+  }
+
+  void setRepeat(QueueRepeat mode) {
+    _queue.setRepeat(mode);
+    state = state.withUpdates(repeat: mode);
   }
 
   Future<void> pauseOrResume() async {
@@ -128,7 +184,8 @@ class PlaybackController extends Notifier<PlaybackView> {
 
   Future<void> stop() async {
     await _player?.stop();
-    state = const PlaybackView();
+    _queue.clear();
+    state = PlaybackView(shuffle: _queue.shuffle, repeat: _queue.repeat);
   }
 }
 

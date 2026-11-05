@@ -1,5 +1,12 @@
 # Three-platform development status — 2026-11-05
 
+## Queue implementation (separate branch, 2026-11-05)
+
+After the tested PR #7 baseline 55aa81a, an independent queue module was added in feature/queue-controls-20261105. Pure-Dart TrackQueue provides ordered context, manual next/previous, seeded Fisher-Yates shuffle, original-order restoration and repeat off/all/one. Library row taps now pass the appropriate filtered/list group context; the mini-player offers previous/next/shuffle/repeat controls. A dedicated queue test file covers edge cases. See ADR 0004.
+
+This branch is intentionally independent of ongoing SQLite work on other branches. No live credentials, WebDAV traffic or device sound checks were performed. The GitHub CI result must be checked before merge. This is only one increment toward the full uploaded specification, not finished full-player acceptance.
+
+
 ## Current verified baseline
 
 The work branch feature/three-platform-player-20261105 began from PR #5 commit c28bca85 after its 3/3 successful CI. Its Android and Windows M2-A build outputs and offline tests are verified, but live credentials and runtime music playback have **not** been verified. The earlier M1 shell was manually launched on Android and Windows.
