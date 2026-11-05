@@ -1,0 +1,36 @@
+name: Check FLAC range parser once
+on:
+  push:
+    branches: [feature/flac-tags-20261105]
+permissions:
+  contents: write
+jobs:
+  parser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/flac-tags-20261105
+          persist-credentials: true
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: stable
+          cache: true
+      - name: Check and format FLAC metadata reader
+        run: |
+          set -euo pipefail
+          flutter pub get --enforce-lockfile
+          dart format lib test
+          flutter analyze
+          flutter test
+          python -m unittest discover -s tests -v
+          git add lib test
+          git diff --cached --check
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'style(tags): format bounded FLAC metadata reader'
+            git push origin HEAD:refs/heads/feature/flac-tags-20261105
+          fi
