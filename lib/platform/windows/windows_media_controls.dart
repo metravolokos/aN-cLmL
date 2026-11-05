@@ -92,8 +92,12 @@ class _WindowsMediaControlsBridgeState
     final duration = view.duration.inMilliseconds;
     final changedPosition = (position - _lastPositionMs).abs() >= 1000;
     final changedDuration = duration != _lastDurationMs;
-    if (!changedTrack && !changedStatus && !changedPosition && !changedDuration)
+    if (!changedTrack &&
+        !changedStatus &&
+        !changedPosition &&
+        !changedDuration) {
       return;
+    }
 
     _trackIdentity = identity;
     _wasPlaying = view.playing;
@@ -116,7 +120,7 @@ class _WindowsMediaControlsBridgeState
               PlaybackTimeline(
                 startTimeMs: 0,
                 endTimeMs: endMs,
-                positionMs: position.clamp(0, endMs),
+                positionMs: position.clamp(0, endMs).toInt(),
                 minSeekTimeMs: 0,
                 maxSeekTimeMs: endMs,
               ),
