@@ -45,7 +45,7 @@ class RemoteTrack {
       (album?.trim().isNotEmpty ?? false) ? album!.trim() : 'Без альбома';
 
   /// Albums with the same title but different artists are distinct.
-  String get albumKey => '${albumArtist ?? artist ?? ''}\u0000${displayAlbum}';
+  String get albumKey => '${albumArtist ?? artist ?? ''}\u0000$displayAlbum';
 
   bool get isFlac => fileName.toLowerCase().endsWith('.flac');
   bool get isMp3 => fileName.toLowerCase().endsWith('.mp3');
