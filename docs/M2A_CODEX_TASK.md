@@ -1,24 +1,24 @@
-# Codex assignment — M2-A only: secure Cloud Mail.ru connection
+# M2-A — real Cloud Mail.ru connection on Windows and Android
 
-Scope: https://github.com/metravolokos/cloudmail-player-m0/issues/3
+Status: approved to start after the user accepted M1 on both platforms, and PR #2 was merged as 288db54d7acf6912a2036878c468d4c3cf505ba9.
 
-## Read first
-- AGENTS.md, docs/STATUS.md, docs/ROADMAP.md, docs/webdav-notes.md and docs/SPEC.md.
-- Start a fresh feature branch off **current remote main** after PR #2 merge; do not reuse stale local work checkouts.
-- Keep this change small: **M2-A** only. Do not jump to SQLite, full indexing, artwork, streaming audio or M2-B/C.
+Read AGENTS.md, docs/SPEC.md, docs/STATUS.md, docs/webdav-notes.md and Issue #3 first. Work **only on feature/m2a-cloud-connection** and submit a Draft PR against main. Do not merge or begin M2-B automatically.
 
-## Functional requirements
-1. Investigate and verify a real, maintained HTTP/WebDAV Flutter/Dart package and OS-backed secret store compatible with Windows 11 and Android **without Google Play Services**. Choose minimum dependencies; document one brief ADR.
-2. Implement a read-only Cloud Mail.ru WebDAV client restricted to https://webdav.cloud.mail.ru/AllMusic and descendants, supporting Basic Auth with the **external-application password**, explicit Depth 0/1 PROPFIND and small bounded GET Range. Protect Authorization headers and personal file paths in logging.
-3. Strictly validate status 207, HTTP 206, actual byte count and Content-Range including the empirically confirmed Cloud Mail.ru form \`bytes=first-last/total\`. Handle URL encoding, Cyrillic and untrusted PROPFIND hrefs, and never follow redirects to a different origin with credentials.
-4. Android/Windows Settings: user enters login + app password; verify connection and show clear Russian success/failure messages. Store secrets only in actual OS secure storage; never persist plaintext passwords in SQLite, settings or logs. Provide Disconnect and remove saved credentials.
-5. Use asynchronous bounded requests with cancellation/timeout; **no** full-library scan, media download, or background sync in this PR.
+## Objective
+A user can enter their Cloud Mail.ru WebDAV app credentials in the Russian Settings screen, tap Connect, and see a truthful Connected/Failed state after a read-only request to /AllMusic. The app works on both Windows and Android without Google services. Disconnect clears session credentials and stored credentials when the user chooses Disconnect. No library indexing or playback yet.
 
-## Tests, artifacts and handoff
-- Unit/integration tests against a local fake WebDAV server with anonymous fixtures (207, 401/403, 404, malformed XML, Unicode paths, oversized/unexpected Range, bad Content-Range, timeouts, cancellation).
-- Run dart format, flutter analyze, flutter test and Python M0 tests; ensure GitHub Actions builds a Windows executable and Android debug APK. No real cloud credentials in GitHub CI.
-- If live authenticated testing is performed in Codex Cloud, use only individually authorized secret environment variables and sanitized summaries. The temporary password previously exposed in chat must be replaced before reuse.
-- Update STATUS, ROADMAP and the brief ADR. Submit a **Draft PR** with actual CI evidence, do not merge without user approval. Report working UI steps and defects concisely. No hours-long tests or speculative refactors.
+## Implementation guidance
+- Review pub.dev compatibility with the committed Flutter/Dart SDK and lockfile before selecting dependencies. Current candidates as of 2026-11-05: dio 5.11.1 (cancellation/timeouts; supports Windows+Android) and flutter_secure_storage 11.2.0 (Windows+Android). Use only what is necessary; document any alternative choice and platform security properties in one short ADR. The Windows backend and Android Keystore behavior must be evaluated, not merely assumed.
+- Never check a username, app password, encoded Authorization header, raw private XML or private filenames into public git, test fixtures, screenshot, log, CI, crash analytics or PR.
+- Use the fixed endpoint https://webdav.cloud.mail.ru and restrict all WebDAV resource paths to /AllMusic and its descendants; reject path escapes in decoded Unicode and percent-encoded paths.
+- Write the read-only WebDAV PROPFIND Depth:0 request in a small client/service separate from widgets, with HTTPS, timeouts, cancellation and a correctly scoped Basic auth header. Verify returned 207 and actual /AllMusic collection; distinguish 401/403, 404, malformed XML, timeout and other network errors. Never treat HTTP 200 alone as proof of connection.
+- No external account requests in CI. Supply a fake HTTP transport/server covering 207, 401, 404, malformed XML, path escape, cancellation and no-secret logging; add focused widgets tests for Settings Connect/Disconnect and errors. Keep tests short.
+- Android internet permission and platform manifest checks as needed; maintain minSdk 24. No GMS or Firebase.
+- Save credentials in OS-backed secret storage only after successful authenticated check; provide explicit handling for unreadable/corrupt saved credentials and Disconnect. Do not log secrets. Never save as plain SharedPreferences, SQLite or Dart logs.
+- Verify with flutter pub get, gen-l10n, format, analyze, test, Android APK and Windows release builds via CI. Update pubspec.lock and short docs; do not claim manual connection or testing until user confirms on devices.
 
-## Important exclusions
-Do not build M2-B SQLite catalog or M2-C tag scanner yet. No favorites, playlists, GMS, telemetry, ALAC or playback engine.
+## Output
+Draft PR URL, head SHA, concise checklist of tested behaviors, three CI results, and a request for a single real-user Connect/Disconnect smoke test after APK/Windows artifacts are available.
+
+## Explicit non-goals
+No PROPFIND Depth:1 recursive scan beyond what is strictly needed to confirm the target collection, no library storage, database, metadata extraction, artwork, audio, UI redesign, stress tests, repeated M0 probe, or long end-to-end tests. M2-B and M2-C are separate PRs.
