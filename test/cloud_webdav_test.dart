@@ -36,7 +36,7 @@ Future<T> withServer<T>(
   try {
     return await check(
       CloudWebDav.forLoopbackTesting(
-        Uri.parse('http://127.0.0.1:' + server.port.toString() + '/AllMusic/'),
+        Uri.parse('http://127.0.0.1:${server.port}/AllMusic/'),
       ),
     );
   } finally {

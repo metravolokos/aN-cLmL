@@ -21,7 +21,7 @@ class CloudException implements Exception {
   final CloudFailure reason;
 
   @override
-  String toString() => 'CloudException(' + reason.name + ')';
+  String toString() => 'CloudException(${reason.name})';
 }
 
 class CancellationToken {
@@ -146,10 +146,7 @@ class CloudWebDav implements CloudProbe {
       request.followRedirects = false;
       request.headers.set(
         HttpHeaders.authorizationHeader,
-        'Basic ' +
-            base64.encode(
-              utf8.encode(credentials.username + ':' + credentials.password),
-            ),
+        'Basic ${base64.encode(utf8.encode('${credentials.username}:${credentials.password}'))}',
       );
       if (depth != null) {
         request.headers.set('Depth', depth);
@@ -304,7 +301,7 @@ class CloudWebDav implements CloudProbe {
       'GET',
       uri,
       credentials,
-      range: 'bytes=$offset-' + (offset + length - 1).toString(),
+      range: 'bytes=${offset}-${offset + length - 1}',
       maxBytes: length,
       cancel: cancel,
     );
