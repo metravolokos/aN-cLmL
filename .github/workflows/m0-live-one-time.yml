@@ -1,0 +1,35 @@
+name: One-time bounded live WebDAV verification
+on:
+  push:
+    branches:
+      - experiment/live-m0-repo-secrets-20261105
+    paths:
+      - .github/workflows/m0-live-one-time.yml
+
+permissions:
+  contents: read
+
+jobs:
+  live-read-only:
+    if: github.repository == 'metravolokos/cloudmail-player-m0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify offline parser contracts
+        run: python -m unittest discover -s tests -v
+      - name: Verify live WebDAV using repository secrets
+        shell: bash
+        env:
+          WEBDAV_USERNAME: ${{ secrets.WEBDAV_USERNAME }}
+          WEBDAV_PASSWORD: ${{ secrets.WEBDAV_PASSWORD }}
+        run: |
+          set -eu
+          if [ -z "$WEBDAV_USERNAME" ] || [ -z "$WEBDAV_PASSWORD" ]; then
+            echo 'BLOCKED: Repository secrets not accessible under expected names.'
+            exit 2
+          fi
+          python tools/webdav_probe.py --live
