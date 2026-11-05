@@ -15,7 +15,8 @@ Future<void> initializeAndroidPlaybackControls() async {
   _androidHandler = await AudioService.init(
     builder: CloudAndroidAudioHandler.new,
     config: const AudioServiceConfig(
-      androidNotificationChannelId: 'com.cloudmailplayer.cloudmail_player.audio',
+      androidNotificationChannelId:
+          'com.cloudmailplayer.cloudmail_player.audio',
       androidNotificationChannelName: 'Воспроизведение музыки',
       androidNotificationOngoing: true,
       androidStopForegroundOnPause: false,
