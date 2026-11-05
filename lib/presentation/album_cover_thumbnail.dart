@@ -6,8 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/library/cloud_music_service.dart';
 import '../domain/remote_track.dart';
 
-/// Small lazy album-cover thumbnail. The CloudMusicService shares only the
-/// last three decoded source byte buffers across visible widgets.
+/// Lazy album cover: decoded off the UI isolate and cached on disk by account.
 class AlbumCoverThumbnail extends ConsumerStatefulWidget {
   const AlbumCoverThumbnail({required this.track, this.size = 52, super.key});
 
@@ -27,7 +26,7 @@ class _AlbumCoverThumbnailState extends ConsumerState<AlbumCoverThumbnail> {
     super.initState();
     imageFuture = ref
         .read(cloudMusicServiceProvider)
-        .readArtwork(widget.track)
+        .readThumbnail(widget.track)
         .catchError((Object error, StackTrace stackTrace) => null);
   }
 
