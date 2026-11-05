@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+*.private.json
+*.local.json
+credentials.env
+secrets/
+__pycache__/
+*.pyc
+*.log
+.dart_tool/
+build/
