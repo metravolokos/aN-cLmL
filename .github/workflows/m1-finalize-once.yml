@@ -32,6 +32,8 @@ jobs:
       - name: Reconcile platform runner files using official Flutter generator
         run: |
           flutter create --no-pub --project-name cloudmail_player --org com.cloudmailplayer --platforms android,windows .
+          # Keep the project's existing M1 widget tests; discard the generator's sample MyApp test.
+          rm -f test/widget_test.dart
           flutter pub get
           git status --short
       - name: Verify Flutter and M0 tests
