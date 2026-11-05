@@ -17,7 +17,7 @@ class PlaybackView {
     this.loading = false,
     this.failed = false,
     this.shuffled = false,
-    this.repeatMode = RepeatMode.off,
+    this.repeatMode = PlayerRepeatMode.off,
   });
 
   final RemoteTrack? track;
@@ -27,7 +27,7 @@ class PlaybackView {
   final bool loading;
   final bool failed;
   final bool shuffled;
-  final RepeatMode repeatMode;
+  final PlayerRepeatMode repeatMode;
 
   PlaybackView withUpdates({
     RemoteTrack? track,
@@ -37,7 +37,7 @@ class PlaybackView {
     bool? loading,
     bool? failed,
     bool? shuffled,
-    RepeatMode? repeatMode,
+    PlayerRepeatMode? repeatMode,
   }) => PlaybackView(
     track: track ?? this.track,
     position: position ?? this.position,
@@ -107,7 +107,7 @@ class PlaybackController extends Notifier<PlaybackView> {
       track: track,
       loading: true,
       shuffled: _queue?.shuffled ?? false,
-      repeatMode: _queue?.repeatMode ?? RepeatMode.off,
+      repeatMode: _queue?.repeatMode ?? PlayerRepeatMode.off,
     );
     try {
       final reader = ref.read(cloudMusicServiceProvider);
@@ -159,7 +159,7 @@ class PlaybackController extends Notifier<PlaybackView> {
   }
 
   void cycleRepeat() {
-    final repeatMode = _queue?.cycleRepeat() ?? RepeatMode.off;
+    final repeatMode = _queue?.cycleRepeat() ?? PlayerRepeatMode.off;
     state = state.withUpdates(repeatMode: repeatMode);
   }
 

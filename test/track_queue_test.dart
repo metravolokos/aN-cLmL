@@ -22,10 +22,10 @@ void main() {
   test('repeat all wraps; repeat one affects auto but not manual next', () {
     final queue = TrackQueue(tracks, 4);
     expect(queue.next(manual: false), isNull);
-    expect(queue.cycleRepeat(), RepeatMode.all);
+    expect(queue.cycleRepeat(), PlayerRepeatMode.all);
     expect(queue.next(manual: false)!.path, '0.flac');
     expect(queue.previous()!.path, '4.flac');
-    expect(queue.cycleRepeat(), RepeatMode.one);
+    expect(queue.cycleRepeat(), PlayerRepeatMode.one);
     expect(queue.next(manual: false)!.path, '4.flac');
     expect(queue.next(manual: true), isNull);
     expect(queue.nextForPrefetch()!.path, '4.flac');
@@ -50,9 +50,9 @@ void main() {
 
   test('repeat cycles through off / all / one', () {
     final queue = TrackQueue(tracks, 0);
-    expect(queue.repeatMode, RepeatMode.off);
-    expect(queue.cycleRepeat(), RepeatMode.all);
-    expect(queue.cycleRepeat(), RepeatMode.one);
-    expect(queue.cycleRepeat(), RepeatMode.off);
+    expect(queue.repeatMode, PlayerRepeatMode.off);
+    expect(queue.cycleRepeat(), PlayerRepeatMode.all);
+    expect(queue.cycleRepeat(), PlayerRepeatMode.one);
+    expect(queue.cycleRepeat(), PlayerRepeatMode.off);
   });
 }

@@ -107,12 +107,12 @@ class MiniPlayer extends ConsumerWidget {
               ),
               IconButton(
                 tooltip: switch (playback.repeatMode) {
-                  RepeatMode.off => strings.repeatOff,
-                  RepeatMode.all => strings.repeatAll,
-                  RepeatMode.one => strings.repeatOne,
+                  PlayerRepeatMode.off => strings.repeatOff,
+                  PlayerRepeatMode.all => strings.repeatAll,
+                  PlayerRepeatMode.one => strings.repeatOne,
                 },
                 icon: Icon(
-                  playback.repeatMode == RepeatMode.one
+                  playback.repeatMode == PlayerRepeatMode.one
                       ? Icons.repeat_one : Icons.repeat,
                 ),
                 onPressed: () =>

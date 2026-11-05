@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'remote_track.dart';
 
-enum RepeatMode { off, all, one }
+enum PlayerRepeatMode { off, all, one }
 
 /// A deterministic playback queue independent of the audio engine and UI.
 class TrackQueue {
@@ -18,7 +18,7 @@ class TrackQueue {
   late List<RemoteTrack> _order;
   int _currentIndex;
   bool _shuffled = false;
-  RepeatMode repeatMode = RepeatMode.off;
+  PlayerRepeatMode repeatMode = PlayerRepeatMode.off;
 
   RemoteTrack get current => _order[_currentIndex];
   bool get shuffled => _shuffled;
@@ -42,22 +42,22 @@ class TrackQueue {
     }
   }
 
-  RepeatMode cycleRepeat() {
-    repeatMode = RepeatMode.values[
-      (repeatMode.index + 1) % RepeatMode.values.length
+  PlayerRepeatMode cycleRepeat() {
+    repeatMode = PlayerRepeatMode.values[
+      (repeatMode.index + 1) % PlayerRepeatMode.values.length
     ];
     return repeatMode;
   }
 
   /// Repeat-one applies only to automatic track completion, not a manual skip.
   RemoteTrack? next({bool manual = true}) {
-    if (!manual && repeatMode == RepeatMode.one) return current;
+    if (!manual && repeatMode == PlayerRepeatMode.one) return current;
     final nextIndex = _currentIndex + 1;
     if (nextIndex < _order.length) {
       _currentIndex = nextIndex;
       return current;
     }
-    if (repeatMode == RepeatMode.all) {
+    if (repeatMode == PlayerRepeatMode.all) {
       _currentIndex = 0;
       return current;
     }
@@ -70,7 +70,7 @@ class TrackQueue {
       _currentIndex = index;
       return current;
     }
-    if (repeatMode == RepeatMode.all) {
+    if (repeatMode == PlayerRepeatMode.all) {
       _currentIndex = _order.length - 1;
       return current;
     }
@@ -79,8 +79,8 @@ class TrackQueue {
 
   /// Returns the next actual file for the two-track prefetch subsystem.
   RemoteTrack? nextForPrefetch() {
-    if (repeatMode == RepeatMode.one) return current;
+    if (repeatMode == PlayerRepeatMode.one) return current;
     if (_currentIndex + 1 < _order.length) return _order[_currentIndex + 1];
-    return repeatMode == RepeatMode.all ? _order.first : null;
+    return repeatMode == PlayerRepeatMode.all ? _order.first : null;
   }
 }
