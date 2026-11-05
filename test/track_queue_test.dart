@@ -51,24 +51,25 @@ void main() {
     expect(queue.current?.path, 'a.flac');
   });
 
-  test('shuffle preserves selected item and every source item exactly once', () {
-    final queue = TrackQueue(random: Random(42))
-      ..load(files, startIndex: 2);
-    queue.setShuffle(true);
-    expect(queue.current?.path, 'c.mp3');
-    final seen = <String>{queue.current!.path};
-    for (var i = 1; i < files.length; i++) {
-      final next = queue.next();
-      expect(next, isNotNull);
-      expect(seen.add(next!.path), isTrue);
-    }
-    expect(seen, files.map((x) => x.path).toSet());
-    expect(queue.next(), isNull);
-  });
+  test(
+    'shuffle preserves selected item and every source item exactly once',
+    () {
+      final queue = TrackQueue(random: Random(42))..load(files, startIndex: 2);
+      queue.setShuffle(true);
+      expect(queue.current?.path, 'c.mp3');
+      final seen = <String>{queue.current!.path};
+      for (var i = 1; i < files.length; i++) {
+        final next = queue.next();
+        expect(next, isNotNull);
+        expect(seen.add(next!.path), isTrue);
+      }
+      expect(seen, files.map((x) => x.path).toSet());
+      expect(queue.next(), isNull);
+    },
+  );
 
   test('disabling shuffle restores original source position and order', () {
-    final queue = TrackQueue(random: Random(1))
-      ..load(files, startIndex: 2);
+    final queue = TrackQueue(random: Random(1))..load(files, startIndex: 2);
     queue.setShuffle(true);
     queue.setShuffle(false);
     expect(queue.current?.path, 'c.mp3');
@@ -87,16 +88,19 @@ void main() {
     expect(queue.current, same(first));
   });
 
-  test('load preserves shuffle and repeat settings but resets track history', () {
-    final queue = TrackQueue(random: Random(7))..load(files);
-    queue.setRepeat(QueueRepeat.all);
-    queue.setShuffle(true);
-    queue.load(files.sublist(1), startIndex: 1);
-    expect(queue.current?.path, 'c.mp3');
-    expect(queue.shuffle, isTrue);
-    expect(queue.repeat, QueueRepeat.all);
-    expect(queue.length, 3);
-  });
+  test(
+    'load preserves shuffle and repeat settings but resets track history',
+    () {
+      final queue = TrackQueue(random: Random(7))..load(files);
+      queue.setRepeat(QueueRepeat.all);
+      queue.setShuffle(true);
+      queue.load(files.sublist(1), startIndex: 1);
+      expect(queue.current?.path, 'c.mp3');
+      expect(queue.shuffle, isTrue);
+      expect(queue.repeat, QueueRepeat.all);
+      expect(queue.length, 3);
+    },
+  );
 
   test('load rejects invalid indices without replacing current list', () {
     final queue = TrackQueue()..load(files);

@@ -158,7 +158,11 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
                       subtitle: Text('${groups[key]!.length}'),
                       children: [
                         for (var i = 0; i < groups[key]!.length; i++)
-                          _TrackTile(track: groups[key]![i], queue: groups[key]!, index: i),
+                          _TrackTile(
+                            track: groups[key]![i],
+                            queue: groups[key]!,
+                            index: i,
+                          ),
                       ],
                     );
                   },
@@ -166,8 +170,11 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
               }
               return ListView.builder(
                 itemCount: filtered.length,
-                itemBuilder: (context, index) =>
-                    _TrackTile(track: filtered[index], queue: filtered, index: index),
+                itemBuilder: (context, index) => _TrackTile(
+                  track: filtered[index],
+                  queue: filtered,
+                  index: index,
+                ),
               );
             },
           ),
@@ -178,7 +185,11 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
 }
 
 class _TrackTile extends ConsumerWidget {
-  const _TrackTile({required this.track, required this.queue, required this.index});
+  const _TrackTile({
+    required this.track,
+    required this.queue,
+    required this.index,
+  });
   final RemoteTrack track;
   final List<RemoteTrack> queue;
   final int index;
@@ -198,8 +209,9 @@ class _TrackTile extends ConsumerWidget {
         overflow: TextOverflow.ellipsis,
       ),
       trailing: const Icon(Icons.play_arrow),
-      onTap: () =>
-          ref.read(playbackControllerProvider.notifier).playFromQueue(queue, startIndex: index),
+      onTap: () => ref
+          .read(playbackControllerProvider.notifier)
+          .playFromQueue(queue, startIndex: index),
     );
   }
 }

@@ -111,8 +111,7 @@ class PlaybackController extends Notifier<PlaybackView> {
     return _player = audio;
   }
 
-  Future<void> playTrack(RemoteTrack track) =>
-      playFromQueue([track]);
+  Future<void> playTrack(RemoteTrack track) => playFromQueue([track]);
 
   Future<void> playFromQueue(
     List<RemoteTrack> tracks, {

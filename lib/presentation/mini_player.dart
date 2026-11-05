@@ -112,16 +112,20 @@ class MiniPlayer extends ConsumerWidget {
                 color: playback.repeat != QueueRepeat.off
                     ? Theme.of(context).colorScheme.primary
                     : null,
-                icon: Icon(playback.repeat == QueueRepeat.one
-                    ? Icons.repeat_one
-                    : Icons.repeat),
+                icon: Icon(
+                  playback.repeat == QueueRepeat.one
+                      ? Icons.repeat_one
+                      : Icons.repeat,
+                ),
                 onPressed: () {
                   final nextMode = switch (playback.repeat) {
                     QueueRepeat.off => QueueRepeat.all,
                     QueueRepeat.all => QueueRepeat.one,
                     QueueRepeat.one => QueueRepeat.off,
                   };
-                  ref.read(playbackControllerProvider.notifier).setRepeat(nextMode);
+                  ref
+                      .read(playbackControllerProvider.notifier)
+                      .setRepeat(nextMode);
                 },
               ),
             ],

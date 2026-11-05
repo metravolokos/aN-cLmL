@@ -20,8 +20,7 @@ class TrackQueue {
   bool get shuffle => _shuffle;
   int get length => _tracks.length;
   bool get isEmpty => _cursor < 0;
-  RemoteTrack? get current =>
-      _cursor < 0 ? null : _tracks[_order[_cursor]];
+  RemoteTrack? get current => _cursor < 0 ? null : _tracks[_order[_cursor]];
   int get originalIndex => _cursor < 0 ? -1 : _order[_cursor];
 
   void load(List<RemoteTrack> tracks, {int startIndex = 0}) {
