@@ -1,0 +1,227 @@
+import 'dart:async';
+import 'dart:typed_data';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../cloud/cloud_connection_service.dart';
+import '../../cloud/cloud_mail_webdav.dart';
+import '../../domain/remote_track.dart';
+import '../db/catalog_database.dart';
+import '../tags/flac_tag_reader.dart';
+import '../tags/mp3_tag_reader.dart';
+
+/// The only data layer that resolves protected credentials for WebDAV reads.
+class CloudMusicService {
+  CloudMusicService({
+    CloudMailWebDavClient? client,
+    CloudCredentialVault? vault,
+  }) : _client = client ?? CloudMailWebDavClient(),
+       _vault = vault ?? FlutterSecureCredentialVault();
+
+  final CloudMailWebDavClient _client;
+  final CloudCredentialVault _vault;
+  CloudCredentials? _credentials;
+  CatalogDatabase? _catalog;
+  String? _catalogFor;
+  bool _closed = false;
+
+  static const String _usernameKey = 'cloud_mail_username';
+  static const String _passwordKey = 'cloud_mail_app_password';
+
+  Future<CloudCredentials> _sessionCredentials() async {
+    if (_closed) throw StateError('Cloud session closed');
+    if (_credentials != null) return _credentials!;
+    final user = await _vault.read(_usernameKey);
+    final password = await _vault.read(_passwordKey);
+    if (user == null || user.isEmpty || password == null || password.isEmpty) {
+      throw const CloudMailException(CloudMailErrorCode.credentialsRequired);
+    }
+    return _credentials = CloudCredentials(
+      username: user,
+      appPassword: password,
+    );
+  }
+
+  Future<CatalogDatabase> _getCatalog() async {
+    final credentials = await _sessionCredentials();
+    if (_catalog != null && _catalogFor == credentials.username) {
+      return _catalog!;
+    }
+    await _catalog?.close();
+    _catalogFor = credentials.username;
+    return _catalog = await openAccountCatalog(credentials.username);
+  }
+
+  Future<List<RemoteTrack>> loadCatalog() async {
+    final credentials = await _sessionCredentials();
+    final entries = await _client.propfind(credentials, depth: 1);
+    final tracks = <RemoteTrack>[];
+    for (final entry in entries) {
+      if (entry.isCollection || entry.relativePath.isEmpty) continue;
+      final path = entry.relativePath;
+      final lower = path.toLowerCase();
+      if (!(lower.endsWith('.flac') ||
+          lower.endsWith('.mp3') ||
+          lower.endsWith('.m4a') ||
+          lower.endsWith('.ogg') ||
+          lower.endsWith('.opus') ||
+          lower.endsWith('.wav'))) {
+        continue;
+      }
+      final size = entry.sizeBytes;
+      if (size == null || size <= 0) continue;
+      tracks.add(RemoteTrack(path: path, sizeBytes: size, etag: entry.etag));
+    }
+    final catalog = await _getCatalog();
+    await catalog.applyScan(tracks);
+    return catalog.readTracks();
+  }
+
+  Future<List<RemoteTrack>> readCachedCatalog() async {
+    try {
+      final catalog = await _getCatalog();
+      return await catalog.readTracks();
+    } on CloudMailException catch (error) {
+      if (error.code == CloudMailErrorCode.credentialsRequired) {
+        return const <RemoteTrack>[];
+      }
+      rethrow;
+    }
+  }
+
+  Future<Uint8List> readRange(
+    String path,
+    int offset,
+    int length, {
+    WebDavRequestCancellation? cancellation,
+  }) async {
+    final credentials = await _sessionCredentials();
+    return _client.getRange(
+      credentials,
+      path: path,
+      offset: offset,
+      length: length,
+      cancellation: cancellation,
+    );
+  }
+
+  /// The UI gets a usable file list immediately; tags update in background
+  /// with bounded concurrency and never consume a full audio file.
+  Future<void> scanMetadata({
+    void Function(List<RemoteTrack> tracks, int done, int total)? onProgress,
+    bool Function()? isCancelled,
+  }) async {
+    final catalog = await _getCatalog();
+    final pending = await catalog.unindexedTracks();
+    if (pending.isEmpty) return;
+    final parser = FlacTagReader(readRange);
+    final mp3Parser = Mp3TagReader(readRange);
+    var assigned = 0;
+    var completed = 0;
+
+    Future<void> worker() async {
+      while (!_closed && !(isCancelled?.call() ?? false)) {
+        final index = assigned++;
+        if (index >= pending.length) return;
+        final track = pending[index];
+        FlacTags? tags;
+        Mp3Tags? id3;
+        try {
+          if (track.isFlac) {
+            tags = await parser.parse(track.path, track.sizeBytes);
+          } else if (track.isMp3) {
+            id3 = await mp3Parser.parse(track.path, track.sizeBytes);
+          }
+        } catch (_) {
+          // Corrupt/unsupported metadata retains a safe file-name fallback.
+        }
+        if (_closed || (isCancelled?.call() ?? false)) return;
+        await catalog.saveTags(
+          track.path,
+          title: tags?.title ?? id3?.title ?? track.displayTitle,
+          artist: tags?.artist ?? id3?.artist,
+          albumArtist: tags?.albumArtist ?? id3?.albumArtist,
+          album: tags?.album ?? id3?.album,
+          trackNumber: tags?.trackNumber ?? id3?.trackNumber,
+          discNumber: tags?.discNumber ?? id3?.discNumber,
+          duration: tags?.duration ?? id3?.duration,
+        );
+        completed++;
+        if (completed % 32 == 0 || completed == pending.length) {
+          final snapshot = await catalog.readTracks();
+          onProgress?.call(snapshot, completed, pending.length);
+        }
+      }
+    }
+
+    await Future.wait([for (var i = 0; i < 4; i++) worker()]);
+  }
+
+  void close() {
+    _closed = true;
+    _credentials = null;
+    final catalog = _catalog;
+    if (catalog != null) unawaited(catalog.close());
+    _client.close();
+  }
+}
+
+final cloudMusicServiceProvider = Provider<CloudMusicService>((ref) {
+  final service = CloudMusicService();
+  ref.onDispose(service.close);
+  return service;
+});
+
+class CloudCatalogController extends AsyncNotifier<List<RemoteTrack>> {
+  bool _disposed = false;
+  bool _refreshing = false;
+
+  @override
+  Future<List<RemoteTrack>> build() async {
+    ref.onDispose(() => _disposed = true);
+    return const <RemoteTrack>[];
+  }
+
+  Future<void> refresh() async {
+    if (_refreshing) return;
+    _refreshing = true;
+    state = const AsyncValue.loading();
+    try {
+      final service = ref.read(cloudMusicServiceProvider);
+      final cached = await service.readCachedCatalog();
+      if (_disposed) return;
+      if (cached.isNotEmpty) state = AsyncValue.data(cached);
+      try {
+        final tracks = await service.loadCatalog();
+        if (_disposed) return;
+        state = AsyncValue.data(tracks);
+        unawaited(_scanMetadata(service));
+      } catch (error, trace) {
+        if (_disposed) return;
+        if (cached.isEmpty) state = AsyncValue.error(error, trace);
+      }
+    } catch (error, trace) {
+      if (!_disposed) state = AsyncValue.error(error, trace);
+    } finally {
+      _refreshing = false;
+    }
+  }
+
+  Future<void> _scanMetadata(CloudMusicService service) async {
+    try {
+      await service.scanMetadata(
+        isCancelled: () => _disposed,
+        onProgress: (tracks, done, total) {
+          if (!_disposed) state = AsyncValue.data(tracks);
+        },
+      );
+    } catch (_) {
+      // Retain a valid file list even if tag scanning is interrupted.
+    }
+  }
+}
+
+final cloudCatalogProvider =
+    AsyncNotifierProvider<CloudCatalogController, List<RemoteTrack>>(
+      CloudCatalogController.new,
+    );

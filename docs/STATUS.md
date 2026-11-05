@@ -1,33 +1,52 @@
-# Project status — 2026-11-05
+# Three-platform development status — 2026-11-05
 
-## M0 — accepted bounded WebDAV connectivity
+## Account switch and Disconnect security
 
-Authenticated read-only Codex Cloud probe confirmed /AllMusic through PROPFIND (207), sampled HEAD (200) and five bounded Range GETs (206). The provider returned Content-Range in bytes=first-last/total form. Six offline Python tests passed. This does not establish full indexing or audio playback. Details in docs/webdav-notes.md.
+Settings now stops audio, closes its cache, and invalidates CloudMusicService
+and CloudCatalogController after a successful credential change or Disconnect.
+This discards in-memory WebDAV credentials and prevents the old session from
+being reused. See ADR 0007. Real-device logout behavior remains to be checked.
 
-## M1 — accepted Android and Windows Flutter UI scaffold
+## Now Playing full-screen controls
 
-User confirmed on 2026-11-05 that the application **launches and works on both target platforms**. This is manual acceptance of the existing UI shell, not of WebDAV or audio playback.
+A responsive Russian-language full-screen Now Playing route now opens by
+tapping the title in the persistent mini-player. It shows title, artist,
+album, seek, previous/next, play/pause, shuffle and repeat, using the
+existing shared player session. One widget test uses an injected
+Riverpod state with no credentials or network. The cover is intentionally
+a placeholder until real bounded artwork extraction is implemented.
 
-M1 includes Russian ARB localization, Material 3, responsive four-destination navigation (Tracks, Albums, Artists, Settings), theme selection and honest disconnected states. No personal WebDAV secrets or data are included.
+## Cache-to-player wiring (independent Draft)
 
-Confirmed in GitHub Actions run #42013267771:
-- Quality: Flutter 3.47.9, Dart 3.13.7; generated localizations, strict formatting, flutter analyze without issues; four Flutter widget tests and six Python M0 tests passed.
-- Android: flutter build apk --debug succeeded; artifact cloudmail-player-android-debug.
-- Windows: flutter build windows --release succeeded; artifact cloudmail-player-windows.
-- The user launched both applications and reported they work.
+The integrated branch has a bounded two-track cache, but playback originally bypassed it. On feature/cache-playback-wiring-20261105 the PlaybackController now passes the current and next queue items into TwoTrackAudioCache, supplies WebDAV cancellation, reads cached pages through CloudRangeAudioSource, and closes the cache on stop/dispose. See ADR 0006. Offline tests/build results and real cloud/device playback must be checked before adoption; this is not a declaration of full release readiness.
 
-Finalization: Flutter's official generator was run on the Android/Windows platform projects; a real pubspec.lock was generated and committed, with any generated Windows registrant adjustments. Reproduction is enforced through flutter pub get --enforce-lockfile. The one-off finalization workflow has been removed.
 
-A formal GMS-dependency audit has not yet been performed on the APK and remains a release criterion. No playback, personal cloud integration or full index is implemented at M1.
+## Current verified baseline
 
-M1 Draft PR #2 is accepted and authorized for merge into main; the user approved advancing to M2. The next work starts from the merged main; do not continue stale Codex work checkouts.
+The work branch feature/three-platform-player-20261105 began from PR #5 commit c28bca85 after its 3/3 successful CI. Its Android and Windows M2-A build outputs and offline tests are verified, but live credentials and runtime music playback have **not** been verified. The earlier M1 shell was manually launched on Android and Windows.
 
-## M2 — next, focused scope
+This branch addresses the expanded specification: Windows 10/11, Android without Google services, and Linux GNOME 51 Wayland. It is **not** a full player yet.
 
-Issue #3: https://github.com/metravolokos/cloudmail-player-m0/issues/3
+## Progress and evidence
 
-Start with M2-A connection/settings, read-only PROPFIND and bounded Range compatibility, secure OS-backed credential storage for Windows/Android. Then implement incremental SQLite catalog and ranged tag extraction in small separate slices. Do not build full playback or run multi-hour stress tests.
+- Imported the tested read-only WebDAV connection implementation from existing PR #5 without merging it to main.
+- Added Android INTERNET permission to the main manifest (required for release APK).
+- Tightened DAV XML multistatus namespace validation.
+- Created technology decisions and platform assumptions without inventing unmeasured performance.
+- Official Flutter Linux runner generated on GitHub-hosted Flutter 3.47.9; three-platform CI added. 
+- Implemented an initial cloud directory listing and seekable 64 KiB Range-to-native audio source. This is a developer vertical slice, not a complete playback/cache system.
+- Flutter dependency lock for audio packages generated by GitHub Actions. On branch c47290e, one-shot GitHub Actions run #42072286027 passed Dart formatting, flutter gen-l10n, flutter analyze (zero issues), 26 Flutter tests and 6 Python M0 tests. The new three-platform binary build workflow is pending on the Draft PR. Live WebDAV and real audio are not yet verified. 
+- All old PRs remain preserved for review; no secrets or private filenames added.
 
-## Security / constraints
+## Limitations
 
-Cloud source restricted to /AllMusic. No GMS, telemetry, playlists, favorites or equalizer. Never commit credentials, accounts or private filenames. M0 temporary app password was exposed earlier in chat; rotate before any new live testing.
+The current assistant runtime has no Flutter/Dart executable and no accessible Cloud Mail.ru secret environment variables. GitHub-hosted runners are used for verification. No real-credential traffic was performed from this chat.
+
+## Next implementation gates
+
+1. Linux runner/CI green and AOSP-safe Android release permissions.
+2. Incremental SQLite catalog and real source listing with safe bounded PROPFIND and Range.
+3. FLAC/MP3 metadata and album/artist grouping, followed by actual playback and disk cache.
+4. GNOME MPRIS / Android Media3 foreground / Windows SMTC, release packaging, manual hardware checks.
+
+For each gate distinguish: written code, green CI, and actual on-device acceptance. Never mark a full-player requirement as satisfied by a source-code-only change.
