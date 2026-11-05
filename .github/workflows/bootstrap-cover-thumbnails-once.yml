@@ -1,0 +1,30 @@
+name: One-time cover thumbnail lock and format
+on:
+  push:
+    branches:
+      - feature/persistent-cover-thumbnails-20261106
+    paths:
+      - .github/workflows/bootstrap-cover-thumbnails-once.yml
+permissions:
+  contents: write
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: stable
+      - run: flutter pub get
+      - run: dart format lib/data/artwork/cover_thumbnail_cache.dart lib/data/library/cloud_music_service.dart lib/presentation/album_cover_thumbnail.dart test/cover_thumbnail_cache_test.dart
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- pubspec.lock lib/data/artwork/cover_thumbnail_cache.dart lib/data/library/cloud_music_service.dart lib/presentation/album_cover_thumbnail.dart test/cover_thumbnail_cache_test.dart
+          if ! git diff --cached --quiet; then
+            git commit -m "build(artwork): lock image dependency and format cache source"
+            git push origin HEAD:feature/persistent-cover-thumbnails-20261106
+          fi
