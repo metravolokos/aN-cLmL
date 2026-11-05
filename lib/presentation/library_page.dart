@@ -23,6 +23,42 @@ class CloudLibraryPage extends ConsumerStatefulWidget {
 class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
   String _filter = '';
 
+  Future<void> _showAlbumTracks(
+    BuildContext context,
+    List<RemoteTrack> albumTracks,
+  ) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: FractionallySizedBox(
+          heightFactor: 0.72,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                child: Text(
+                  albumTracks.first.displayAlbum,
+                  style: Theme.of(sheetContext).textTheme.titleLarge,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: albumTracks.length,
+                  itemBuilder: (context, index) =>
+                      _TrackTile(track: albumTracks[index], queue: albumTracks),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context)!;
@@ -38,12 +74,13 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
       AsyncData<List<RemoteTrack>>(:final value) => value,
       _ => const <RemoteTrack>[],
     };
-    final filtered = tracks
-        .where(
-          (track) =>
-              track.displayTitle.toLowerCase().contains(_filter.toLowerCase()),
-        )
-        .toList();
+    final query = _filter.trim().toLowerCase();
+    final filtered = tracks.where((track) {
+      if (query.isEmpty) return true;
+      return track.displayTitle.toLowerCase().contains(query) ||
+          track.displayArtist.toLowerCase().contains(query) ||
+          track.displayAlbum.toLowerCase().contains(query);
+    }).toList();
     final groups = <String, List<RemoteTrack>>{};
     if (destination == AppDestination.albums ||
         destination == AppDestination.artists) {
@@ -156,29 +193,83 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
               }
               if (groups.isNotEmpty) {
                 final keys = groups.keys.toList()..sort();
+                if (destination == AppDestination.albums) {
+                  return GridView.builder(
+                    key: const ValueKey('album-grid'),
+                    padding: const EdgeInsets.all(12),
+                    gridDelegate:
+                        const SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 200,
+                          childAspectRatio: 0.74,
+                          mainAxisSpacing: 8,
+                          crossAxisSpacing: 8,
+                        ),
+                    itemCount: keys.length,
+                    itemBuilder: (context, index) {
+                      final albumTracks = groups[keys[index]]!;
+                      final first = albumTracks.first;
+                      return Card(
+                        clipBehavior: Clip.antiAlias,
+                        child: InkWell(
+                          key: ValueKey('album-open-${first.albumKey}'),
+                          onTap: () => _showAlbumTracks(context, albumTracks),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              AspectRatio(
+                                aspectRatio: 1,
+                                child: LayoutBuilder(
+                                  builder: (context, constraints) =>
+                                      AlbumCoverThumbnail(
+                                        key: ValueKey(
+                                          '${first.path}:${first.etag}',
+                                        ),
+                                        track: first,
+                                        size: constraints.maxWidth,
+                                      ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      first.displayAlbum,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleSmall,
+                                    ),
+                                    Text(
+                                      '${first.displayArtist} · ${albumTracks.length}',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodySmall,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }
                 return ListView.builder(
                   itemCount: keys.length,
                   itemBuilder: (context, index) {
                     final key = keys[index];
                     return ExpansionTile(
-                      leading: destination == AppDestination.albums
-                          ? AlbumCoverThumbnail(
-                              key: ValueKey(
-                                '${groups[key]!.first.path}:${groups[key]!.first.etag}',
-                              ),
-                              track: groups[key]!.first,
-                            )
-                          : null,
-                      title: Text(
-                        destination == AppDestination.albums
-                            ? groups[key]!.first.displayAlbum
-                            : key,
-                      ),
-                      subtitle: Text(
-                        destination == AppDestination.albums
-                            ? '${groups[key]!.first.displayArtist} · ${groups[key]!.length}'
-                            : '${groups[key]!.length}',
-                      ),
+                      title: Text(key),
+                      subtitle: Text('${groups[key]!.length}'),
                       children: [
                         for (final track in groups[key]!)
                           _TrackTile(track: track, queue: groups[key]!),
