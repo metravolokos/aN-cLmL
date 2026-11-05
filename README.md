@@ -1,67 +1,54 @@
-# CloudMail Player
+# CloudMail Player — Windows / Android / Linux
 
-A Flutter app for Windows and Android, initially using Russian Material 3 UI.
-**M1 app shell has been accepted**: tracks, albums, artists and settings screens,
-adaptive bottom navigation / Windows rail, and system/light/dark theme mode.
-The user confirmed launches and UI operation on both platforms (2026-11-05).
+The project is a Flutter-based personal Cloud Mail.ru WebDAV audio player for
+`https://webdav.cloud.mail.ru/AllMusic`. It has **no playlists, favorites,
+Google Mobile Services, telemetry or analytics**.
 
-**M2-A connection slice:** Settings accepts a Cloud Mail.ru login and an
-external-application password, verifies read-only access to `/AllMusic`, and
-stores both values in OS-backed secure storage. The WebDAV client only issues
-Depth 0/1 PROPFIND and bounded Range GET requests to
-`https://webdav.cloud.mail.ru/AllMusic` and descendants. It does not build a
-catalog, read tags, download complete media files, or play audio.
+The working branch `feature/three-platform-player-20261105` combines:
+- A validated read-only WebDAV client with Basic Auth and OS-protected credentials.
+- Russian Material 3 UI, theme controls, cloud connection settings.
+- Bounded Depth:1 library listing and file-name-based tracks view.
+- A **development-stage**, seekable, 64 KiB WebDAV Range audio source connected
+  to just_audio (Android Media3) and just_audio_media_kit (Windows/Linux libmpv).
+- Generated official Flutter runners for Windows, Android and Linux.
 
-**Not yet implemented:** local music indexing, artwork, playback, queues or
-background services. M2-B and M2-C remain separate slices.
+**Not a final released music player.** SQLite index, tag/cover parsing, audio
+disk caching, full queue controls and OS background integrations are unfinished.
+Runtime sound, credentials and GNOME 51 Wayland are not confirmed.
 
-## Development
+## Build
 
-Flutter 3.47.9 stable (revision c197ca5199), Dart 3.13.7, Windows or Android toolchain.
-Dependencies are reproducibly pinned by the committed pubspec.lock.
+Use Flutter **3.47.9**, Dart **3.13.7** (pinned in `.fvmrc`).
+Credentials are entered in the app, never in the source or CI.
 
-~~~sh
-flutter --version
-dart --version
+```sh
 flutter pub get --enforce-lockfile
 flutter gen-l10n
 dart format --output=none --set-exit-if-changed lib test
 flutter analyze
 flutter test
 python -m unittest discover -s tests -v
-flutter build apk --debug        # Android SDK/JDK
-flutter build windows --release # On Windows with Visual Studio C++ build tools
-~~~
+bash tools/check_layers.sh
 
-CI separates Linux Quality, Android APK, Windows release build; the first full
-green run was https://github.com/metravolokos/cloudmail-player-m0/actions/runs/42013267771.
-The M1 finalization job subsequently generated the genuine lockfile and
-reconciled official platform templates. Device UI smoke tests were confirmed by
-the user. The GMS-free binary audit remains a release acceptance check.
+flutter build apk --debug
+flutter build windows --release   # Windows host + Visual Studio 2022 C++ and ATL
+flutter build linux --release     # Linux host + GTK/libsecret development files
+```
 
-## Layout
+Linux Debian/Ubuntu development dependencies:
+`clang cmake ninja-build pkg-config libgtk-3-dev libstdc++-12-dev libsecret-1-dev`.
+For Windows/Linux media playback, libmpv is bundled or supplied according to the
+media_kit library package and the target packaging constraints. Release licensing
+and actual GNOME 51 runtime tests are still required.
 
-- lib/app: Material UI shell and Riverpod navigation/theme state.
-- lib/l10n/app_ru.arb: Russian strings, gen-l10n generated Dart classes.
-- lib/cloud: bounded read-only WebDAV transport and secure credential service.
-- lib/domain/services.dart: contracts for later catalog and playback work.
-- android, windows: native runners; Android minimum API 24.
-- test: Flutter widgets; tests and tools: bounded Python M0 probe.
-- docs: status, roadmap, architecture decisions and focused M2-A task.
+## Work and evidence
 
-## Privacy and connection behavior
+Read [AGENTS.md](AGENTS.md), [STATUS](docs/STATUS.md),
+[ROADMAP](docs/ROADMAP.md), [PLATFORMS](docs/PLATFORMS.md),
+[TECH STACK](docs/TECH_STACK.md) and [ARCHITECTURE](docs/ARCHITECTURE.md).
 
-Cloud requests are restricted to `https://webdav.cloud.mail.ru/AllMusic` and
-descendants; redirects are disabled. Login and app password are written to
-OS-backed secure storage only after a successful check. Android app backups are
-disabled so encrypted keys cannot be restored without their device keystore.
-Disconnect deletes both stored values. CI uses only a local anonymous fake
-server and never receives a personal Cloud Mail.ru credential.
+Cloud login requires an external-application password issued by the Cloud Mail.ru
+account. Earlier passwords mentioned in conversations should be rotated before
+new live use. Do not put account secrets in issues, test fixtures or logs.
 
-The Android build checks its resolved runtime dependency graph for Google Play
-Services and Firebase. The secure-storage plugin's Android cryptography
-dependency is Tink, a standalone crypto library, not Google Play Services.
-There is no telemetry, playlist, favorite, or GMS dependency.
-
-Next scope: M2-B local SQLite catalog as a separate change, tracked in
-[Issue #3](https://github.com/metravolokos/cloudmail-player-m0/issues/3).
+Source is fixed to `/AllMusic`; requests never write or delete remote files.
