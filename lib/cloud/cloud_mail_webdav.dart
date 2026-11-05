@@ -403,7 +403,9 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
       rootElement = child;
       break;
     }
-    if (rootElement == null || rootElement.name.local != 'multistatus') {
+    if (rootElement == null ||
+        rootElement.name.local != 'multistatus' ||
+        rootElement.name.namespaceUri != 'DAV:') {
       throw const CloudMailException(CloudMailErrorCode.invalidResponse);
     }
 
