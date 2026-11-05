@@ -28,7 +28,7 @@ Cloud Mail.ru drives is granted.
 
 The workflow verifies that the Flutter release bundle builds, the GNOME
 runtime can package it, and the exported Flatpak has the expected binary
-and ICU data in its sandbox. This is **not** a GTK/Wayland display or sound
+and ICU data in its sandbox, with no unresolved direct ELF dependencies. This is **not** a GTK/Wayland display or sound
 test. In particular, verify libmpv dependency resolution, Secret Service
 read/write, MPRIS Play/Pause/Next/Stop, network login and FLAC playback on
 a real GNOME 51 Wayland desktop before calling the package accepted.
