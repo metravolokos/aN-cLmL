@@ -59,11 +59,15 @@ class PlaybackController extends Notifier<PlaybackView> {
   final List<StreamSubscription<dynamic>> _subscriptions = [];
   bool _closed = false;
   bool _changingTrack = false;
+  RemoteTrack? _pendingTrack;
+  int _operationGeneration = 0;
 
   @override
   PlaybackView build() {
     ref.onDispose(() {
       _closed = true;
+      _pendingTrack = null;
+      _operationGeneration++;
       for (final subscription in _subscriptions) {
         unawaited(subscription.cancel());
       }
@@ -123,8 +127,21 @@ class PlaybackController extends Notifier<PlaybackView> {
   }
 
   Future<void> _open(RemoteTrack track) async {
-    if (_closed || _changingTrack) return;
+    if (_closed) return;
+    if (_changingTrack) {
+      // The most recent user selection wins while an earlier source opens.
+      _pendingTrack = track;
+      _operationGeneration++;
+      state = PlaybackView(
+        track: track,
+        loading: true,
+        shuffled: _queue?.shuffled ?? false,
+        repeatMode: _queue?.repeatMode ?? PlayerRepeatMode.off,
+      );
+      return;
+    }
     _changingTrack = true;
+    final generation = ++_operationGeneration;
     state = PlaybackView(
       track: track,
       loading: true,
@@ -164,6 +181,7 @@ class PlaybackController extends Notifier<PlaybackView> {
         }
         activeCache = null;
       }
+      if (_closed || generation != _operationGeneration) return;
       final cache = activeCache;
       final player = _ensurePlayer();
       await player.setAudioSource(
@@ -174,11 +192,23 @@ class PlaybackController extends Notifier<PlaybackView> {
               : (path, offset, length) => cache.read(path, offset, length),
         ),
       );
-      if (!_closed) unawaited(player.play());
+      if (_closed || generation != _operationGeneration) {
+        await player.stop();
+        return;
+      }
+      unawaited(player.play());
     } catch (_) {
-      if (!_closed) state = state.withUpdates(failed: true, loading: false);
+      // A cancelled open must not resurrect a failed state after Stop.
+      if (!_closed && generation == _operationGeneration) {
+        state = state.withUpdates(failed: true, loading: false);
+      }
     } finally {
       _changingTrack = false;
+      final pending = _pendingTrack;
+      _pendingTrack = null;
+      if (!_closed && pending != null && _queue != null) {
+        unawaited(_open(pending));
+      }
     }
   }
 
@@ -193,7 +223,7 @@ class PlaybackController extends Notifier<PlaybackView> {
   }
 
   Future<void> next({bool manual = true}) async {
-    if (_changingTrack || _closed) return;
+    if (_closed) return;
     final newTrack = _queue?.next(manual: manual);
     if (newTrack != null) {
       await _open(newTrack);
@@ -203,7 +233,7 @@ class PlaybackController extends Notifier<PlaybackView> {
   }
 
   Future<void> previous() async {
-    if (_changingTrack || _closed) return;
+    if (_closed) return;
     final newTrack = _queue?.previous();
     if (newTrack != null) {
       await _open(newTrack);
@@ -235,10 +265,13 @@ class PlaybackController extends Notifier<PlaybackView> {
   Future<void> seek(Duration position) async => _player?.seek(position);
 
   Future<void> stop() async {
-    await _player?.stop();
+    // Invalidate any pending setAudioSource before waiting for I/O.
+    final generation = ++_operationGeneration;
+    _pendingTrack = null;
     _queue = null;
     final cacheFuture = _cacheFuture;
     _cacheFuture = null;
+    await _player?.stop();
     if (cacheFuture != null) {
       try {
         await (await cacheFuture).close();
@@ -246,7 +279,9 @@ class PlaybackController extends Notifier<PlaybackView> {
         // Stopping playback must succeed even when temporary storage fails.
       }
     }
-    state = const PlaybackView();
+    if (!_closed && generation == _operationGeneration) {
+      state = const PlaybackView();
+    }
   }
 }
 
