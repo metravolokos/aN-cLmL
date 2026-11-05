@@ -1,16 +1,18 @@
-# CloudMail Player — roadmap for the expanded three-platform assignment
+# CloudMail Player — current roadmap (2026-11-05)
 
-| Stage | Current status | Gate |
+| Stage | Implemented source status | Remaining acceptance |
 | --- | --- | --- |
-| M0 | Prior bounded Cloud Mail.ru WebDAV observation recorded; new Linux/media/Flatpak probe incomplete | Actual real account PROPFIND/Range and GNOME 51 compatibility tests |
-| M1 | Windows and Android Flutter UI accepted previously; Linux runner generated, 3-OS CI configured | All three native CI builds and layer checker |
-| M2 | Read-only WebDAV 207/206 client with secure storage exists; live list UI implemented; no SQLite index or sync yet | File listing, drift SQLite with checkpoints and bounded tag reads |
-| M3 | Initial tracks list with filename fallbacks; no real artist/album tags or cover images yet | FLAC/MP3 and grouping + artwork cache |
-| M4 | First seekable remote audio source written using just_audio and 64 KiB Range; not device verified | Actual playback, seek and queue on all three OSes |
-| M5 | Not implemented | Current+next disk cache, bounded prefetch and cleanup |
-| M6 | Not implemented | Shuffle/repeat/persistence |
-| M7 | Not implemented | Android media session, Windows SMTC, Linux MPRIS |
-| M8 | Not implemented | Performance measurements, error handling and scaling |
-| M9 | Not implemented | Signed release APK, Windows archive/installer and Flatpak validation |
+| M0 | Initial WebDAV behavior and multi-platform tooling documented | Real Cloud Mail.ru bounded live checks and GNOME 51 investigation |
+| M1 | Flutter shell, Russian UI, three-platform native runners and CI | Device launch check for current integrated binary on all three systems |
+| M2 | Secure WebDAV, SQLite incremental catalog and bounded FLAC/MP3 scanner | Actual authenticated indexing, recovery and performance checks |
+| M3 | Tracks/albums/artists and text search | Embedded art integration, album image grid, safe thumbnail LRU |
+| M4 | Remote seekable playback, queue, Now Playing and mini-player | Audible real-device stream, seek, Next, Pause/Resume and handoff |
+| M5 | Temporary current+next cache and background prefetch | Live cache behavior; no stale files or extra GET on cached seek |
+| M6 | Shuffle, repeat and queue logic | Persistence across app restart and end-to-end behavior |
+| M7 | Not yet integrated | Android foreground media session / BT / audio focus, Windows SMTC, Linux MPRIS |
+| M8 | Selected validations and graceful error handling | 50k indexing, artwork memory budget, UX and error recovery |
+| M9 | Development APK/Windows/Linux bundles via CI | Release signing, Windows delivery, Linux Flatpak and manual platform checks |
 
-No stage is accepted by writing source code alone. Tests and builds do not demonstrate real audio playback, GNOME Wayland/MPRIS or Cloud Mail.ru access on the user's devices.
+**Acceptance rule:** a source commit or successful binary build is not proof that the feature works with an authenticated account and physical devices. Avoid describing M0–M9 as complete until these acceptance checks pass.
+
+**Priorities:** stabilize current playback and artwork, verify real Cloud Mail.ru playback, integrate platform media sessions, then package deliverables. Do not reimplement functionality that already exists on main without a measured defect.
