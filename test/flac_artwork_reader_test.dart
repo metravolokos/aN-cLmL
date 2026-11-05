@@ -9,7 +9,11 @@ List<int> _u32(int number) {
   return buffer.buffer.asUint8List();
 }
 
-List<int> _picture(int pictureType, List<int> bytes, {String mime = 'image/jpeg'}) {
+List<int> _picture(
+  int pictureType,
+  List<int> bytes, {
+  String mime = 'image/jpeg',
+}) {
   return [
     ..._u32(pictureType),
     ..._u32(mime.length),
@@ -72,14 +76,19 @@ void main() {
     expect(reads.where((n) => n == 65536).length, greaterThanOrEqualTo(2));
   });
 
-  test('untrusted picture dimensions and invalid signature are rejected', () async {
-    final fake = Uint8List.fromList([
-      ...ascii.encode('fLaC'),
-      ..._block(6, _picture(3, [1, 2, 3]), last: true),
-    ]);
-    final reader = FlacArtworkReader((path, offset, length) async =>
-        Uint8List.sublistView(fake, offset, offset + length));
-    expect(await reader.read('invalid.flac', fake.length), isNull);
-    expect(await reader.read('invalid.flac', 3), isNull);
-  });
+  test(
+    'untrusted picture dimensions and invalid signature are rejected',
+    () async {
+      final fake = Uint8List.fromList([
+        ...ascii.encode('fLaC'),
+        ..._block(6, _picture(3, [1, 2, 3]), last: true),
+      ]);
+      final reader = FlacArtworkReader(
+        (path, offset, length) async =>
+            Uint8List.sublistView(fake, offset, offset + length),
+      );
+      expect(await reader.read('invalid.flac', fake.length), isNull);
+      expect(await reader.read('invalid.flac', 3), isNull);
+    },
+  );
 }

@@ -2,8 +2,11 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-typedef ArtworkRangeReader =
-    Future<Uint8List> Function(String path, int offset, int length);
+typedef ArtworkRangeReader = Future<Uint8List> Function(
+  String path,
+  int offset,
+  int length,
+);
 
 /// A verified embedded FLAC image, returned only on explicit artwork lookup.
 class FlacEmbeddedArtwork {
@@ -41,7 +44,9 @@ class FlacArtworkReader {
     int length,
     int fileSize,
   ) async {
-    if (offset < 0 || length < 0 || offset + length > fileSize ||
+    if (offset < 0 ||
+        length < 0 ||
+        offset + length > fileSize ||
         offset + length > maximumMetadataOffset) {
       throw const FormatException('FLAC artwork metadata outside bounds');
     }
@@ -105,40 +110,51 @@ class FlacArtworkReader {
       final type = takeInt();
       final mimeLength = takeInt();
       if (mimeLength > 256 || cursor + mimeLength > bytes.length) return null;
-      final mime = ascii.decode(
-        Uint8List.sublistView(bytes, cursor, cursor + mimeLength),
-        allowInvalid: true,
-      ).toLowerCase();
+      final mime = ascii
+          .decode(
+            Uint8List.sublistView(bytes, cursor, cursor + mimeLength),
+            allowInvalid: true,
+          )
+          .toLowerCase();
       cursor += mimeLength;
       if (mime != 'image/jpeg' && mime != 'image/png') return null;
       final descriptionLength = takeInt();
       if (descriptionLength > 64 * 1024 ||
-          cursor + descriptionLength > bytes.length) return null;
+          cursor + descriptionLength > bytes.length)
+        return null;
       cursor += descriptionLength;
       final width = takeInt();
       final height = takeInt();
       takeInt(); // color depth
       takeInt(); // indexed palette count
       final imageLength = takeInt();
-      if (width < 1 || height < 1 ||
-          width > maximumDimension || height > maximumDimension ||
-          imageLength < 1 || imageLength > maximumImageBytes ||
-          cursor + imageLength != bytes.length) return null;
-      final image = Uint8List.sublistView(
-        bytes,
-        cursor,
-        cursor + imageLength,
-      );
+      if (width < 1 ||
+          height < 1 ||
+          width > maximumDimension ||
+          height > maximumDimension ||
+          imageLength < 1 ||
+          imageLength > maximumImageBytes ||
+          cursor + imageLength != bytes.length)
+        return null;
+      final image = Uint8List.sublistView(bytes, cursor, cursor + imageLength);
       // Reject corrupt MIME declarations without relying on image decoding.
-      final jpeg = image.length >= 3 &&
-          image[0] == 0xff && image[1] == 0xd8 && image[2] == 0xff;
-      final png = image.length >= 8 &&
-          image[0] == 0x89 && image[1] == 0x50 &&
-          image[2] == 0x4e && image[3] == 0x47 &&
-          image[4] == 0x0d && image[5] == 0x0a &&
-          image[6] == 0x1a && image[7] == 0x0a;
-      if ((mime == 'image/jpeg' && !jpeg) ||
-          (mime == 'image/png' && !png)) return null;
+      final jpeg =
+          image.length >= 3 &&
+          image[0] == 0xff &&
+          image[1] == 0xd8 &&
+          image[2] == 0xff;
+      final png =
+          image.length >= 8 &&
+          image[0] == 0x89 &&
+          image[1] == 0x50 &&
+          image[2] == 0x4e &&
+          image[3] == 0x47 &&
+          image[4] == 0x0d &&
+          image[5] == 0x0a &&
+          image[6] == 0x1a &&
+          image[7] == 0x0a;
+      if ((mime == 'image/jpeg' && !jpeg) || (mime == 'image/png' && !png))
+        return null;
       return FlacEmbeddedArtwork(
         bytes: Uint8List.fromList(image),
         mimeType: mime,
