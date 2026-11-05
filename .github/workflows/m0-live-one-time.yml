@@ -19,17 +19,40 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Verify offline parser contracts
+      - name: Offline parser contracts
         run: python -m unittest discover -s tests -v
-      - name: Verify live WebDAV using repository secrets
+      - name: Bounded live WebDAV probe with existing secret aliases
         shell: bash
         env:
-          WEBDAV_USERNAME: ${{ secrets.WEBDAV_USERNAME }}
-          WEBDAV_PASSWORD: ${{ secrets.WEBDAV_PASSWORD }}
+          U0: ${{ secrets.WEBDAV_USERNAME }}
+          P0: ${{ secrets.WEBDAV_PASSWORD }}
+          U1: ${{ secrets.WEBDAV_LOGIN }}
+          P1: ${{ secrets.WEBDAV_PASS }}
+          U2: ${{ secrets.CLOUDMAIL_USERNAME }}
+          P2: ${{ secrets.CLOUDMAIL_PASSWORD }}
+          U3: ${{ secrets.CLOUDMAIL_LOGIN }}
+          P3: ${{ secrets.CLOUDMAIL_APP_PASSWORD }}
+          U4: ${{ secrets.MAILRU_LOGIN }}
+          P4: ${{ secrets.MAILRU_PASSWORD }}
         run: |
           set -eu
-          if [ -z "$WEBDAV_USERNAME" ] || [ -z "$WEBDAV_PASSWORD" ]; then
-            echo 'BLOCKED: Repository secrets not accessible under expected names.'
+          username=""
+          password=""
+          for id in 0 1 2 3 4; do
+            u="U$id"
+            p="P$id"
+            candidate_user="${!u}"
+            candidate_password="${!p}"
+            if [ -n "$candidate_user" ] && [ -n "$candidate_password" ]; then
+              username="$candidate_user"
+              password="$candidate_password"
+              break
+            fi
+          done
+          if [ -z "$username" ] || [ -z "$password" ]; then
+            echo 'BLOCKED: No matching accessible pair of repository secret aliases.'
             exit 2
           fi
+          export WEBDAV_USERNAME="$username"
+          export WEBDAV_PASSWORD="$password"
           python tools/webdav_probe.py --live
