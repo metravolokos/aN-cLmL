@@ -1,17 +1,33 @@
 # Project status — 2026-11-05
 
-## M0: bounded WebDAV connectivity — completed for moving forward
+## M0 — accepted bounded WebDAV connectivity
 
-A Codex Cloud agent achieved HTTPS access via its standard proxy and authenticated with read-only PROPFIND. /AllMusic was confirmed; sampled HEAD and five Range requests succeeded. Content-Range uses bytes= syntax. Six offline tests passed. See docs/webdav-notes.md.
+Authenticated read-only Codex Cloud probe confirmed /AllMusic through PROPFIND (207), sampled HEAD (200) and five bounded Range GETs (206). The provider returned Content-Range in bytes=first-last/total form. Six offline Python tests passed. This does not establish full indexing or audio playback. Details in docs/webdav-notes.md.
 
-The agent reported local documentation commit b48d785da4a5a3d49254bdbc41e0f0ea4015eda9, but it was not pushed to GitHub when the M1 handoff was prepared. This status is reconstructed from its user-visible report, not a line-by-line review of that local commit.
+## M1 — accepted Android and Windows Flutter UI scaffold
 
-## M1: authorized, not yet implemented
+User confirmed on 2026-11-05 that the application **launches and works on both target platforms**. This is manual acceptance of the existing UI shell, not of WebDAV or audio playback.
 
-The user approved continuing development. Next deliverable: Flutter Windows+Android app scaffold with Russian ARB localizations, Material UI shell, tracks/albums/artists/settings navigation, theme and simple DI/state model. Use docs/M1_CODEX_TASK.md and keep changes in a feature branch/Draft PR.
+M1 includes Russian ARB localization, Material 3, responsive four-destination navigation (Tracks, Albums, Artists, Settings), theme selection and honest disconnected states. No personal WebDAV secrets or data are included.
 
-No Flutter builds or runtime app smoke tests have yet been confirmed. Current repository still contains the Python M0 probe, not the player.
+Confirmed in GitHub Actions run #42013267771:
+- Quality: Flutter 3.47.9, Dart 3.13.7; generated localizations, strict formatting, flutter analyze without issues; four Flutter widget tests and six Python M0 tests passed.
+- Android: flutter build apk --debug succeeded; artifact cloudmail-player-android-debug.
+- Windows: flutter build windows --release succeeded; artifact cloudmail-player-windows.
+- The user launched both applications and reported they work.
 
-## Constraints
+Finalization: Flutter's official generator was run on the Android/Windows platform projects; a real pubspec.lock was generated and committed, with any generated Windows registrant adjustments. Reproduction is enforced through flutter pub get --enforce-lockfile. The one-off finalization workflow has been removed.
 
-No GMS; no telemetry; only Cloud Mail.ru /AllMusic as future source. No playlists/favorites. Do not use live credentials during M1. Real cloud integration and audio playback are out of scope until their later milestones.
+A formal GMS-dependency audit has not yet been performed on the APK and remains a release criterion. No playback, personal cloud integration or full index is implemented at M1.
+
+M1 Draft PR #2 is accepted and authorized for merge into main; the user approved advancing to M2. The next work starts from the merged main; do not continue stale Codex work checkouts.
+
+## M2 — next, focused scope
+
+Issue #3: https://github.com/metravolokos/cloudmail-player-m0/issues/3
+
+Start with M2-A connection/settings, read-only PROPFIND and bounded Range compatibility, secure OS-backed credential storage for Windows/Android. Then implement incremental SQLite catalog and ranged tag extraction in small separate slices. Do not build full playback or run multi-hour stress tests.
+
+## Security / constraints
+
+Cloud source restricted to /AllMusic. No GMS, telemetry, playlists, favorites or equalizer. Never commit credentials, accounts or private filenames. M0 temporary app password was exposed earlier in chat; rotate before any new live testing.

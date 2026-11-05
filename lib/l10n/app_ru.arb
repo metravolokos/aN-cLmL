@@ -1,0 +1,17 @@
+{
+  "@@locale": "ru",
+  "appTitle": "CloudMail Player",
+  "tracks": "Треки",
+  "albums": "Альбомы",
+  "artists": "Исполнители",
+  "settings": "Настройки",
+  "libraryDisconnected": "Библиотека не подключена",
+  "libraryHint": "Подключение и индексирование облака появятся на этапах M2/M3.",
+  "theme": "Тема оформления",
+  "systemTheme": "Как в системе",
+  "lightTheme": "Светлая",
+  "darkTheme": "Тёмная",
+  "connection": "Подключение к облаку",
+  "connectionUnavailable": "Подключение пока не реализовано. Пароль не требуется.",
+  "source": "Источник библиотеки: Cloud Mail.ru, /AllMusic"
+}

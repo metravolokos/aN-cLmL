@@ -10,3 +10,17 @@ __pycache__/
 *.log
 .dart_tool/
 build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.idea/
+*.iml
+lib/l10n/app_localizations*.dart
+android/.gradle/
+android/captures/
+android/local.properties
+android/key.properties
+android/app/debug/
+android/app/profile/
+android/app/release/
+windows/flutter/ephemeral/
