@@ -19,24 +19,25 @@ void main() {
     expect(list.last.sizeBytes, 42);
   });
 
-  test('incremental scan deletes missing tracks and updates changed size', () async {
-    await db.applyScan(const [
-      RemoteTrack(path: 'one.flac', sizeBytes: 12, etag: 'a'),
-      RemoteTrack(path: 'two.flac', sizeBytes: 11, etag: 'b'),
-    ]);
-    await db.applyScan(const [
-      RemoteTrack(path: 'two.flac', sizeBytes: 99, etag: 'c'),
-      RemoteTrack(path: 'three.flac', sizeBytes: 7, etag: 'd'),
-    ]);
-    final rows = await db.readTracks();
-    expect(rows.map((track) => track.path), ['three.flac', 'two.flac']);
-    expect(rows.last.sizeBytes, 99);
-  });
+  test(
+    'incremental scan deletes missing tracks and updates changed size',
+    () async {
+      await db.applyScan(const [
+        RemoteTrack(path: 'one.flac', sizeBytes: 12, etag: 'a'),
+        RemoteTrack(path: 'two.flac', sizeBytes: 11, etag: 'b'),
+      ]);
+      await db.applyScan(const [
+        RemoteTrack(path: 'two.flac', sizeBytes: 99, etag: 'c'),
+        RemoteTrack(path: 'three.flac', sizeBytes: 7, etag: 'd'),
+      ]);
+      final rows = await db.readTracks();
+      expect(rows.map((track) => track.path), ['three.flac', 'two.flac']);
+      expect(rows.last.sizeBytes, 99);
+    },
+  );
 
   test('failed scan transaction leaves previous generation intact', () async {
-    await db.applyScan(const [
-      RemoteTrack(path: 'song.flac', sizeBytes: 45),
-    ]);
+    await db.applyScan(const [RemoteTrack(path: 'song.flac', sizeBytes: 45)]);
     await expectLater(
       db.applyScan(const [
         RemoteTrack(path: 'duplicate.flac', sizeBytes: 4),

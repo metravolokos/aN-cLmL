@@ -46,9 +46,7 @@ class CatalogDatabase extends _$CatalogDatabase {
         ),
     ];
     tracks.sort(
-      (a, b) => a.fileName.toLowerCase().compareTo(
-        b.fileName.toLowerCase(),
-      ),
+      (a, b) => a.fileName.toLowerCase().compareTo(b.fileName.toLowerCase()),
     );
     return tracks;
   }
@@ -64,7 +62,8 @@ class CatalogDatabase extends _$CatalogDatabase {
       await batch((batch) {
         for (final file in remote) {
           final previous = existing[file.path];
-          final sameFile = previous != null &&
+          final sameFile =
+              previous != null &&
               previous.etag == file.etag &&
               previous.sizeBytes == file.sizeBytes;
           batch.insert(
@@ -82,9 +81,9 @@ class CatalogDatabase extends _$CatalogDatabase {
           );
         }
       });
-      await (delete(remoteFiles)
-            ..where((row) => row.generation.isNotValue(epoch)))
-          .go();
+      await (delete(
+        remoteFiles,
+      )..where((row) => row.generation.isNotValue(epoch))).go();
     });
   }
 }
@@ -95,7 +94,5 @@ Future<CatalogDatabase> openAccountCatalog(String username) async {
   final support = await getApplicationSupportDirectory();
   final digest = sha256.convert(utf8.encode(username.toLowerCase())).toString();
   final path = p.join(support.path, 'music_${digest.substring(0, 24)}.sqlite');
-  return CatalogDatabase(
-    NativeDatabase.createInBackground(File(path)),
-  );
+  return CatalogDatabase(NativeDatabase.createInBackground(File(path)));
 }

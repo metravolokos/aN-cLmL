@@ -102,7 +102,9 @@ class CloudMusicService {
   void close() {
     _credentials = null;
     final catalog = _catalog;
-    if (catalog != null) { unawaited(catalog.close()); }
+    if (catalog != null) {
+      unawaited(catalog.close());
+    }
     _client.close();
   }
 }
