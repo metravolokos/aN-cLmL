@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 
+import '../../cloud/cloud_mail_webdav.dart';
 import '../../domain/remote_track.dart';
 import '../../domain/track_queue.dart';
 import '../library/cloud_music_service.dart';
 import 'cloud_range_audio_source.dart';
+import 'two_track_cache.dart';
 
 class PlaybackView {
   const PlaybackView({
@@ -52,6 +54,7 @@ class PlaybackView {
 
 class PlaybackController extends Notifier<PlaybackView> {
   AudioPlayer? _player;
+  Future<TwoTrackAudioCache>? _cacheFuture;
   TrackQueue? _queue;
   final List<StreamSubscription<dynamic>> _subscriptions = [];
   bool _closed = false;
@@ -66,6 +69,12 @@ class PlaybackController extends Notifier<PlaybackView> {
       }
       final player = _player;
       if (player != null) unawaited(player.dispose());
+      final cacheFuture = _cacheFuture;
+      if (cacheFuture != null) {
+        unawaited(cacheFuture.then((cache) => cache.close()).onError(
+          (Object _, StackTrace __) {},
+        ));
+      }
     });
     return const PlaybackView();
   }
@@ -122,9 +131,43 @@ class PlaybackController extends Notifier<PlaybackView> {
     );
     try {
       final reader = ref.read(cloudMusicServiceProvider);
+      TwoTrackAudioCache? activeCache;
+      try {
+        _cacheFuture ??= TwoTrackAudioCache.open(
+          fetch: (
+            String path,
+            int offset,
+            int length, {
+            WebDavRequestCancellation? cancellation,
+          }) => reader.readRange(
+            path,
+            offset,
+            length,
+            cancellation: cancellation,
+          ),
+        );
+        activeCache = await _cacheFuture;
+        await activeCache.configure(track, _queue?.nextForPrefetch());
+      } catch (_) {
+        // A read-only cache is an optimization; playback can stream directly.
+        final abandoned = _cacheFuture;
+        _cacheFuture = null;
+        if (abandoned != null) {
+          unawaited(abandoned.then((cache) => cache.close()).onError(
+            (Object _, StackTrace __) {},
+          ));
+        }
+        activeCache = null;
+      }
+      final cache = activeCache;
       final player = _ensurePlayer();
       await player.setAudioSource(
-        CloudRangeAudioSource(track, reader.readRange),
+        CloudRangeAudioSource(
+          track,
+          cache == null
+              ? reader.readRange
+              : (path, offset, length) => cache.read(path, offset, length),
+        ),
       );
       if (!_closed) unawaited(player.play());
     } catch (_) {
@@ -189,6 +232,15 @@ class PlaybackController extends Notifier<PlaybackView> {
   Future<void> stop() async {
     await _player?.stop();
     _queue = null;
+    final cacheFuture = _cacheFuture;
+    _cacheFuture = null;
+    if (cacheFuture != null) {
+      try {
+        await (await cacheFuture).close();
+      } catch (_) {
+        // Stopping playback must succeed even when temporary storage fails.
+      }
+    }
     state = const PlaybackView();
   }
 }

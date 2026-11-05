@@ -1,5 +1,10 @@
 # Three-platform development status — 2026-11-05
 
+## Cache-to-player wiring (independent Draft)
+
+The integrated branch has a bounded two-track cache, but playback originally bypassed it. On feature/cache-playback-wiring-20261105 the PlaybackController now passes the current and next queue items into TwoTrackAudioCache, supplies WebDAV cancellation, reads cached pages through CloudRangeAudioSource, and closes the cache on stop/dispose. See ADR 0006. Offline tests/build results and real cloud/device playback must be checked before adoption; this is not a declaration of full release readiness.
+
+
 ## Current verified baseline
 
 The work branch feature/three-platform-player-20261105 began from PR #5 commit c28bca85 after its 3/3 successful CI. Its Android and Windows M2-A build outputs and offline tests are verified, but live credentials and runtime music playback have **not** been verified. The earlier M1 shell was manually launched on Android and Windows.

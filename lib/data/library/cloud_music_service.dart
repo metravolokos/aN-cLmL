@@ -89,13 +89,19 @@ class CloudMusicService {
     }
   }
 
-  Future<Uint8List> readRange(String path, int offset, int length) async {
+  Future<Uint8List> readRange(
+    String path,
+    int offset,
+    int length, {
+    WebDavRequestCancellation? cancellation,
+  }) async {
     final credentials = await _sessionCredentials();
     return _client.getRange(
       credentials,
       path: path,
       offset: offset,
       length: length,
+      cancellation: cancellation,
     );
   }
 
