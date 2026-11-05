@@ -24,5 +24,6 @@ modules:
     sources:
       - type: dir
         path: bundle
+        dest: bundle
       - type: file
         path: com.cloudmailplayer.cloudmail_player.desktop
