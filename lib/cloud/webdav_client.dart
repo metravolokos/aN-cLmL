@@ -183,13 +183,16 @@ class CloudWebDav implements CloudProbe {
         throw const CloudException(CloudFailure.malformed);
       }
       final bytes = BytesBuilder(copy: false);
-      await for (final chunk in response.timeout(_timeout)) {
-        cancel?.throwIfCancelled();
-        if (bytes.length + chunk.length > maxBytes) {
-          throw const CloudException(CloudFailure.malformed);
+      Future<void> readAll() async {
+        await for (final chunk in response) {
+          cancel?.throwIfCancelled();
+          if (bytes.length + chunk.length > maxBytes) {
+            throw const CloudException(CloudFailure.malformed);
+          }
+          bytes.add(chunk);
         }
-        bytes.add(chunk);
       }
+      await readAll().timeout(_timeout);
       cancel?.throwIfCancelled();
       return _DavResponse(response.statusCode, contentRange, bytes.takeBytes());
     } on CloudException {
@@ -301,7 +304,7 @@ class CloudWebDav implements CloudProbe {
       'GET',
       uri,
       credentials,
-      range: 'bytes=${offset}-${offset + length - 1}',
+      range: 'bytes=$offset-${offset + length - 1}',
       maxBytes: length,
       cancel: cancel,
     );
