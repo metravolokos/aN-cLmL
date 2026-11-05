@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -29,7 +28,7 @@ void main() {
     cache = await TwoTrackAudioCache.open(
       directory: temp,
       fetch: (path, offset, length, {cancellation}) async {
-        requests.add(path + ':' + offset.toString() + ':' + length.toString());
+        requests.add('$path:$offset:$length');
         return Uint8List.fromList(
           List.generate(length, (i) => (offset + i) % 256),
         );
@@ -71,6 +70,15 @@ void main() {
     expect(cache.isComplete(trackB), isTrue);
     expect(requests.where((s) => s.startsWith('Б.flac:')).length, before);
     expect((await temp.list().toList()).whereType<File>(), hasLength(2));
+  });
+
+  test('Cyrillic track key is UTF-8 and cached seek makes no new GET', () async {
+    await cache.configure(trackB, null);
+    await waitFor(trackB);
+    final before = requests.length;
+    final bytes = await cache.read(trackB.path, 128, 1024);
+    expect(bytes.length, 1024);
+    expect(requests.length, before);
   });
 
   test('oversized track is streamable but cannot occupy cache', () async {

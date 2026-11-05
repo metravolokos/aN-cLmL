@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../cloud/cloud_connection_service.dart';
 import '../cloud/cloud_mail_webdav.dart';
+import '../data/audio/playback_controller.dart';
+import '../data/library/cloud_music_service.dart';
 import '../presentation/library_page.dart';
 import '../presentation/mini_player.dart';
 import '../l10n/app_localizations.dart';
@@ -211,6 +213,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             cancellation: cancellation,
           );
       if (!mounted) return;
+      await _resetAccountSession();
+      if (!mounted) return;
       setState(() {
         _hasSavedCredentials = true;
         _connected = true;
@@ -230,6 +234,18 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   void _cancelConnect() => _cancellation?.cancel();
 
+  /// Close old authenticated readers when changing or removing credentials.
+  Future<void> _resetAccountSession() async {
+    try {
+      await ref.read(playbackControllerProvider.notifier).stop();
+    } catch (_) {
+      // Credential invalidation must proceed even if audio shutdown fails.
+    }
+    if (!mounted) return;
+    ref.invalidate(cloudMusicServiceProvider);
+    ref.invalidate(cloudCatalogProvider);
+  }
+
   Future<void> _disconnect() async {
     setState(() {
       _busy = true;
@@ -239,6 +255,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     });
     try {
       await ref.read(cloudConnectionServiceProvider).disconnect();
+      if (!mounted) return;
+      await _resetAccountSession();
       if (!mounted) return;
       setState(() {
         _hasSavedCredentials = false;

@@ -1,5 +1,12 @@
 # Three-platform development status — 2026-11-05
 
+## Account switch and Disconnect security
+
+Settings now stops audio, closes its cache, and invalidates CloudMusicService
+and CloudCatalogController after a successful credential change or Disconnect.
+This discards in-memory WebDAV credentials and prevents the old session from
+being reused. See ADR 0007. Real-device logout behavior remains to be checked.
+
 ## Cache-to-player wiring (independent Draft)
 
 The integrated branch has a bounded two-track cache, but playback originally bypassed it. On feature/cache-playback-wiring-20261105 the PlaybackController now passes the current and next queue items into TwoTrackAudioCache, supplies WebDAV cancellation, reads cached pages through CloudRangeAudioSource, and closes the cache on stop/dispose. See ADR 0006. Offline tests/build results and real cloud/device playback must be checked before adoption; this is not a declaration of full release readiness.

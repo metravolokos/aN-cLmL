@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
@@ -48,18 +49,13 @@ class TwoTrackAudioCache {
   }
 
   String _key(RemoteTrack track) {
-    final source =
-        track.path +
-        '\u0000' +
-        (track.etag ?? '') +
-        '\u0000' +
-        track.sizeBytes.toString();
-    return sha256.convert(source.codeUnits).toString();
+    final source = '${track.path}\u0000${track.etag ?? ''}\u0000${track.sizeBytes}';
+    return sha256.convert(utf8.encode(source)).toString();
   }
 
   _CacheSlot _create(RemoteTrack track) {
     final id = _key(track);
-    return _CacheSlot(track, File(p.join(_directory.path, id + '.part')));
+    return _CacheSlot(track, File(p.join(_directory.path, '$id.part')));
   }
 
   /// Reuses a prefetched next-track file during promotion.

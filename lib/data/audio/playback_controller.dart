@@ -74,7 +74,7 @@ class PlaybackController extends Notifier<PlaybackView> {
         unawaited(
           cacheFuture
               .then((cache) => cache.close())
-              .onError((Object _, StackTrace __) {}),
+              .onError((Object _, StackTrace _) {}),
         );
       }
     });
@@ -159,7 +159,7 @@ class PlaybackController extends Notifier<PlaybackView> {
           unawaited(
             abandoned
                 .then((cache) => cache.close())
-                .onError((Object _, StackTrace __) {}),
+                .onError((Object _, StackTrace _) {}),
           );
         }
         activeCache = null;
