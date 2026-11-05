@@ -37,7 +37,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       setState(() {
         _savedCredentials = saved;
         _user.text = saved?.username ?? '';
-        _message = saved == null ? strings.cloudDisconnected : strings.cloudSaved;
+        _message = saved == null
+            ? strings.cloudDisconnected
+            : strings.cloudSaved;
       });
     } on Object {
       if (!mounted) return;
@@ -52,8 +54,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final password = typedPassword.isNotEmpty
         ? typedPassword
         : (_savedCredentials?.username == username
-            ? _savedCredentials?.password ?? ''
-            : '');
+              ? _savedCredentials?.password ?? ''
+              : '');
     if (username.isEmpty || password.isEmpty) {
       setState(() => _message = strings.cloudCredentialsNeeded);
       return;
@@ -79,13 +81,15 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       });
     } on CloudException catch (error) {
       if (!mounted) return;
-      setState(() => _message = switch (error.reason) {
-        CloudFailure.unauthorized => strings.cloudUnauthorized,
-        CloudFailure.missingRoot => strings.cloudMissingRoot,
-        CloudFailure.network => strings.cloudNetworkError,
-        CloudFailure.malformed => strings.cloudInvalidResponse,
-        CloudFailure.cancelled => strings.cloudCancelled,
-      });
+      setState(
+        () => _message = switch (error.reason) {
+          CloudFailure.unauthorized => strings.cloudUnauthorized,
+          CloudFailure.missingRoot => strings.cloudMissingRoot,
+          CloudFailure.network => strings.cloudNetworkError,
+          CloudFailure.malformed => strings.cloudInvalidResponse,
+          CloudFailure.cancelled => strings.cloudCancelled,
+        },
+      );
     } on Object {
       if (!mounted) return;
       setState(() => _message = strings.cloudStorageError);
@@ -138,8 +142,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       key: const ValueKey('page-settings'),
       padding: const EdgeInsets.all(24),
       children: [
-        Text(strings.settings,
-            style: Theme.of(context).textTheme.headlineMedium),
+        Text(
+          strings.settings,
+          style: Theme.of(context).textTheme.headlineMedium,
+        ),
         const SizedBox(height: 24),
         DropdownButtonFormField<ThemeMode>(
           key: const ValueKey('theme-selector'),
@@ -158,8 +164,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           },
         ),
         const SizedBox(height: 32),
-        Text(strings.connection,
-            style: Theme.of(context).textTheme.titleLarge),
+        Text(strings.connection, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
         Text(strings.source),
         const SizedBox(height: 16),
@@ -190,9 +195,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
               tooltip: strings.cloudRevealPassword,
-              onPressed: () => setState(
-                () => _showPassword = !_showPassword,
-              ),
+              onPressed: () => setState(() => _showPassword = !_showPassword),
               icon: Icon(
                 _showPassword ? Icons.visibility_off : Icons.visibility,
               ),

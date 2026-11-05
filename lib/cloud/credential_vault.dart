@@ -11,7 +11,7 @@ abstract interface class CredentialVault {
 /// Protected encrypted storage on Android and Windows.
 class DeviceCredentialVault implements CredentialVault {
   DeviceCredentialVault({FlutterSecureStorage? storage})
-      : _storage = storage ?? const FlutterSecureStorage();
+    : _storage = storage ?? const FlutterSecureStorage();
 
   final FlutterSecureStorage _storage;
   static const _userKey = 'cloudmail_account';

@@ -56,20 +56,26 @@ class DavEntry {
 }
 
 abstract interface class CloudProbe {
-  Future<void> checkRoot(CloudCredentials credentials, {CancellationToken? cancel});
+  Future<void> checkRoot(
+    CloudCredentials credentials, {
+    CancellationToken? cancel,
+  });
 }
 
 /// Production is pinned to HTTPS Cloud Mail.ru /AllMusic, without redirects.
 /// A loopback-only constructor supports deterministic local fake-server tests.
 class CloudWebDav implements CloudProbe {
   CloudWebDav({HttpClient Function()? clientFactory})
-      : _root = Uri.parse('https://webdav.cloud.mail.ru/AllMusic/'),
-        _clientFactory = clientFactory ?? HttpClient.new;
+    : _root = Uri.parse('https://webdav.cloud.mail.ru/AllMusic/'),
+      _clientFactory = clientFactory ?? HttpClient.new;
 
-  CloudWebDav.forLoopbackTesting(Uri uri, {HttpClient Function()? clientFactory})
-      : _root = uri,
-        _clientFactory = clientFactory ?? HttpClient.new {
-    if (uri.scheme != 'http' || uri.host != '127.0.0.1' ||
+  CloudWebDav.forLoopbackTesting(
+    Uri uri, {
+    HttpClient Function()? clientFactory,
+  }) : _root = uri,
+       _clientFactory = clientFactory ?? HttpClient.new {
+    if (uri.scheme != 'http' ||
+        uri.host != '127.0.0.1' ||
         uri.path != '/AllMusic/') {
       throw ArgumentError('Invalid loopback test root');
     }
@@ -82,8 +88,10 @@ class CloudWebDav implements CloudProbe {
   static const _maxXmlBytes = 512 * 1024;
 
   Uri _checkedUri(Uri uri) {
-    if (uri.origin != _root.origin || uri.userInfo.isNotEmpty ||
-        uri.hasQuery || uri.hasFragment) {
+    if (uri.origin != _root.origin ||
+        uri.userInfo.isNotEmpty ||
+        uri.hasQuery ||
+        uri.hasFragment) {
       throw const CloudException(CloudFailure.malformed);
     }
     final segments = uri.pathSegments;
@@ -92,7 +100,10 @@ class CloudWebDav implements CloudProbe {
     }
     for (var i = 0; i < segments.length; i++) {
       final s = segments[i];
-      if (s == '.' || s == '..' || s.contains('/') || s.contains('\\') ||
+      if (s == '.' ||
+          s == '..' ||
+          s.contains('/') ||
+          s.contains('\\') ||
           (s.isEmpty && i != segments.length - 1)) {
         throw const CloudException(CloudFailure.malformed);
       }
@@ -135,14 +146,18 @@ class CloudWebDav implements CloudProbe {
       request.followRedirects = false;
       request.headers.set(
         HttpHeaders.authorizationHeader,
-        'Basic ' + base64.encode(utf8.encode(
-          credentials.username + ':' + credentials.password,
-        )),
+        'Basic ' +
+            base64.encode(
+              utf8.encode(credentials.username + ':' + credentials.password),
+            ),
       );
       if (depth != null) {
         request.headers.set('Depth', depth);
-        request.headers.contentType =
-            ContentType('application', 'xml', charset: 'utf-8');
+        request.headers.contentType = ContentType(
+          'application',
+          'xml',
+          charset: 'utf-8',
+        );
         request.write(
           '<?xml version="1.0" encoding="utf-8"?>'
           '<d:propfind xmlns:d="DAV:"><d:allprop/></d:propfind>',
@@ -151,8 +166,9 @@ class CloudWebDav implements CloudProbe {
       if (range != null) request.headers.set(HttpHeaders.rangeHeader, range);
       final response = await request.close().timeout(_timeout);
       cancel?.throwIfCancelled();
-      final contentRange =
-          response.headers.value(HttpHeaders.contentRangeHeader);
+      final contentRange = response.headers.value(
+        HttpHeaders.contentRangeHeader,
+      );
       if (response.isRedirect ||
           (response.statusCode >= 300 && response.statusCode < 400)) {
         throw const CloudException(CloudFailure.malformed);
@@ -178,9 +194,7 @@ class CloudWebDav implements CloudProbe {
         bytes.add(chunk);
       }
       cancel?.throwIfCancelled();
-      return _DavResponse(
-        response.statusCode, contentRange, bytes.takeBytes(),
-      );
+      return _DavResponse(response.statusCode, contentRange, bytes.takeBytes());
     } on CloudException {
       rethrow;
     } on TimeoutException {
@@ -204,8 +218,11 @@ class CloudWebDav implements CloudProbe {
   }) async {
     if (depth != 0 && depth != 1) throw ArgumentError.value(depth, 'depth');
     final response = await _request(
-      'PROPFIND', _root, credentials,
-      depth: '$depth', cancel: cancel,
+      'PROPFIND',
+      _root,
+      credentials,
+      depth: '$depth',
+      cancel: cancel,
     );
     if (response.status != 207) {
       throw const CloudException(CloudFailure.malformed);
@@ -219,8 +236,7 @@ class CloudWebDav implements CloudProbe {
       }
       final entries = <DavEntry>[];
       for (final item in root.childElements) {
-        if (item.name.local != 'response' ||
-            item.name.namespaceUri != 'DAV:') {
+        if (item.name.local != 'response' || item.name.namespaceUri != 'DAV:') {
           continue;
         }
         final hrefs = item.childElements.where(
@@ -231,15 +247,16 @@ class CloudWebDav implements CloudProbe {
         }
         final uri = _fromHref(hrefs.single.innerText);
         final collection = item.descendantElements.any(
-          (e) => e.name.local == 'collection' &&
-              e.name.namespaceUri == 'DAV:',
+          (e) => e.name.local == 'collection' && e.name.namespaceUri == 'DAV:',
         );
         entries.add(DavEntry(uri, isCollection: collection));
       }
-      if (!entries.any((e) => e.uri.pathSegments.where(
-        (s) => s.isNotEmpty,
-      ).length == 1 && e.uri.pathSegments.first == 'AllMusic' &&
-          e.isCollection)) {
+      if (!entries.any(
+        (e) =>
+            e.uri.pathSegments.where((s) => s.isNotEmpty).length == 1 &&
+            e.uri.pathSegments.first == 'AllMusic' &&
+            e.isCollection,
+      )) {
         throw const CloudException(CloudFailure.malformed);
       }
       return entries;
@@ -252,8 +269,9 @@ class CloudWebDav implements CloudProbe {
 
   @override
   Future<void> checkRoot(
-    CloudCredentials credentials, {CancellationToken? cancel}
-  ) async {
+    CloudCredentials credentials, {
+    CancellationToken? cancel,
+  }) async {
     await propfind(credentials, depth: 0, cancel: cancel);
   }
 
@@ -265,31 +283,46 @@ class CloudWebDav implements CloudProbe {
     required int length,
     CancellationToken? cancel,
   }) async {
-    if (offset < 0 || length < 1 || length > maxRangeBytes ||
+    if (offset < 0 ||
+        length < 1 ||
+        length > maxRangeBytes ||
         relativeSegments.isEmpty ||
-        relativeSegments.any((s) => s.isEmpty || s == '.' || s == '..' ||
-          s.contains('/') || s.contains('\\'))) {
+        relativeSegments.any(
+          (s) =>
+              s.isEmpty ||
+              s == '.' ||
+              s == '..' ||
+              s.contains('/') ||
+              s.contains('\\'),
+        )) {
       throw ArgumentError('Invalid bounded range or path');
     }
-    final uri = _checkedUri(_root.replace(
-      pathSegments: ['AllMusic', ...relativeSegments],
-    ));
+    final uri = _checkedUri(
+      _root.replace(pathSegments: ['AllMusic', ...relativeSegments]),
+    );
     final response = await _request(
-      'GET', uri, credentials,
+      'GET',
+      uri,
+      credentials,
       range: 'bytes=$offset-' + (offset + length - 1).toString(),
-      maxBytes: length, cancel: cancel,
+      maxBytes: length,
+      cancel: cancel,
     );
     if (response.status != 206) {
       throw const CloudException(CloudFailure.malformed);
     }
-    final match = RegExp(r'^bytes[ =](\d+)-(\d+)/(\d+)$')
-        .firstMatch(response.contentRange ?? '');
+    final match = RegExp(
+      r'^bytes[ =](\d+)-(\d+)/(\d+)$',
+    ).firstMatch(response.contentRange ?? '');
     if (match == null) throw const CloudException(CloudFailure.malformed);
     final start = int.tryParse(match.group(1)!);
     final end = int.tryParse(match.group(2)!);
     final total = int.tryParse(match.group(3)!);
-    if (start != offset || end != offset + length - 1 ||
-        total == null || total <= end! || response.body.length != length) {
+    if (start != offset ||
+        end != offset + length - 1 ||
+        total == null ||
+        total <= end! ||
+        response.body.length != length) {
       throw const CloudException(CloudFailure.malformed);
     }
     return response.body;

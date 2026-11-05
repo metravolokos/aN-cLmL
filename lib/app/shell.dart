@@ -125,4 +125,3 @@ class LibraryEmptyState extends StatelessWidget {
     );
   }
 }
-

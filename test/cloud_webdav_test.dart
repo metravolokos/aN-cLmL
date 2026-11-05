@@ -4,9 +4,13 @@ import 'dart:io';
 import 'package:cloudmail_player/cloud/webdav_client.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-const credentials = CloudCredentials('tester@example.invalid', 'fake-app-password');
+const credentials = CloudCredentials(
+  'tester@example.invalid',
+  'fake-app-password',
+);
 
-const rootXml = '<?xml version="1.0"?>'
+const rootXml =
+    '<?xml version="1.0"?>'
     '<D:multistatus xmlns:D="DAV:">'
     '<D:response><D:href>/AllMusic/</D:href><D:propstat>'
     '<D:prop><D:resourcetype><D:collection/></D:resourcetype></D:prop>'
@@ -30,9 +34,11 @@ Future<T> withServer<T>(
     }
   });
   try {
-    return await check(CloudWebDav.forLoopbackTesting(
-      Uri.parse('http://127.0.0.1:' + server.port.toString() + '/AllMusic/'),
-    ));
+    return await check(
+      CloudWebDav.forLoopbackTesting(
+        Uri.parse('http://127.0.0.1:' + server.port.toString() + '/AllMusic/'),
+      ),
+    );
   } finally {
     await server.close(force: true);
   }
@@ -53,15 +59,12 @@ void main() {
     String? method;
     String? depth;
     String? authorization;
-    await withServer(
-      (request) async {
-        method = request.method;
-        depth = request.headers.value('depth');
-        authorization = request.headers.value(HttpHeaders.authorizationHeader);
-        await reply(request, 207, rootXml);
-      },
-      (client) async => client.checkRoot(credentials),
-    );
+    await withServer((request) async {
+      method = request.method;
+      depth = request.headers.value('depth');
+      authorization = request.headers.value(HttpHeaders.authorizationHeader);
+      await reply(request, 207, rootXml);
+    }, (client) async => client.checkRoot(credentials));
     expect(method, 'PROPFIND');
     expect(depth, '0');
     expect(authorization, startsWith('Basic '));
@@ -71,7 +74,7 @@ void main() {
     final xml = rootXml.replaceFirst(
       '</D:multistatus>',
       '<D:response><D:href>/AllMusic/%D0%A2%D1%80%D0%B5%D0%BA.flac'
-      '</D:href></D:response></D:multistatus>',
+          '</D:href></D:response></D:multistatus>',
     );
     final entries = await withServer(
       (r) => reply(r, 207, xml),
@@ -103,38 +106,43 @@ void main() {
     );
   });
 
-  test('malformed XML, wrong namespace and escaping href fail closed', () async {
-    for (final xml in [
-      '<D:multistatus xmlns:D="DAV:"><oops>',
-      '<D:multistatus xmlns:D="bad"></D:multistatus>',
-      rootXml.replaceFirst(
-        '</D:multistatus>',
-        '<D:response><D:href>/Elsewhere/music.flac</D:href>'
-        '</D:response></D:multistatus>',
-      ),
-      rootXml.replaceFirst(
-        '</D:multistatus>',
-        '<D:response><D:href>https://evil.invalid/AllMusic/x.flac'
-        '</D:href></D:response></D:multistatus>',
-      ),
-    ]) {
-      await withServer(
-        (r) => reply(r, 207, xml),
-        (client) => expectLater(
-          client.checkRoot(credentials),
-          throwsA(cloudFailure(CloudFailure.malformed)),
+  test(
+    'malformed XML, wrong namespace and escaping href fail closed',
+    () async {
+      for (final xml in [
+        '<D:multistatus xmlns:D="DAV:"><oops>',
+        '<D:multistatus xmlns:D="bad"></D:multistatus>',
+        rootXml.replaceFirst(
+          '</D:multistatus>',
+          '<D:response><D:href>/Elsewhere/music.flac</D:href>'
+              '</D:response></D:multistatus>',
         ),
-      );
-    }
-  });
+        rootXml.replaceFirst(
+          '</D:multistatus>',
+          '<D:response><D:href>https://evil.invalid/AllMusic/x.flac'
+              '</D:href></D:response></D:multistatus>',
+        ),
+      ]) {
+        await withServer(
+          (r) => reply(r, 207, xml),
+          (client) => expectLater(
+            client.checkRoot(credentials),
+            throwsA(cloudFailure(CloudFailure.malformed)),
+          ),
+        );
+      }
+    },
+  );
 
   test('rejects redirect and does not forward Basic credentials', () async {
     await withServer(
       (r) async {
         await r.drain<void>();
         r.response.statusCode = 302;
-        r.response.headers.set(HttpHeaders.locationHeader,
-            'https://evil.invalid/AllMusic/');
+        r.response.headers.set(
+          HttpHeaders.locationHeader,
+          'https://evil.invalid/AllMusic/',
+        );
         await r.response.close();
       },
       (client) => expectLater(
@@ -144,27 +152,33 @@ void main() {
     );
   });
 
-  test('bounded GET accepts standard and Mail.ru Content-Range syntax', () async {
-    for (final header in ['bytes=0-3/100', 'bytes 0-3/100']) {
-      await withServer(
-        (r) async {
-          expect(r.method, 'GET');
-          expect(r.headers.value(HttpHeaders.rangeHeader), 'bytes=0-3');
-          await r.drain<void>();
-          r.response.statusCode = 206;
-          r.response.headers.set(HttpHeaders.contentRangeHeader, header);
-          r.response.add([1, 2, 3, 4]);
-          await r.response.close();
-        },
-        (client) async {
-          final result = await client.getRange(
-            credentials, ['Трек.flac'], offset: 0, length: 4,
-          );
-          expect(result, [1, 2, 3, 4]);
-        },
-      );
-    }
-  });
+  test(
+    'bounded GET accepts standard and Mail.ru Content-Range syntax',
+    () async {
+      for (final header in ['bytes=0-3/100', 'bytes 0-3/100']) {
+        await withServer(
+          (r) async {
+            expect(r.method, 'GET');
+            expect(r.headers.value(HttpHeaders.rangeHeader), 'bytes=0-3');
+            await r.drain<void>();
+            r.response.statusCode = 206;
+            r.response.headers.set(HttpHeaders.contentRangeHeader, header);
+            r.response.add([1, 2, 3, 4]);
+            await r.response.close();
+          },
+          (client) async {
+            final result = await client.getRange(
+              credentials,
+              ['Трек.flac'],
+              offset: 0,
+              length: 4,
+            );
+            expect(result, [1, 2, 3, 4]);
+          },
+        );
+      }
+    },
+  );
 
   test('rejects wrong 206 framing and excess response bytes', () async {
     for (final header in ['bytes=1-4/100', 'bytes */100', 'bytes=0-3/3']) {

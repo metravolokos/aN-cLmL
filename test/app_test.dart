@@ -12,15 +12,22 @@ class _FakeVault implements CredentialVault {
   @override
   Future<CloudCredentials?> read() async => saved;
   @override
-  Future<void> save(CloudCredentials credentials) async { saved = credentials; }
+  Future<void> save(CloudCredentials credentials) async {
+    saved = credentials;
+  }
+
   @override
-  Future<void> clear() async { saved = null; }
+  Future<void> clear() async {
+    saved = null;
+  }
 }
 
 class _FakeProbe implements CloudProbe {
   @override
-  Future<void> checkRoot(CloudCredentials credentials,
-      {CancellationToken? cancel}) async {}
+  Future<void> checkRoot(
+    CloudCredentials credentials, {
+    CancellationToken? cancel,
+  }) async {}
 }
 
 Future<void> launch(WidgetTester tester, Size size) async {
@@ -28,13 +35,15 @@ Future<void> launch(WidgetTester tester, Size size) async {
   tester.view.physicalSize = size;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
-  await tester.pumpWidget(ProviderScope(
-    overrides: [
-      credentialVaultProvider.overrideWithValue(_FakeVault()),
-      cloudProbeProvider.overrideWithValue(_FakeProbe()),
-    ],
-    child: const CloudMailApp(),
-  ));
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        credentialVaultProvider.overrideWithValue(_FakeVault()),
+        cloudProbeProvider.overrideWithValue(_FakeProbe()),
+      ],
+      child: const CloudMailApp(),
+    ),
+  );
   await tester.pumpAndSettle();
 }
 
@@ -115,10 +124,7 @@ void main() {
         );
       }
     }
-    expect(
-      find.text('Облако не подключено'),
-      findsOneWidget,
-    );
+    expect(find.text('Облако не подключено'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

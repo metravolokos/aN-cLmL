@@ -7,6 +7,4 @@ final credentialVaultProvider = Provider<CredentialVault>(
   (ref) => DeviceCredentialVault(),
 );
 
-final cloudProbeProvider = Provider<CloudProbe>(
-  (ref) => CloudWebDav(),
-);
+final cloudProbeProvider = Provider<CloudProbe>((ref) => CloudWebDav());
