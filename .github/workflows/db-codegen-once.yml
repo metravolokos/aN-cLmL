@@ -1,0 +1,39 @@
+name: Resolve Drift catalog code generation once
+on:
+  push:
+    branches: [feature/sqlite-catalog-20261105]
+permissions:
+  contents: write
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/sqlite-catalog-20261105
+          persist-credentials: true
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: stable
+          cache: true
+      - name: Generate, check and commit DB code
+        shell: bash
+        run: |
+          set -euo pipefail
+          flutter pub get
+          dart run build_runner build --delete-conflicting-outputs
+          dart format lib test
+          flutter gen-l10n
+          flutter analyze
+          flutter test
+          python -m unittest discover -s tests -v
+          git add pubspec.lock lib test
+          git diff --cached --check
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'chore(db): generate Drift schema and lock dependencies'
+            git push origin HEAD:refs/heads/feature/sqlite-catalog-20261105
+          fi
