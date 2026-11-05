@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../cloud/cloud_connection_service.dart';
 import '../../cloud/cloud_mail_webdav.dart';
 import '../../domain/remote_track.dart';
+import '../artwork/flac_artwork_reader.dart';
 import '../db/catalog_database.dart';
 import '../tags/flac_tag_reader.dart';
 import '../tags/mp3_tag_reader.dart';
@@ -24,6 +26,9 @@ class CloudMusicService {
   CatalogDatabase? _catalog;
   String? _catalogFor;
   bool _closed = false;
+  // Three images max, with each image independently capped at 5 MiB.
+  final LinkedHashMap<String, Future<Uint8List?>> _artworkCache =
+      LinkedHashMap<String, Future<Uint8List?>>();
 
   static const String _usernameKey = 'cloud_mail_username';
   static const String _passwordKey = 'cloud_mail_app_password';
@@ -108,6 +113,34 @@ class CloudMusicService {
     );
   }
 
+  /// Embedded artwork is loaded lazily for the displayed track only.
+  Future<Uint8List?> readArtwork(RemoteTrack track) async {
+    if (_closed) throw StateError('Cloud session closed');
+    if (!track.isFlac) return null;
+    final key =
+        '${track.path}\u0000${track.etag ?? ''}\u0000${track.sizeBytes}';
+    final cached = _artworkCache.remove(key);
+    if (cached != null) {
+      _artworkCache[key] = cached;
+      return cached;
+    }
+    final request = FlacArtworkReader(
+      readRange,
+    ).read(track.path, track.sizeBytes).then((artwork) => artwork?.bytes);
+    _artworkCache[key] = request;
+    if (_artworkCache.length > 3) {
+      _artworkCache.remove(_artworkCache.keys.first);
+    }
+    try {
+      return await request;
+    } catch (_) {
+      if (identical(_artworkCache[key], request)) {
+        _artworkCache.remove(key);
+      }
+      rethrow;
+    }
+  }
+
   /// The UI gets a usable file list immediately; tags update in background
   /// with bounded concurrency and never consume a full audio file.
   Future<void> scanMetadata({
@@ -162,6 +195,7 @@ class CloudMusicService {
 
   void close() {
     _closed = true;
+    _artworkCache.clear();
     _credentials = null;
     final catalog = _catalog;
     if (catalog != null) unawaited(catalog.close());

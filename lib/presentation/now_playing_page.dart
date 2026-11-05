@@ -1,7 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/audio/playback_controller.dart';
+import '../data/library/cloud_music_service.dart';
+import '../domain/remote_track.dart';
 import '../domain/track_queue.dart';
 import '../l10n/app_localizations.dart';
 
@@ -64,10 +68,12 @@ class NowPlayingPage extends ConsumerWidget {
                                 color: colors.surfaceContainerHighest,
                                 borderRadius: BorderRadius.circular(20),
                               ),
-                              child: Icon(
-                                Icons.album,
-                                size: size / 2,
-                                color: colors.onSurfaceVariant,
+                              child: _TrackArtwork(
+                                key: ValueKey(
+                                  '${track.path}:${track.etag}:${track.sizeBytes}',
+                                ),
+                                track: track,
+                                size: size,
                               ),
                             ),
                           ),
@@ -202,6 +208,59 @@ class NowPlayingPage extends ConsumerWidget {
                 );
               },
             ),
+    );
+  }
+}
+
+class _TrackArtwork extends ConsumerStatefulWidget {
+  const _TrackArtwork({required this.track, required this.size, super.key});
+
+  final RemoteTrack track;
+  final double size;
+
+  @override
+  ConsumerState<_TrackArtwork> createState() => _TrackArtworkState();
+}
+
+class _TrackArtworkState extends ConsumerState<_TrackArtwork> {
+  late final Future<Uint8List?> _image;
+
+  @override
+  void initState() {
+    super.initState();
+    _image = ref
+        .read(cloudMusicServiceProvider)
+        .readArtwork(widget.track)
+        .catchError((Object error, StackTrace stackTrace) => null);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    Widget placeholder() => Icon(
+      Icons.album,
+      size: widget.size / 2,
+      color: colors.onSurfaceVariant,
+    );
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: FutureBuilder<Uint8List?>(
+        future: _image,
+        builder: (context, snapshot) {
+          final image = snapshot.data;
+          if (image == null || image.isEmpty) return placeholder();
+          return Image.memory(
+            image,
+            width: widget.size,
+            height: widget.size,
+            fit: BoxFit.cover,
+            cacheWidth: 800,
+            cacheHeight: 800,
+            errorBuilder: (context, error, stackTrace) => placeholder(),
+          );
+        },
+      ),
     );
   }
 }
