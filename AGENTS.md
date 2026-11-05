@@ -1,29 +1,24 @@
 # CloudMail Player — instructions for coding agents
 
-Read docs/STATUS.md, docs/ROADMAP.md, docs/SPEC.md, and the active task before working.
-The user approved continuing from M0 into M1 on 2026-11-05.
+Read docs/STATUS.md, docs/ROADMAP.md, docs/SPEC.md and the active task before editing. The user approved M1 merge and M2 development on 2026-11-05.
 
-## Communication and safety
-- Communicate with the user in Russian. Code, commit messages, comments, ADRs and documentation are in English; app UI is localized initially to Russian via ARB.
-- The real cloud is a private personal account: never print, commit, log or include credentials, personal file names, raw WebDAV XML or account identifiers in screenshots, tests or task output.
-- Read live WebDAV only when an explicit stage/task requires it. Do not run live WebDAV experiments again for M1. Never modify or delete cloud data.
-- Read secrets only from explicitly provided environment variables; never paste them into commands, source code, docs or PRs.
-- Never introduce Google Mobile Services (GMS), Firebase, telemetry, analytics or Google Play dependencies.
-- Source is restricted to /AllMusic via Cloud Mail.ru WebDAV.
-- No playlists, favorites, equalizer, lyrics, ALAC support, or invented extra features.
+## Communication and security
+- Communicate with the user in Russian. Code, ADRs, documentation and commit messages in English. App UI starts in Russian through ARB.
+- Never commit, log, expose, screenshot or print credentials, email addresses, private cloud filenames, Authorization headers or raw WebDAV XML.
+- Never put personal credentials in CI. For optional live manual tests, use the user-controlled secret store; previously exposed temporary passwords must be rotated.
+- The only music source is Cloud Mail.ru WebDAV at /AllMusic. Protect path containment, bound Range responses, and respect cancellations.
+- No GMS, Firebase, telemetry, analytics, Google-dependent runtime, playlists, favorites, equalizer, lyrics or ALAC.
+- Do not modify or delete files in the cloud.
 
-## Scope
-- M0 read-only connectivity completed in a bounded Codex experiment; the dated summary is in docs/webdav-notes.md. The detailed local report commit b48d785 was not yet available on remote main when this handoff was prepared.
-- Active stage: M1, Flutter scaffold, navigation, localization, theme, dependency injection and platform build setup, governed by docs/M1_CODEX_TASK.md.
-- M1 source is in place; acceptance is blocked by SDK bootstrap and CI startup. Read the exact evidence and remaining checklist in docs/STATUS.md. Do not claim M1 complete until the real lockfile, Flutter checks and platform builds are verified.
-- M2+ (WebDAV index, SQLite, covers, playback) are not authorized by the M1 task. Do not implement them prematurely.
+## Current state and scope
+- M0: accepted bounded real WebDAV observation; see docs/webdav-notes.md.
+- M1: accepted Windows and Android Flutter shell; generated pubspec.lock, verified build, real user smoke test. See docs/STATUS.md.
+- Next: **M2-A only** under docs/M2A_CODEX_TASK.md and Issue #3. Build a real secure connection and bounded read-only WebDAV client with a Russian connection UI.
+- SQLite index, tagged metadata scans, covers and playback must wait for subsequent M2-B/C/M3/M4 slices. Do not build everything at once.
 
-## Engineering conventions
-- Work in a feature branch and submit a Draft PR; do not merge without user approval.
-- Plan each small change, then run formatter, analyzer, tests and platform build checks that the available environment actually supports.
-- Never claim an Android or Windows binary was built unless the actual corresponding build command succeeded.
-- Do not disable or delete failed tests; document the real blocker.
-- Choose verified dependency versions, pin them in pubspec.lock, and document consequential decisions in docs/adr.
-- Prefer framework widgets and a simple modular structure. Avoid heavy code generation, placeholder infrastructure and speculative abstractions.
-- Update docs/STATUS.md and docs/ROADMAP.md with each milestone; include commands and meaningful test results.
-- Windows native build needs a Windows runner / Visual Studio toolchain, not a Linux VM. Android build needs JDK and Android SDK. Do not silently skip either.
+## Engineering workflow
+- Start from current origin/main, not stale Codex checkout. Work on a feature branch in small steps and submit a Draft PR; no unapproved merges.
+- Verify actual package and platform compatibility before choosing dependencies; pin versions in pubspec.yaml and a real pubspec.lock. Do not invent versions.
+- CI uses flutter pub get --enforce-lockfile; run formatter, analyzer, focused widget/integration tests and real Android/Windows builds where available. Distinguish a compiled app from a tested running app.
+- Do not suppress failures, remove useful tests or run multi-hour tests without specific need and user approval.
+- Update docs/STATUS.md, docs/ROADMAP.md, and an ADR for nontrivial decisions with changes in behavior.
