@@ -184,7 +184,10 @@ class PlaybackController extends Notifier<PlaybackView> {
       }
       unawaited(player.play());
     } catch (_) {
-      if (!_closed) state = state.withUpdates(failed: true, loading: false);
+      // A cancelled open must not resurrect a failed state after Stop.
+      if (!_closed && generation == _operationGeneration) {
+        state = state.withUpdates(failed: true, loading: false);
+      }
     } finally {
       _changingTrack = false;
     }
