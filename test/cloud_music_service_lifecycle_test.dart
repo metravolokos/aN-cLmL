@@ -25,14 +25,16 @@ class _DelayedVault implements CloudCredentialVault {
 }
 
 void main() {
-  test('closed service rejects credentials returned by an in-flight vault read',
-      () async {
-    final vault = _DelayedVault();
-    final service = CloudMusicService(vault: vault);
-    final pending = service.readCachedCatalog();
-    service.close();
-    vault.firstRead.complete('fake@example.invalid');
+  test(
+    'closed service rejects credentials returned by an in-flight vault read',
+    () async {
+      final vault = _DelayedVault();
+      final service = CloudMusicService(vault: vault);
+      final pending = service.readCachedCatalog();
+      service.close();
+      vault.firstRead.complete('fake@example.invalid');
 
-    await expectLater(pending, throwsStateError);
-  });
+      await expectLater(pending, throwsStateError);
+    },
+  );
 }
