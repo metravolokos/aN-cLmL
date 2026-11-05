@@ -30,3 +30,14 @@ The full initial user instructions described a Windows + Android (no GMS) music 
 - M1-008: README, AGENTS, STATUS, ROADMAP, ADR and minimum CI updated to match actual code and honest test evidence.
 
 No requirement to implement media playback, fake library data or cloud login in M1.
+
+## M1 implementation evidence
+
+The shell source implements the M1 UI slice. Navigation switches at 720 logical
+pixels; destination and theme survive layout changes in the same app session.
+Theme persistence across restarts is deferred. Capability contracts have no cloud,
+storage or player implementation. Settings never request credentials.
+
+Acceptance remains pending: no Flutter runtime check or native build has yet
+succeeded. See STATUS and ADR 0001 for exact blockers; prepared runner directories
+and unexecuted tests do not satisfy M1-006/M1-007 on their own.

@@ -15,6 +15,7 @@ The user approved continuing from M0 into M1 on 2026-11-05.
 ## Scope
 - M0 read-only connectivity completed in a bounded Codex experiment; the dated summary is in docs/webdav-notes.md. The detailed local report commit b48d785 was not yet available on remote main when this handoff was prepared.
 - Active stage: M1, Flutter scaffold, navigation, localization, theme, dependency injection and platform build setup, governed by docs/M1_CODEX_TASK.md.
+- M1 source is in place; acceptance is blocked by SDK bootstrap and CI startup. Read the exact evidence and remaining checklist in docs/STATUS.md. Do not claim M1 complete until the real lockfile, Flutter checks and platform builds are verified.
 - M2+ (WebDAV index, SQLite, covers, playback) are not authorized by the M1 task. Do not implement them prematurely.
 
 ## Engineering conventions

@@ -1,7 +1,7 @@
 name: Flutter M1
 on:
   push:
-    branches: [main, feature/m1-flutter-scaffold]
+    branches: [main]
   pull_request:
   workflow_dispatch:
 permissions:
@@ -20,21 +20,11 @@ jobs:
           flutter-version: '3.47.9'
           channel: stable
           cache: true
-      - run: flutter create --no-pub --project-name cloudmail_player --platforms=android,windows --org com.cloudmailplayer .
       - run: flutter --version
       - run: dart --version
       - run: flutter pub get
       - run: flutter gen-l10n
-      - run: dart format lib test
-      - uses: actions/upload-artifact@v4
-        with:
-          name: m1-resolved-source
-          include-hidden-files: true
-          path: |
-            pubspec.lock
-            .metadata
-            lib/
-            test/
+      - run: dart format --output=none --set-exit-if-changed lib test
       - run: flutter analyze
       - run: flutter test
       - run: python -m unittest discover -s tests -v
