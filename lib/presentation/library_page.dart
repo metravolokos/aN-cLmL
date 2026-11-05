@@ -5,6 +5,7 @@ import '../app/state.dart';
 import '../data/audio/playback_controller.dart';
 import '../data/library/cloud_music_service.dart';
 import '../domain/remote_track.dart';
+import '../domain/album_track_order.dart';
 import '../l10n/app_localizations.dart';
 import 'album_cover_thumbnail.dart';
 
@@ -51,6 +52,11 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
             ? track.albumKey
             : track.displayArtist;
         groups.putIfAbsent(key, () => []).add(track);
+      }
+      if (destination == AppDestination.albums) {
+        for (final group in groups.values) {
+          group.sort(compareAlbumTracks);
+        }
       }
     }
     return Column(
