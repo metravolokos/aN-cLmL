@@ -47,7 +47,7 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
         destination == AppDestination.artists) {
       for (final track in filtered) {
         final key = destination == AppDestination.albums
-            ? track.displayAlbum
+            ? track.albumKey
             : track.displayArtist;
         groups.putIfAbsent(key, () => []).add(track);
       }
@@ -154,8 +154,15 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
                   itemBuilder: (context, index) {
                     final key = keys[index];
                     return ExpansionTile(
-                      title: Text(key),
-                      subtitle: Text('${groups[key]!.length}'),
+                      title: Text(
+                        destination == AppDestination.albums
+                            ? groups[key]!.first.displayAlbum : key,
+                      ),
+                      subtitle: Text(
+                        destination == AppDestination.albums
+                            ? '${groups[key]!.first.displayArtist} · ${groups[key]!.length}'
+                            : '${groups[key]!.length}',
+                      ),
                       children: [
                         for (final track in groups[key]!)
                           _TrackTile(track: track, queue: groups[key]!),

@@ -8,6 +8,7 @@ import '../../cloud/cloud_mail_webdav.dart';
 import '../../domain/remote_track.dart';
 import '../db/catalog_database.dart';
 import '../tags/flac_tag_reader.dart';
+import '../tags/mp3_tag_reader.dart';
 
 /// The only data layer that resolves protected credentials for WebDAV reads.
 class CloudMusicService {
@@ -108,6 +109,7 @@ class CloudMusicService {
     final pending = await catalog.unindexedTracks();
     if (pending.isEmpty) return;
     final parser = FlacTagReader(readRange);
+    final mp3Parser = Mp3TagReader(readRange);
     var assigned = 0;
     var completed = 0;
 
@@ -117,9 +119,12 @@ class CloudMusicService {
         if (index >= pending.length) return;
         final track = pending[index];
         FlacTags? tags;
+        Mp3Tags? id3;
         try {
           if (track.isFlac) {
             tags = await parser.parse(track.path, track.sizeBytes);
+          } else if (track.isMp3) {
+            id3 = await mp3Parser.parse(track.path, track.sizeBytes);
           }
         } catch (_) {
           // Corrupt/unsupported metadata retains a safe file-name fallback.
@@ -127,13 +132,13 @@ class CloudMusicService {
         if (_closed || (isCancelled?.call() ?? false)) return;
         await catalog.saveTags(
           track.path,
-          title: tags?.title ?? track.displayTitle,
-          artist: tags?.artist,
-          albumArtist: tags?.albumArtist,
-          album: tags?.album,
-          trackNumber: tags?.trackNumber,
-          discNumber: tags?.discNumber,
-          duration: tags?.duration,
+          title: tags?.title ?? id3?.title ?? track.displayTitle,
+          artist: tags?.artist ?? id3?.artist,
+          albumArtist: tags?.albumArtist ?? id3?.albumArtist,
+          album: tags?.album ?? id3?.album,
+          trackNumber: tags?.trackNumber ?? id3?.trackNumber,
+          discNumber: tags?.discNumber ?? id3?.discNumber,
+          duration: tags?.duration ?? id3?.duration,
         );
         completed++;
         if (completed % 32 == 0 || completed == pending.length) {
