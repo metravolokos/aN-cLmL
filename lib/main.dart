@@ -14,9 +14,7 @@ Future<void> main() async {
   JustAudioMediaKit.ensureInitialized();
   runApp(
     ProviderScope(
-      overrides: [
-        mediaTagFactoryProvider.overrideWithValue(androidMediaTag),
-      ],
+      overrides: [mediaTagFactoryProvider.overrideWithValue(androidMediaTag)],
       child: const CloudMailApp(),
     ),
   );

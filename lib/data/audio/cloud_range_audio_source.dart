@@ -16,7 +16,7 @@ typedef RangeFetcher =
 /// Never embeds the user's Authorization header in a URL or local proxy.
 class CloudRangeAudioSource extends StreamAudioSource {
   CloudRangeAudioSource(this.track, this.fetcher, {Object? mediaTag})
-      : super(tag: mediaTag);
+    : super(tag: mediaTag);
 
   static const int chunkSize = 64 * 1024;
 

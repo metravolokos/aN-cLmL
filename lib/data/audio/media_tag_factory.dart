@@ -6,5 +6,6 @@ import '../../domain/remote_track.dart';
 typedef MediaTagFactory = Object? Function(RemoteTrack track);
 
 final mediaTagFactoryProvider = Provider<MediaTagFactory>(
-  (ref) => (track) => null,
+  (ref) =>
+      (track) => null,
 );
