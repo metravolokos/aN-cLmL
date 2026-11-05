@@ -140,6 +140,7 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
   final Duration _timeout;
   final Dio _dio;
 
+  @override
   Future<void> verifyConnection(
     CloudCredentials credentials, {
     WebDavRequestCancellation? cancellation,

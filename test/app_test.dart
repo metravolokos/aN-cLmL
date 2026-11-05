@@ -42,7 +42,7 @@ class _FakeConnectionService implements CloudConnectionService {
 Future<void> launch(
   WidgetTester tester,
   Size size, {
-  _FakeConnectionService? service,
+  CloudConnectionService? service,
 }) async {
   final connectionService = service ?? _FakeConnectionService();
   tester.view.devicePixelRatio = 1;
