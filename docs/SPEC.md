@@ -38,11 +38,6 @@ pixels; destination and theme survive layout changes in the same app session.
 Theme persistence across restarts is deferred. Capability contracts have no cloud,
 storage or player implementation. Settings never request credentials.
 
-M1 acceptance: Flutter 3.47.9 / Dart 3.13.7 Quality completed with
-flutter analyze (zero issues), four widget tests, six Python M0 tests and strict
-Dart formatting. Android debug APK and Windows release build succeeded in
-CI run #42013267771. The user confirmed both apps launch and function.
-Flutter create subsequently reconciled platform templates, and a genuine
-pubspec.lock was committed. Cloud login, media indexing, covers and playback
-are explicitly not part of the M1 shell. A GMS-free APK dependency audit remains
-required before release. M2-A is the next approved development slice.
+Acceptance remains pending: no Flutter runtime check or native build has yet
+succeeded. See STATUS and ADR 0001 for exact blockers; prepared runner directories
+and unexecuted tests do not satisfy M1-006/M1-007 on their own.

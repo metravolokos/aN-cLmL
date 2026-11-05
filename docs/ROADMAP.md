@@ -17,3 +17,9 @@
 M1 acceptance: user verified successful starts on Android and Windows; GitHub Actions run #42013267771 completed Quality, Android and Windows successfully. A real lockfile was subsequently generated, and platform templates were reconciled with official Flutter generator.
 
 M2 work items: [Issue #3](https://github.com/metravolokos/cloudmail-player-m0/issues/3), starting with M2-A. Each slice should provide short tests, a real build and a working user-visible result; avoid long endurance tests and architectural rework without specific defects.
+
+## Independent M2-A comparison
+
+ChatGPT branch `experiment/chatgpt-m2a` implements the secure connection only.
+It remains separate from the Codex M2-A implementation until a side-by-side
+review of tests, builds and manual behavior. Do not merge experiments together.

@@ -1,33 +1,67 @@
 # Project status — 2026-11-05
 
-## M0 — accepted bounded WebDAV connectivity
+## M0: bounded WebDAV connectivity — completed for moving forward
 
-Authenticated read-only Codex Cloud probe confirmed /AllMusic through PROPFIND (207), sampled HEAD (200) and five bounded Range GETs (206). The provider returned Content-Range in bytes=first-last/total form. Six offline Python tests passed. This does not establish full indexing or audio playback. Details in docs/webdav-notes.md.
+A Codex Cloud agent achieved HTTPS access via its standard proxy and authenticated with read-only PROPFIND. /AllMusic was confirmed; sampled HEAD and five Range requests succeeded. Content-Range uses bytes= syntax. Six offline tests passed. See docs/webdav-notes.md.
 
-## M1 — accepted Android and Windows Flutter UI scaffold
+The agent reported local documentation commit b48d785da4a5a3d49254bdbc41e0f0ea4015eda9, but it was not pushed to GitHub when the M1 handoff was prepared. This status is reconstructed from its user-visible report, not a line-by-line review of that local commit.
 
-User confirmed on 2026-11-05 that the application **launches and works on both target platforms**. This is manual acceptance of the existing UI shell, not of WebDAV or audio playback.
+## M1: implementation in Draft PR, validation blocked
 
-M1 includes Russian ARB localization, Material 3, responsive four-destination navigation (Tracks, Albums, Artists, Settings), theme selection and honest disconnected states. No personal WebDAV secrets or data are included.
+Base: fresh origin/main `bffd03e8880a5d563e418c242b0cc96ca1909d6b`.
+Branch: `feature/m1-flutter-scaffold`.
+Draft PR: https://github.com/metravolokos/cloudmail-player-m0/pull/2.
+The local-only M0 commit `b48d785da4a5a3d49254bdbc41e0f0ea4015eda9` is
+not in this checkout's object database; the existing sanitized summary is retained.
 
-Confirmed in GitHub Actions run #42013267771:
-- Quality: Flutter 3.47.9, Dart 3.13.7; generated localizations, strict formatting, flutter analyze without issues; four Flutter widget tests and six Python M0 tests passed.
-- Android: flutter build apk --debug succeeded; artifact cloudmail-player-android-debug.
-- Windows: flutter build windows --release succeeded; artifact cloudmail-player-windows.
-- The user launched both applications and reported they work.
+Implemented source: root Flutter package, Android/Windows runner templates,
+Android minSdk 24, Russian ARB configuration, Material 3, adaptive four-destination
+navigation, Riverpod theme/navigation state, honest empty states, settings and
+four focused widget tests. Future service contracts have no implementations.
+No live requests, credentials, cloud files, audio plugins or M2 code were used.
 
-Finalization: Flutter's official generator was run on the Android/Windows platform projects; a real pubspec.lock was generated and committed, with any generated Windows registrant adjustments. Reproduction is enforced through flutter pub get --enforce-lockfile. The one-off finalization workflow has been removed.
+### Verification on 2026-11-05
 
-A formal GMS-dependency audit has not yet been performed on the APK and remains a release criterion. No playback, personal cloud integration or full index is implemented at M1.
+| Command / check | Actual result |
+| --- | --- |
+| `git fetch origin main` | Passed after network permission; expected base confirmed |
+| `python -m unittest discover -s tests -v` | 6 tests passed |
+| `git diff --check` | Passed for implementation commit |
+| `flutter --version` | Bootstrap failed, exit 56, proxy CONNECT 403 for storage.googleapis.com |
+| `dart --version` | Same bootstrap blocker; no runtime version confirmed |
+| `dart format lib test` | Same bootstrap blocker; formatting unverified |
+| `flutter gen-l10n` | Same bootstrap blocker; generated output unavailable |
+| `flutter analyze` | Same bootstrap blocker; no analyzer result |
+| `flutter test` | Same bootstrap blocker; 4 widget tests written, none executed |
+| `flutter build apk --debug` | Same bootstrap blocker; also no local Android SDK; JDK 21.0.12.1 exists |
+| `flutter build windows --release` | Bootstrap blocked; native build also requires Windows/VS, this host is Linux |
 
-M1 Draft PR #2 is accepted and authorized for merge into main; the user approved advancing to M2. The next work starts from the merged main; do not continue stale Codex work checkouts.
+Official stable source is tag 3.47.9, revision
+`c197ca5199e9ee5661e865596c9c07294dfab51c`; this is not a runtime version
+measurement. See ADR 0001. Platform files were rendered from SDK templates,
+not produced by a successful flutter create invocation. No pubspec.lock could
+be resolved. No successful binary or runtime smoke test is claimed.
 
-## M2 — next, focused scope
+CI has separate Linux quality, Windows release and Android debug jobs with
+15/20-minute limits and read-only repository permission. The first PR run
+https://github.com/metravolokos/cloudmail-player-m0/actions/runs/41994305871
+failed all three jobs before any recorded steps. The job-step API returned empty
+lists; log downloads returned 404 BlobNotFound. The failure's underlying cause
+could not be established with the available API, and is not attributed to code
+or billing without evidence. No CI artifacts were produced or tested.
 
-Issue #3: https://github.com/metravolokos/cloudmail-player-m0/issues/3
+### Required to finish M1
 
-Start with M2-A connection/settings, read-only PROPFIND and bounded Range compatibility, secure OS-backed credential storage for Windows/Android. Then implement incremental SQLite catalog and ranged tag extraction in small separate slices. Do not build full playback or run multi-hour stress tests.
+1. Allow storage.googleapis.com in the managed environment's outbound policy;
+   generic network permission was granted but did not change the proxy denial.
+2. Bootstrap Flutter, record actual Flutter and Dart runtime versions, reconcile
+   platform templates with flutter create and resolve/commit pubspec.lock.
+3. Format, generate localization, analyze and execute widget tests; fix failures.
+4. Obtain successful Android and Windows builds with their native toolchains;
+   inspect the Actions run's annotations in GitHub if jobs still fail to start.
+5. Update this evidence and the Draft PR checklist. M1 is not complete until
+   these checks pass. Do not start M2 or merge automatically.
 
-## Security / constraints
+## Constraints
 
-Cloud source restricted to /AllMusic. No GMS, telemetry, playlists, favorites or equalizer. Never commit credentials, accounts or private filenames. M0 temporary app password was exposed earlier in chat; rotate before any new live testing.
+No GMS; no telemetry; only Cloud Mail.ru /AllMusic as future source. No playlists/favorites. Do not use live credentials during M1. Real cloud integration and audio playback are out of scope until their later milestones.

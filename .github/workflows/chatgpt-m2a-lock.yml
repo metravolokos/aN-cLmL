@@ -1,0 +1,45 @@
+name: Experimental M2-A dependency lock
+on:
+  push:
+    branches: [experiment/chatgpt-m2a]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  lock-and-format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: experiment/chatgpt-m2a
+          persist-credentials: true
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: stable
+          cache: true
+      - name: Resolve dependency lock and format source
+        run: |
+          flutter pub get
+          dart format lib test
+          flutter gen-l10n
+      - name: Commit generated lock and formatted Dart code
+        run: |
+          set -eu
+          test -s pubspec.lock
+          git add pubspec.lock lib test windows/flutter
+          git diff --cached --check
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'chore(m2a-chatgpt): lock dependencies and format source'
+            git push origin HEAD:refs/heads/experiment/chatgpt-m2a
+          fi
+      - name: Analyze and test the independent implementation
+        run: |
+          flutter analyze
+          flutter test
+          python -m unittest discover -s tests -v

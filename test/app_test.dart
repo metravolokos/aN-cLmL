@@ -1,15 +1,40 @@
 import 'package:cloudmail_player/app/app.dart';
 import 'package:cloudmail_player/app/state.dart';
+import 'package:cloudmail_player/cloud/credential_vault.dart';
+import 'package:cloudmail_player/cloud/providers.dart';
+import 'package:cloudmail_player/cloud/webdav_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+class _FakeVault implements CredentialVault {
+  CloudCredentials? saved;
+  @override
+  Future<CloudCredentials?> read() async => saved;
+  @override
+  Future<void> save(CloudCredentials credentials) async { saved = credentials; }
+  @override
+  Future<void> clear() async { saved = null; }
+}
+
+class _FakeProbe implements CloudProbe {
+  @override
+  Future<void> checkRoot(CloudCredentials credentials,
+      {CancellationToken? cancel}) async {}
+}
 
 Future<void> launch(WidgetTester tester, Size size) async {
   tester.view.devicePixelRatio = 1;
   tester.view.physicalSize = size;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
-  await tester.pumpWidget(const ProviderScope(child: CloudMailApp()));
+  await tester.pumpWidget(ProviderScope(
+    overrides: [
+      credentialVaultProvider.overrideWithValue(_FakeVault()),
+      cloudProbeProvider.overrideWithValue(_FakeProbe()),
+    ],
+    child: const CloudMailApp(),
+  ));
   await tester.pumpAndSettle();
 }
 
@@ -91,7 +116,7 @@ void main() {
       }
     }
     expect(
-      find.text('Подключение пока не реализовано. Пароль не требуется.'),
+      find.text('Облако не подключено'),
       findsOneWidget,
     );
     expect(tester.takeException(), isNull);
