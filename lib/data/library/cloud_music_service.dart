@@ -1,13 +1,19 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:crypto/crypto.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import '../../cloud/cloud_connection_service.dart';
 import '../../cloud/cloud_mail_webdav.dart';
 import '../../domain/remote_track.dart';
 import '../artwork/flac_artwork_reader.dart';
+import '../artwork/cover_thumbnail_cache.dart';
 import '../db/catalog_database.dart';
 import '../tags/flac_tag_reader.dart';
 import '../tags/mp3_tag_reader.dart';
@@ -26,6 +32,7 @@ class CloudMusicService {
   CatalogDatabase? _catalog;
   String? _catalogFor;
   bool _closed = false;
+  Future<CoverThumbnailCache>? _thumbnailCache;
   // Three images max, with each image independently capped at 5 MiB.
   final LinkedHashMap<String, Future<Uint8List?>> _artworkCache =
       LinkedHashMap<String, Future<Uint8List?>>();
@@ -139,6 +146,25 @@ class CloudMusicService {
       }
       rethrow;
     }
+  }
+
+  /// Persistent, account-scoped miniatures use only bounded cover Range reads.
+  Future<Uint8List?> readThumbnail(RemoteTrack track) async {
+    if (_closed) throw StateError('Cloud session closed');
+    if (!track.isFlac) return null;
+    final account = (await _sessionCredentials()).username;
+    if (_closed) throw StateError('Cloud session closed');
+    _thumbnailCache ??= getApplicationCacheDirectory().then((root) {
+      final accountKey = sha256.convert(utf8.encode(account)).toString();
+      return CoverThumbnailCache(
+        Directory(p.join(root.path, 'cloud_cover_thumbnails', accountKey)),
+      );
+    });
+    final cache = await _thumbnailCache!;
+    if (_closed) throw StateError('Cloud session closed');
+    final sourceIdentity =
+        '$account\\u0000${track.path}\\u0000${track.etag ?? ''}\\u0000${track.sizeBytes}';
+    return cache.read(sourceIdentity, () => readArtwork(track));
   }
 
   /// The UI gets a usable file list immediately; tags update in background
