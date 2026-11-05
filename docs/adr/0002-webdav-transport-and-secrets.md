@@ -21,7 +21,7 @@ Status: Accepted for M2-A
 - Send credentials only to the fixed HTTPS Cloud Mail.ru origin. Never follow a
   redirect, and do not include URLs, response XML, credentials or file names in
   application errors or logs. Requests are read-only PROPFIND and GET.
-- Limit each Range response to 128 KiB and validate HTTP 206, exact byte count,
+- Limit each Range response to 64 KiB and validate HTTP 206, exact byte count,
   requested offsets and both observed `bytes=first-last/total` and standard
   `bytes first-last/total` Content-Range forms. Allow one retry for transient
   failures; use an 8-second timeout and caller cancellation.

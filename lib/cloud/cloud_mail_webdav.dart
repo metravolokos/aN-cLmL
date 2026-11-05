@@ -124,7 +124,7 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
          ),
        );
 
-  static const int maximumRangeBytes = 128 * 1024;
+  static const int maximumRangeBytes = 64 * 1024;
   static const int _maximumXmlBytes = 8 * 1024 * 1024;
   static const Duration _retryDelay = Duration(milliseconds: 150);
   static final Uri _productionBaseUri = Uri.parse(
