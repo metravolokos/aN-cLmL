@@ -56,7 +56,8 @@ class CoverThumbnailCache {
       }
 
       final source = await fetchSource();
-      if (source == null || source.isEmpty ||
+      if (source == null ||
+          source.isEmpty ||
           source.length > _maximumSourceBytes) {
         return null;
       }
@@ -140,7 +141,9 @@ Uint8List? encodeCoverThumbnail(Uint8List source) {
   }
   if (picture == null || picture.width < 1 || picture.height < 1) return null;
   const maxEdge = 640;
-  final larger = picture.width > picture.height ? picture.width : picture.height;
+  final larger = picture.width > picture.height
+      ? picture.width
+      : picture.height;
   if (larger > maxEdge) {
     picture = picture.width >= picture.height
         ? img.copyResize(picture, width: maxEdge)

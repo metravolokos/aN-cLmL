@@ -34,20 +34,23 @@ void main() {
     expect(fetches, 2);
   });
 
-  test('unsupported image and missing artwork never write thumbnails', () async {
-    final directory = await Directory.systemTemp.createTemp('empty-cover-');
-    addTearDown(() => directory.delete(recursive: true));
-    final cache = CoverThumbnailCache(directory);
-    expect(await cache.read('none', () async => null), isNull);
-    expect(
-      await cache.read('invalid', () async => Uint8List.fromList([1, 2, 3])),
-      isNull,
-    );
-    expect(
-      directory.listSync().whereType<File>().where(
-        (file) => file.path.endsWith('.jpg'),
-      ),
-      isEmpty,
-    );
-  });
+  test(
+    'unsupported image and missing artwork never write thumbnails',
+    () async {
+      final directory = await Directory.systemTemp.createTemp('empty-cover-');
+      addTearDown(() => directory.delete(recursive: true));
+      final cache = CoverThumbnailCache(directory);
+      expect(await cache.read('none', () async => null), isNull);
+      expect(
+        await cache.read('invalid', () async => Uint8List.fromList([1, 2, 3])),
+        isNull,
+      );
+      expect(
+        directory.listSync().whereType<File>().where(
+          (file) => file.path.endsWith('.jpg'),
+        ),
+        isEmpty,
+      );
+    },
+  );
 }
