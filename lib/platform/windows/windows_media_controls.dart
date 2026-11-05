@@ -52,6 +52,8 @@ class _WindowsMediaControlsBridgeState
         nextEnabled: true,
         prevEnabled: true,
         stopEnabled: true,
+        fastForwardEnabled: false,
+        rewindEnabled: false,
       ),
       enabled: false,
     );
