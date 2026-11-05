@@ -34,12 +34,11 @@ class RemoteTrack {
     return dot > 0 ? fallback.substring(0, dot) : fallback;
   }
 
-  String get displayArtist =>
-      (artist?.trim().isNotEmpty ?? false)
-          ? artist!.trim()
-          : (albumArtist?.trim().isNotEmpty ?? false)
-              ? albumArtist!.trim()
-              : 'Неизвестный исполнитель';
+  String get displayArtist => (artist?.trim().isNotEmpty ?? false)
+      ? artist!.trim()
+      : (albumArtist?.trim().isNotEmpty ?? false)
+      ? albumArtist!.trim()
+      : 'Неизвестный исполнитель';
 
   String get displayAlbum =>
       (album?.trim().isNotEmpty ?? false) ? album!.trim() : 'Без альбома';

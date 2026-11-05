@@ -29,6 +29,7 @@ Uint8List vorbisFields(List<String> entries) {
     final b = ByteData(4)..setUint32(0, number, Endian.little);
     builder.add(b.buffer.asUint8List());
   }
+
   final vendor = utf8.encode('test');
   addCount(vendor.length);
   builder.add(vendor);
@@ -46,14 +47,18 @@ void main() {
     final source = Uint8List.fromList([
       ...ascii.encode('fLaC'),
       ...metadataBlock(0, streamInfo(const Duration(seconds: 90))),
-      ...metadataBlock(4, vorbisFields([
-        'TITLE=Тихая ночь',
-        'ARTIST=Мой артист',
-        'ALBUM=Альбом №1',
-        'ALBUMARTIST=Альбомный исполнитель',
-        'TRACKNUMBER=03/12',
-        'DISCNUMBER=2',
-      ]), last: true),
+      ...metadataBlock(
+        4,
+        vorbisFields([
+          'TITLE=Тихая ночь',
+          'ARTIST=Мой артист',
+          'ALBUM=Альбом №1',
+          'ALBUMARTIST=Альбомный исполнитель',
+          'TRACKNUMBER=03/12',
+          'DISCNUMBER=2',
+        ]),
+        last: true,
+      ),
       ...Uint8List(16000),
     ]);
     var requested = 0;
@@ -72,36 +77,46 @@ void main() {
     expect(requested, lessThan(source.length));
   });
 
-  test('large embedded picture is skipped without reading image bytes', () async {
-    final source = Uint8List.fromList([
-      ...ascii.encode('fLaC'),
-      ...metadataBlock(0, streamInfo(const Duration(seconds: 2))),
-      ...metadataBlock(6, Uint8List(120000)),
-      ...metadataBlock(4, vorbisFields(['TITLE=After artwork']), last: true),
-      ...Uint8List(700),
-    ]);
-    var requested = 0;
-    final parser = FlacTagReader((_, offset, length) async {
-      requested += length;
-      return Uint8List.sublistView(source, offset, offset + length);
-    });
-    final tags = await parser.parse('track.flac', source.length);
-    expect(tags.title, 'After artwork');
-    expect(requested, lessThan(9000));
-  });
+  test(
+    'large embedded picture is skipped without reading image bytes',
+    () async {
+      final source = Uint8List.fromList([
+        ...ascii.encode('fLaC'),
+        ...metadataBlock(0, streamInfo(const Duration(seconds: 2))),
+        ...metadataBlock(6, Uint8List(120000)),
+        ...metadataBlock(4, vorbisFields(['TITLE=After artwork']), last: true),
+        ...Uint8List(700),
+      ]);
+      var requested = 0;
+      final parser = FlacTagReader((_, offset, length) async {
+        requested += length;
+        return Uint8List.sublistView(source, offset, offset + length);
+      });
+      final tags = await parser.parse('track.flac', source.length);
+      expect(tags.title, 'After artwork');
+      expect(requested, lessThan(9000));
+    },
+  );
 
-  test('malformed block length is rejected without a network overflow', () async {
-    final source = Uint8List.fromList([
-      ...ascii.encode('fLaC'), 0x84, 0xff, 0xff, 0xff,
-    ]);
-    final parser = FlacTagReader((_, offset, length) async {
-      return Uint8List.sublistView(source, offset, offset + length);
-    });
-    await expectLater(
-      parser.parse('broken.flac', source.length),
-      throwsFormatException,
-    );
-  });
+  test(
+    'malformed block length is rejected without a network overflow',
+    () async {
+      final source = Uint8List.fromList([
+        ...ascii.encode('fLaC'),
+        0x84,
+        0xff,
+        0xff,
+        0xff,
+      ]);
+      final parser = FlacTagReader((_, offset, length) async {
+        return Uint8List.sublistView(source, offset, offset + length);
+      });
+      await expectLater(
+        parser.parse('broken.flac', source.length),
+        throwsFormatException,
+      );
+    },
+  );
 
   test('Vorbis parser rejects malformed length and too-many entries', () async {
     final source = Uint8List.fromList([

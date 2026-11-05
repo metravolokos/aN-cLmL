@@ -53,7 +53,12 @@ void main() {
       RemoteTrack(path: 't.flac', sizeBytes: 10, etag: 'old'),
     ]);
     expect(await db.unindexedTracks(), hasLength(1));
-    await db.saveTags('t.flac', title: 'Песня', album: 'Альбом', artist: 'Автор');
+    await db.saveTags(
+      't.flac',
+      title: 'Песня',
+      album: 'Альбом',
+      artist: 'Автор',
+    );
     expect(await db.unindexedTracks(), isEmpty);
     await db.applyScan(const [
       RemoteTrack(path: 't.flac', sizeBytes: 10, etag: 'old'),
@@ -66,5 +71,4 @@ void main() {
     expect(await db.unindexedTracks(), hasLength(1));
     expect((await db.readTracks()).single.artist, isNull);
   });
-
 }

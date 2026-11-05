@@ -56,6 +56,17 @@ class $RemoteFilesTable extends RemoteFiles
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _albumArtistMeta = const VerificationMeta(
+    'albumArtist',
+  );
+  @override
+  late final GeneratedColumn<String> albumArtist = GeneratedColumn<String>(
+    'album_artist',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _albumMeta = const VerificationMeta('album');
   @override
   late final GeneratedColumn<String> album = GeneratedColumn<String>(
@@ -64,6 +75,54 @@ class $RemoteFilesTable extends RemoteFiles
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
+  );
+  static const VerificationMeta _trackNumberMeta = const VerificationMeta(
+    'trackNumber',
+  );
+  @override
+  late final GeneratedColumn<int> trackNumber = GeneratedColumn<int>(
+    'track_number',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _discNumberMeta = const VerificationMeta(
+    'discNumber',
+  );
+  @override
+  late final GeneratedColumn<int> discNumber = GeneratedColumn<int>(
+    'disc_number',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _durationMsMeta = const VerificationMeta(
+    'durationMs',
+  );
+  @override
+  late final GeneratedColumn<int> durationMs = GeneratedColumn<int>(
+    'duration_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _tagsIndexedMeta = const VerificationMeta(
+    'tagsIndexed',
+  );
+  @override
+  late final GeneratedColumn<bool> tagsIndexed = GeneratedColumn<bool>(
+    'tags_indexed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("tags_indexed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
   );
   static const VerificationMeta _generationMeta = const VerificationMeta(
     'generation',
@@ -83,7 +142,12 @@ class $RemoteFilesTable extends RemoteFiles
     etag,
     title,
     artist,
+    albumArtist,
     album,
+    trackNumber,
+    discNumber,
+    durationMs,
+    tagsIndexed,
     generation,
   ];
   @override
@@ -132,10 +196,49 @@ class $RemoteFilesTable extends RemoteFiles
         artist.isAcceptableOrUnknown(data['artist']!, _artistMeta),
       );
     }
+    if (data.containsKey('album_artist')) {
+      context.handle(
+        _albumArtistMeta,
+        albumArtist.isAcceptableOrUnknown(
+          data['album_artist']!,
+          _albumArtistMeta,
+        ),
+      );
+    }
     if (data.containsKey('album')) {
       context.handle(
         _albumMeta,
         album.isAcceptableOrUnknown(data['album']!, _albumMeta),
+      );
+    }
+    if (data.containsKey('track_number')) {
+      context.handle(
+        _trackNumberMeta,
+        trackNumber.isAcceptableOrUnknown(
+          data['track_number']!,
+          _trackNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('disc_number')) {
+      context.handle(
+        _discNumberMeta,
+        discNumber.isAcceptableOrUnknown(data['disc_number']!, _discNumberMeta),
+      );
+    }
+    if (data.containsKey('duration_ms')) {
+      context.handle(
+        _durationMsMeta,
+        durationMs.isAcceptableOrUnknown(data['duration_ms']!, _durationMsMeta),
+      );
+    }
+    if (data.containsKey('tags_indexed')) {
+      context.handle(
+        _tagsIndexedMeta,
+        tagsIndexed.isAcceptableOrUnknown(
+          data['tags_indexed']!,
+          _tagsIndexedMeta,
+        ),
       );
     }
     if (data.containsKey('generation')) {
@@ -175,10 +278,30 @@ class $RemoteFilesTable extends RemoteFiles
         DriftSqlType.string,
         data['${effectivePrefix}artist'],
       ),
+      albumArtist: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}album_artist'],
+      ),
       album: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}album'],
       ),
+      trackNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}track_number'],
+      ),
+      discNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}disc_number'],
+      ),
+      durationMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}duration_ms'],
+      ),
+      tagsIndexed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}tags_indexed'],
+      )!,
       generation: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}generation'],
@@ -198,7 +321,12 @@ class RemoteFile extends DataClass implements Insertable<RemoteFile> {
   final String? etag;
   final String? title;
   final String? artist;
+  final String? albumArtist;
   final String? album;
+  final int? trackNumber;
+  final int? discNumber;
+  final int? durationMs;
+  final bool tagsIndexed;
   final int generation;
   const RemoteFile({
     required this.path,
@@ -206,7 +334,12 @@ class RemoteFile extends DataClass implements Insertable<RemoteFile> {
     this.etag,
     this.title,
     this.artist,
+    this.albumArtist,
     this.album,
+    this.trackNumber,
+    this.discNumber,
+    this.durationMs,
+    required this.tagsIndexed,
     required this.generation,
   });
   @override
@@ -223,9 +356,22 @@ class RemoteFile extends DataClass implements Insertable<RemoteFile> {
     if (!nullToAbsent || artist != null) {
       map['artist'] = Variable<String>(artist);
     }
+    if (!nullToAbsent || albumArtist != null) {
+      map['album_artist'] = Variable<String>(albumArtist);
+    }
     if (!nullToAbsent || album != null) {
       map['album'] = Variable<String>(album);
     }
+    if (!nullToAbsent || trackNumber != null) {
+      map['track_number'] = Variable<int>(trackNumber);
+    }
+    if (!nullToAbsent || discNumber != null) {
+      map['disc_number'] = Variable<int>(discNumber);
+    }
+    if (!nullToAbsent || durationMs != null) {
+      map['duration_ms'] = Variable<int>(durationMs);
+    }
+    map['tags_indexed'] = Variable<bool>(tagsIndexed);
     map['generation'] = Variable<int>(generation);
     return map;
   }
@@ -241,9 +387,22 @@ class RemoteFile extends DataClass implements Insertable<RemoteFile> {
       artist: artist == null && nullToAbsent
           ? const Value.absent()
           : Value(artist),
+      albumArtist: albumArtist == null && nullToAbsent
+          ? const Value.absent()
+          : Value(albumArtist),
       album: album == null && nullToAbsent
           ? const Value.absent()
           : Value(album),
+      trackNumber: trackNumber == null && nullToAbsent
+          ? const Value.absent()
+          : Value(trackNumber),
+      discNumber: discNumber == null && nullToAbsent
+          ? const Value.absent()
+          : Value(discNumber),
+      durationMs: durationMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(durationMs),
+      tagsIndexed: Value(tagsIndexed),
       generation: Value(generation),
     );
   }
@@ -259,7 +418,12 @@ class RemoteFile extends DataClass implements Insertable<RemoteFile> {
       etag: serializer.fromJson<String?>(json['etag']),
       title: serializer.fromJson<String?>(json['title']),
       artist: serializer.fromJson<String?>(json['artist']),
+      albumArtist: serializer.fromJson<String?>(json['albumArtist']),
       album: serializer.fromJson<String?>(json['album']),
+      trackNumber: serializer.fromJson<int?>(json['trackNumber']),
+      discNumber: serializer.fromJson<int?>(json['discNumber']),
+      durationMs: serializer.fromJson<int?>(json['durationMs']),
+      tagsIndexed: serializer.fromJson<bool>(json['tagsIndexed']),
       generation: serializer.fromJson<int>(json['generation']),
     );
   }
@@ -272,7 +436,12 @@ class RemoteFile extends DataClass implements Insertable<RemoteFile> {
       'etag': serializer.toJson<String?>(etag),
       'title': serializer.toJson<String?>(title),
       'artist': serializer.toJson<String?>(artist),
+      'albumArtist': serializer.toJson<String?>(albumArtist),
       'album': serializer.toJson<String?>(album),
+      'trackNumber': serializer.toJson<int?>(trackNumber),
+      'discNumber': serializer.toJson<int?>(discNumber),
+      'durationMs': serializer.toJson<int?>(durationMs),
+      'tagsIndexed': serializer.toJson<bool>(tagsIndexed),
       'generation': serializer.toJson<int>(generation),
     };
   }
@@ -283,7 +452,12 @@ class RemoteFile extends DataClass implements Insertable<RemoteFile> {
     Value<String?> etag = const Value.absent(),
     Value<String?> title = const Value.absent(),
     Value<String?> artist = const Value.absent(),
+    Value<String?> albumArtist = const Value.absent(),
     Value<String?> album = const Value.absent(),
+    Value<int?> trackNumber = const Value.absent(),
+    Value<int?> discNumber = const Value.absent(),
+    Value<int?> durationMs = const Value.absent(),
+    bool? tagsIndexed,
     int? generation,
   }) => RemoteFile(
     path: path ?? this.path,
@@ -291,7 +465,12 @@ class RemoteFile extends DataClass implements Insertable<RemoteFile> {
     etag: etag.present ? etag.value : this.etag,
     title: title.present ? title.value : this.title,
     artist: artist.present ? artist.value : this.artist,
+    albumArtist: albumArtist.present ? albumArtist.value : this.albumArtist,
     album: album.present ? album.value : this.album,
+    trackNumber: trackNumber.present ? trackNumber.value : this.trackNumber,
+    discNumber: discNumber.present ? discNumber.value : this.discNumber,
+    durationMs: durationMs.present ? durationMs.value : this.durationMs,
+    tagsIndexed: tagsIndexed ?? this.tagsIndexed,
     generation: generation ?? this.generation,
   );
   RemoteFile copyWithCompanion(RemoteFilesCompanion data) {
@@ -301,7 +480,22 @@ class RemoteFile extends DataClass implements Insertable<RemoteFile> {
       etag: data.etag.present ? data.etag.value : this.etag,
       title: data.title.present ? data.title.value : this.title,
       artist: data.artist.present ? data.artist.value : this.artist,
+      albumArtist: data.albumArtist.present
+          ? data.albumArtist.value
+          : this.albumArtist,
       album: data.album.present ? data.album.value : this.album,
+      trackNumber: data.trackNumber.present
+          ? data.trackNumber.value
+          : this.trackNumber,
+      discNumber: data.discNumber.present
+          ? data.discNumber.value
+          : this.discNumber,
+      durationMs: data.durationMs.present
+          ? data.durationMs.value
+          : this.durationMs,
+      tagsIndexed: data.tagsIndexed.present
+          ? data.tagsIndexed.value
+          : this.tagsIndexed,
       generation: data.generation.present
           ? data.generation.value
           : this.generation,
@@ -316,15 +510,32 @@ class RemoteFile extends DataClass implements Insertable<RemoteFile> {
           ..write('etag: $etag, ')
           ..write('title: $title, ')
           ..write('artist: $artist, ')
+          ..write('albumArtist: $albumArtist, ')
           ..write('album: $album, ')
+          ..write('trackNumber: $trackNumber, ')
+          ..write('discNumber: $discNumber, ')
+          ..write('durationMs: $durationMs, ')
+          ..write('tagsIndexed: $tagsIndexed, ')
           ..write('generation: $generation')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(path, sizeBytes, etag, title, artist, album, generation);
+  int get hashCode => Object.hash(
+    path,
+    sizeBytes,
+    etag,
+    title,
+    artist,
+    albumArtist,
+    album,
+    trackNumber,
+    discNumber,
+    durationMs,
+    tagsIndexed,
+    generation,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -334,7 +545,12 @@ class RemoteFile extends DataClass implements Insertable<RemoteFile> {
           other.etag == this.etag &&
           other.title == this.title &&
           other.artist == this.artist &&
+          other.albumArtist == this.albumArtist &&
           other.album == this.album &&
+          other.trackNumber == this.trackNumber &&
+          other.discNumber == this.discNumber &&
+          other.durationMs == this.durationMs &&
+          other.tagsIndexed == this.tagsIndexed &&
           other.generation == this.generation);
 }
 
@@ -344,7 +560,12 @@ class RemoteFilesCompanion extends UpdateCompanion<RemoteFile> {
   final Value<String?> etag;
   final Value<String?> title;
   final Value<String?> artist;
+  final Value<String?> albumArtist;
   final Value<String?> album;
+  final Value<int?> trackNumber;
+  final Value<int?> discNumber;
+  final Value<int?> durationMs;
+  final Value<bool> tagsIndexed;
   final Value<int> generation;
   final Value<int> rowid;
   const RemoteFilesCompanion({
@@ -353,7 +574,12 @@ class RemoteFilesCompanion extends UpdateCompanion<RemoteFile> {
     this.etag = const Value.absent(),
     this.title = const Value.absent(),
     this.artist = const Value.absent(),
+    this.albumArtist = const Value.absent(),
     this.album = const Value.absent(),
+    this.trackNumber = const Value.absent(),
+    this.discNumber = const Value.absent(),
+    this.durationMs = const Value.absent(),
+    this.tagsIndexed = const Value.absent(),
     this.generation = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -363,7 +589,12 @@ class RemoteFilesCompanion extends UpdateCompanion<RemoteFile> {
     this.etag = const Value.absent(),
     this.title = const Value.absent(),
     this.artist = const Value.absent(),
+    this.albumArtist = const Value.absent(),
     this.album = const Value.absent(),
+    this.trackNumber = const Value.absent(),
+    this.discNumber = const Value.absent(),
+    this.durationMs = const Value.absent(),
+    this.tagsIndexed = const Value.absent(),
     required int generation,
     this.rowid = const Value.absent(),
   }) : path = Value(path),
@@ -375,7 +606,12 @@ class RemoteFilesCompanion extends UpdateCompanion<RemoteFile> {
     Expression<String>? etag,
     Expression<String>? title,
     Expression<String>? artist,
+    Expression<String>? albumArtist,
     Expression<String>? album,
+    Expression<int>? trackNumber,
+    Expression<int>? discNumber,
+    Expression<int>? durationMs,
+    Expression<bool>? tagsIndexed,
     Expression<int>? generation,
     Expression<int>? rowid,
   }) {
@@ -385,7 +621,12 @@ class RemoteFilesCompanion extends UpdateCompanion<RemoteFile> {
       if (etag != null) 'etag': etag,
       if (title != null) 'title': title,
       if (artist != null) 'artist': artist,
+      if (albumArtist != null) 'album_artist': albumArtist,
       if (album != null) 'album': album,
+      if (trackNumber != null) 'track_number': trackNumber,
+      if (discNumber != null) 'disc_number': discNumber,
+      if (durationMs != null) 'duration_ms': durationMs,
+      if (tagsIndexed != null) 'tags_indexed': tagsIndexed,
       if (generation != null) 'generation': generation,
       if (rowid != null) 'rowid': rowid,
     });
@@ -397,7 +638,12 @@ class RemoteFilesCompanion extends UpdateCompanion<RemoteFile> {
     Value<String?>? etag,
     Value<String?>? title,
     Value<String?>? artist,
+    Value<String?>? albumArtist,
     Value<String?>? album,
+    Value<int?>? trackNumber,
+    Value<int?>? discNumber,
+    Value<int?>? durationMs,
+    Value<bool>? tagsIndexed,
     Value<int>? generation,
     Value<int>? rowid,
   }) {
@@ -407,7 +653,12 @@ class RemoteFilesCompanion extends UpdateCompanion<RemoteFile> {
       etag: etag ?? this.etag,
       title: title ?? this.title,
       artist: artist ?? this.artist,
+      albumArtist: albumArtist ?? this.albumArtist,
       album: album ?? this.album,
+      trackNumber: trackNumber ?? this.trackNumber,
+      discNumber: discNumber ?? this.discNumber,
+      durationMs: durationMs ?? this.durationMs,
+      tagsIndexed: tagsIndexed ?? this.tagsIndexed,
       generation: generation ?? this.generation,
       rowid: rowid ?? this.rowid,
     );
@@ -431,8 +682,23 @@ class RemoteFilesCompanion extends UpdateCompanion<RemoteFile> {
     if (artist.present) {
       map['artist'] = Variable<String>(artist.value);
     }
+    if (albumArtist.present) {
+      map['album_artist'] = Variable<String>(albumArtist.value);
+    }
     if (album.present) {
       map['album'] = Variable<String>(album.value);
+    }
+    if (trackNumber.present) {
+      map['track_number'] = Variable<int>(trackNumber.value);
+    }
+    if (discNumber.present) {
+      map['disc_number'] = Variable<int>(discNumber.value);
+    }
+    if (durationMs.present) {
+      map['duration_ms'] = Variable<int>(durationMs.value);
+    }
+    if (tagsIndexed.present) {
+      map['tags_indexed'] = Variable<bool>(tagsIndexed.value);
     }
     if (generation.present) {
       map['generation'] = Variable<int>(generation.value);
@@ -451,7 +717,12 @@ class RemoteFilesCompanion extends UpdateCompanion<RemoteFile> {
           ..write('etag: $etag, ')
           ..write('title: $title, ')
           ..write('artist: $artist, ')
+          ..write('albumArtist: $albumArtist, ')
           ..write('album: $album, ')
+          ..write('trackNumber: $trackNumber, ')
+          ..write('discNumber: $discNumber, ')
+          ..write('durationMs: $durationMs, ')
+          ..write('tagsIndexed: $tagsIndexed, ')
           ..write('generation: $generation, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -477,7 +748,12 @@ typedef $$RemoteFilesTableCreateCompanionBuilder =
       Value<String?> etag,
       Value<String?> title,
       Value<String?> artist,
+      Value<String?> albumArtist,
       Value<String?> album,
+      Value<int?> trackNumber,
+      Value<int?> discNumber,
+      Value<int?> durationMs,
+      Value<bool> tagsIndexed,
       required int generation,
       Value<int> rowid,
     });
@@ -488,7 +764,12 @@ typedef $$RemoteFilesTableUpdateCompanionBuilder =
       Value<String?> etag,
       Value<String?> title,
       Value<String?> artist,
+      Value<String?> albumArtist,
       Value<String?> album,
+      Value<int?> trackNumber,
+      Value<int?> discNumber,
+      Value<int?> durationMs,
+      Value<bool> tagsIndexed,
       Value<int> generation,
       Value<int> rowid,
     });
@@ -527,8 +808,33 @@ class $$RemoteFilesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get albumArtist => $composableBuilder(
+    column: $table.albumArtist,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get album => $composableBuilder(
     column: $table.album,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get trackNumber => $composableBuilder(
+    column: $table.trackNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get discNumber => $composableBuilder(
+    column: $table.discNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get tagsIndexed => $composableBuilder(
+    column: $table.tagsIndexed,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -572,8 +878,33 @@ class $$RemoteFilesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get albumArtist => $composableBuilder(
+    column: $table.albumArtist,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get album => $composableBuilder(
     column: $table.album,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get trackNumber => $composableBuilder(
+    column: $table.trackNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get discNumber => $composableBuilder(
+    column: $table.discNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get tagsIndexed => $composableBuilder(
+    column: $table.tagsIndexed,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -607,8 +938,33 @@ class $$RemoteFilesTableAnnotationComposer
   GeneratedColumn<String> get artist =>
       $composableBuilder(column: $table.artist, builder: (column) => column);
 
+  GeneratedColumn<String> get albumArtist => $composableBuilder(
+    column: $table.albumArtist,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get album =>
       $composableBuilder(column: $table.album, builder: (column) => column);
+
+  GeneratedColumn<int> get trackNumber => $composableBuilder(
+    column: $table.trackNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get discNumber => $composableBuilder(
+    column: $table.discNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get tagsIndexed => $composableBuilder(
+    column: $table.tagsIndexed,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get generation => $composableBuilder(
     column: $table.generation,
@@ -652,7 +1008,12 @@ class $$RemoteFilesTableTableManager
                 Value<String?> etag = const Value.absent(),
                 Value<String?> title = const Value.absent(),
                 Value<String?> artist = const Value.absent(),
+                Value<String?> albumArtist = const Value.absent(),
                 Value<String?> album = const Value.absent(),
+                Value<int?> trackNumber = const Value.absent(),
+                Value<int?> discNumber = const Value.absent(),
+                Value<int?> durationMs = const Value.absent(),
+                Value<bool> tagsIndexed = const Value.absent(),
                 Value<int> generation = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RemoteFilesCompanion(
@@ -661,7 +1022,12 @@ class $$RemoteFilesTableTableManager
                 etag: etag,
                 title: title,
                 artist: artist,
+                albumArtist: albumArtist,
                 album: album,
+                trackNumber: trackNumber,
+                discNumber: discNumber,
+                durationMs: durationMs,
+                tagsIndexed: tagsIndexed,
                 generation: generation,
                 rowid: rowid,
               ),
@@ -672,7 +1038,12 @@ class $$RemoteFilesTableTableManager
                 Value<String?> etag = const Value.absent(),
                 Value<String?> title = const Value.absent(),
                 Value<String?> artist = const Value.absent(),
+                Value<String?> albumArtist = const Value.absent(),
                 Value<String?> album = const Value.absent(),
+                Value<int?> trackNumber = const Value.absent(),
+                Value<int?> discNumber = const Value.absent(),
+                Value<int?> durationMs = const Value.absent(),
+                Value<bool> tagsIndexed = const Value.absent(),
                 required int generation,
                 Value<int> rowid = const Value.absent(),
               }) => RemoteFilesCompanion.insert(
@@ -681,7 +1052,12 @@ class $$RemoteFilesTableTableManager
                 etag: etag,
                 title: title,
                 artist: artist,
+                albumArtist: albumArtist,
                 album: album,
+                trackNumber: trackNumber,
+                discNumber: discNumber,
+                durationMs: durationMs,
+                tagsIndexed: tagsIndexed,
                 generation: generation,
                 rowid: rowid,
               ),
