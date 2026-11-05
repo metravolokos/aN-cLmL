@@ -7,6 +7,7 @@ import '../../domain/remote_track.dart';
 import '../../domain/track_queue.dart';
 import '../library/cloud_music_service.dart';
 import 'cloud_range_audio_source.dart';
+import 'two_track_audio_cache.dart';
 
 class PlaybackView {
   const PlaybackView({
@@ -52,6 +53,7 @@ class PlaybackView {
 
 class PlaybackController extends Notifier<PlaybackView> {
   AudioPlayer? _player;
+  Future<TwoTrackAudioCache>? _cacheFuture;
   TrackQueue? _queue;
   final List<StreamSubscription<dynamic>> _subscriptions = [];
   bool _closed = false;
@@ -66,6 +68,10 @@ class PlaybackController extends Notifier<PlaybackView> {
       }
       final player = _player;
       if (player != null) unawaited(player.dispose());
+      final cache = _cacheFuture;
+      if (cache != null) {
+        unawaited(cache.then((value) => value.close()).catchError((Object _) {}));
+      }
     });
     return const PlaybackView();
   }
@@ -111,11 +117,27 @@ class PlaybackController extends Notifier<PlaybackView> {
     );
     try {
       final reader = ref.read(cloudMusicServiceProvider);
+      TwoTrackAudioCache? cache;
+      try {
+        final cacheFuture = _cacheFuture ??=
+            TwoTrackAudioCache.create(reader: reader.readRange);
+        cache = await cacheFuture;
+        await cache.activate(track, _queue?.nextForPrefetch());
+      } catch (_) {
+        // A blocked temporary directory must not prevent ordinary streaming.
+        cache = null;
+      }
       final player = _ensurePlayer();
       await player.setAudioSource(
-        CloudRangeAudioSource(track, reader.readRange),
+        CloudRangeAudioSource(
+          track,
+          cache == null
+              ? reader.readRange
+              : (_, offset, length) => cache!.read(track, offset, length),
+        ),
       );
       if (!_closed) unawaited(player.play());
+      if (cache != null) unawaited(cache.prefetchCurrentThenNext());
     } catch (_) {
       if (!_closed) state = state.withUpdates(failed: true, loading: false);
     } finally {
@@ -178,6 +200,15 @@ class PlaybackController extends Notifier<PlaybackView> {
   Future<void> stop() async {
     await _player?.stop();
     _queue = null;
+    final cache = _cacheFuture;
+    _cacheFuture = null;
+    if (cache != null) {
+      try {
+        await (await cache).close();
+      } catch (_) {
+        // Playback stop must remain safe when the temporary filesystem fails.
+      }
+    }
     state = const PlaybackView();
   }
 }
