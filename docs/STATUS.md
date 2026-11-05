@@ -12,9 +12,9 @@
 
 ## In development
 
-- Android music audio focus configuration (separate feature branch and CI). Hardware interruptions and headset routing unverified.
-- Persistent resized artwork thumbnail cache with bounded disk LRU; current cover cache is a small in-memory cache only.
-- Signed/distributable APK, Windows package and Linux Flatpak.
+- Android music audio focus configuration is merged (PR #26); hardware interruptions and headset routing remain unverified.
+- Persistent resized artwork thumbnail cache with bounded disk LRU is in draft PR #28; hardware performance and reuse are not yet accepted.
+- ARM64 APK for device testing is available from CI with **debug signing only** (PR #27). Production-signed APK, Windows package and Linux Flatpak are still pending.
 
 ## NOT yet validated on physical devices / real cloud
 
@@ -38,3 +38,5 @@ Quality + Android + Windows + Linux jobs must all be green for the exact current
 - #23 — stale media-command protection after Stop.
 - #24 — responsive album cover grid.
 - #25 — Linux MPRIS.
+- #26 — Android music audio focus.
+- #27 — Android ARM64 test-installable APK workflow.
