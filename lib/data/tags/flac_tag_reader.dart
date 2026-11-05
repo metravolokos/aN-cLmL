@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-typedef FlacRangeReader = Future<Uint8List> Function(
-    String path, int offset, int length);
+typedef FlacRangeReader =
+    Future<Uint8List> Function(String path, int offset, int length);
 
 class FlacTags {
   const FlacTags({
@@ -36,7 +36,12 @@ class FlacTagReader {
   static const int maximumCommentBytes = 512 * 1024;
   static const int maximumMetadataOffset = 32 * 1024 * 1024;
 
-  Future<Uint8List> _read(String path, int offset, int count, int fileSize) async {
+  Future<Uint8List> _read(
+    String path,
+    int offset,
+    int count,
+    int fileSize,
+  ) async {
     if (offset < 0 || count < 0 || offset + count > fileSize) {
       throw const FormatException('FLAC metadata is outside the file');
     }
@@ -89,9 +94,7 @@ class FlacTagReader {
         final sampleRate = packed >> 44;
         final samples = packed & ((1 << 36) - 1);
         if (sampleRate > 0 && samples > 0) {
-          duration = Duration(
-            microseconds: (samples * 1000000) ~/ sampleRate,
-          );
+          duration = Duration(microseconds: (samples * 1000000) ~/ sampleRate);
         }
       } else if (type == 4) {
         if (length > maximumCommentBytes) {
