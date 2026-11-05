@@ -59,11 +59,13 @@ class PlaybackController extends Notifier<PlaybackView> {
   final List<StreamSubscription<dynamic>> _subscriptions = [];
   bool _closed = false;
   bool _changingTrack = false;
+  int _operationGeneration = 0;
 
   @override
   PlaybackView build() {
     ref.onDispose(() {
       _closed = true;
+      _operationGeneration++;
       for (final subscription in _subscriptions) {
         unawaited(subscription.cancel());
       }
@@ -125,6 +127,7 @@ class PlaybackController extends Notifier<PlaybackView> {
   Future<void> _open(RemoteTrack track) async {
     if (_closed || _changingTrack) return;
     _changingTrack = true;
+    final generation = ++_operationGeneration;
     state = PlaybackView(
       track: track,
       loading: true,
@@ -164,6 +167,7 @@ class PlaybackController extends Notifier<PlaybackView> {
         }
         activeCache = null;
       }
+      if (_closed || generation != _operationGeneration) return;
       final cache = activeCache;
       final player = _ensurePlayer();
       await player.setAudioSource(
@@ -174,7 +178,11 @@ class PlaybackController extends Notifier<PlaybackView> {
               : (path, offset, length) => cache.read(path, offset, length),
         ),
       );
-      if (!_closed) unawaited(player.play());
+      if (_closed || generation != _operationGeneration) {
+        await player.stop();
+        return;
+      }
+      unawaited(player.play());
     } catch (_) {
       if (!_closed) state = state.withUpdates(failed: true, loading: false);
     } finally {
@@ -235,8 +243,10 @@ class PlaybackController extends Notifier<PlaybackView> {
   Future<void> seek(Duration position) async => _player?.seek(position);
 
   Future<void> stop() async {
-    await _player?.stop();
+    // Invalidate any pending setAudioSource before waiting for I/O.
+    _operationGeneration++;
     _queue = null;
+    await _player?.stop();
     final cacheFuture = _cacheFuture;
     _cacheFuture = null;
     if (cacheFuture != null) {
