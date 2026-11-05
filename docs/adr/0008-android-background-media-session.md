@@ -11,6 +11,8 @@ Flutter UI and just_audio already stream encrypted authenticated WebDAV audio us
 
 Use audio_service 0.18.19 with a custom BaseAudioHandler. Unlike the simple just_audio_background adapter, the custom handler dispatches Play, Pause, Stop, Seek, Next and Previous to the existing PlaybackController, so the Android system notification can expose the actual application queue even though the native just_audio engine currently loads one stream at a time.
 
+The foreground service stays active during Pause using `androidStopForegroundOnPause: false`. `androidNotificationOngoing` remains false because `audio_service` forbids an ongoing notification combined with a non-stopping foreground service; this setting requires hardware/EMUI verification for notification retention.
+
 The Android activity extends AudioServiceActivity. The manifest declares WAKE_LOCK, foreground mediaPlayback permissions, AudioService and a media button receiver. Initialize the handler before constructing the Flutter app. A platform-only Riverpod bridge forwards playback state and media metadata to the handler and installs guarded callbacks; no second decoder, WebDAV client or audio player is created.
 
 Only code in lib/platform/android imports audio_service. A platform-injected MediaTagFactory creates MediaItem metadata (relative path ID, album, artist, title and duration), never Basic Auth, app passwords, authenticated URLs or redirect targets. Windows/Linux continue using their existing audio backends.
