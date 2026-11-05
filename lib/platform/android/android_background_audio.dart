@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:audio_service/audio_service.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
 import '../../domain/remote_track.dart';
