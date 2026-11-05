@@ -7,6 +7,10 @@ import 'package:crypto/crypto.dart';
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as p;
 
+// Top-level isolate entry prevents capturing the cache instance and Futures.
+Future<Uint8List?> _encodeInWorker(Uint8List source) =>
+    Isolate.run(() => encodeCoverThumbnail(source));
+
 /// Persistent, bounded, resized cover images. Only hashed names reach disk.
 /// Callers include the account, remote ETag and size in the source identity.
 class CoverThumbnailCache {
@@ -62,7 +66,7 @@ class CoverThumbnailCache {
         return null;
       }
 
-      final bytes = await Isolate.run(() => encodeCoverThumbnail(source));
+      final bytes = await _encodeInWorker(source);
       if (bytes == null || bytes.length > _maximumThumbnailBytes) return null;
       final temporary = File(p.join(directory.path, '$id.tmp'));
       await temporary.writeAsBytes(bytes, flush: true);
