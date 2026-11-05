@@ -54,7 +54,7 @@ void main() {
         'TRACKNUMBER=03/12',
         'DISCNUMBER=2',
       ]), last: true),
-      ...Uint8List(1200),
+      ...Uint8List(16000),
     ]);
     var requested = 0;
     final parser = FlacTagReader((_, offset, length) async {
@@ -87,7 +87,7 @@ void main() {
     });
     final tags = await parser.parse('track.flac', source.length);
     expect(tags.title, 'After artwork');
-    expect(requested, lessThan(1000));
+    expect(requested, lessThan(9000));
   });
 
   test('malformed block length is rejected without a network overflow', () async {

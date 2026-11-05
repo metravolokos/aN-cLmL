@@ -48,4 +48,23 @@ void main() {
     final rows = await db.readTracks();
     expect(rows.single.path, 'duplicate.flac');
   });
+  test('preserves unchanged tags but invalidates changed files', () async {
+    await db.applyScan(const [
+      RemoteTrack(path: 't.flac', sizeBytes: 10, etag: 'old'),
+    ]);
+    expect(await db.unindexedTracks(), hasLength(1));
+    await db.saveTags('t.flac', title: 'Песня', album: 'Альбом', artist: 'Автор');
+    expect(await db.unindexedTracks(), isEmpty);
+    await db.applyScan(const [
+      RemoteTrack(path: 't.flac', sizeBytes: 10, etag: 'old'),
+    ]);
+    expect((await db.readTracks()).single.title, 'Песня');
+    expect(await db.unindexedTracks(), isEmpty);
+    await db.applyScan(const [
+      RemoteTrack(path: 't.flac', sizeBytes: 11, etag: 'new'),
+    ]);
+    expect(await db.unindexedTracks(), hasLength(1));
+    expect((await db.readTracks()).single.artist, isNull);
+  });
+
 }

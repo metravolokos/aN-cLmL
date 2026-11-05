@@ -57,7 +57,17 @@ class FlacTagReader {
 
   Future<FlacTags> parse(String path, int fileSize) async {
     if (fileSize < 8) throw const FormatException('Too short for FLAC');
-    final signature = await _read(path, 0, 4, fileSize);
+    // The first 8 KiB is fetched once and shared by all header/metadata
+    // reads. Normally this means just one Range GET per FLAC file.
+    final headLength = math.min(fileSize, 8192);
+    final head = await _read(path, 0, headLength, fileSize);
+    Future<Uint8List> readAt(int offset, int count) async {
+      if (offset >= 0 && offset + count <= head.length) {
+        return Uint8List.sublistView(head, offset, offset + count);
+      }
+      return _read(path, offset, count, fileSize);
+    }
+    final signature = Uint8List.sublistView(head, 0, 4);
     if (ascii.decode(signature) != 'fLaC') {
       throw const FormatException('Not a FLAC stream');
     }
@@ -72,7 +82,7 @@ class FlacTagReader {
       if (++blockCount > 128 || position > maximumMetadataOffset) {
         throw const FormatException('FLAC metadata limit exceeded');
       }
-      final header = await _read(path, position, 4, fileSize);
+      final header = await readAt(position, 4);
       lastBlock = (header[0] & 0x80) != 0;
       final type = header[0] & 0x7f;
       final length = (header[1] << 16) | (header[2] << 8) | header[3];
@@ -84,7 +94,7 @@ class FlacTagReader {
 
       if (type == 0) {
         if (length != 34) throw const FormatException('Bad STREAMINFO');
-        final data = await _read(path, position, 34, fileSize);
+        final data = await readAt(position, 34);
         final packed = ByteData.sublistView(data).getUint64(10, Endian.big);
         final sampleRate = packed >> 44;
         final samples = packed & ((1 << 36) - 1);
@@ -97,7 +107,7 @@ class FlacTagReader {
         if (length > maximumCommentBytes) {
           throw const FormatException('Oversized FLAC comments');
         }
-        final data = await _read(path, position, length, fileSize);
+        final data = await readAt(position, length);
         _readComments(data, tags);
       }
       // PICTURE (type 6) and other blocks are skipped by metadata offset;
