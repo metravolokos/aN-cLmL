@@ -192,6 +192,7 @@ class CloudWebDav implements CloudProbe {
           bytes.add(chunk);
         }
       }
+
       await readAll().timeout(_timeout);
       cancel?.throwIfCancelled();
       return _DavResponse(response.statusCode, contentRange, bytes.takeBytes());
