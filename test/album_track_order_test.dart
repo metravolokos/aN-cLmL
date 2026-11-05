@@ -36,20 +36,13 @@ void main() {
       const RemoteTrack(path: 'Вторая.flac', sizeBytes: 100),
       const RemoteTrack(path: 'Первая.flac', sizeBytes: 100),
     ]..sort(compareAlbumTracks);
-    expect(tracks.map((track) => track.path), [
-      'Вторая.flac',
-      'Первая.flac',
-    ]);
+    expect(tracks.map((track) => track.path), ['Вторая.flac', 'Первая.flac']);
   });
 
   test('numbered tracks precede missing numbers on the same disc', () {
     final tracks = <RemoteTrack>[
       const RemoteTrack(path: 'unknown.flac', sizeBytes: 100),
-      const RemoteTrack(
-        path: 'numbered.flac',
-        sizeBytes: 100,
-        trackNumber: 3,
-      ),
+      const RemoteTrack(path: 'numbered.flac', sizeBytes: 100, trackNumber: 3),
     ]..sort(compareAlbumTracks);
     expect(tracks.first.path, 'numbered.flac');
   });

@@ -11,13 +11,12 @@ import 'package:path_provider/path_provider.dart';
 import '../../cloud/cloud_mail_webdav.dart';
 import '../../domain/remote_track.dart';
 
-typedef CacheRangeFetch =
-    Future<Uint8List> Function(
-      String path,
-      int offset,
-      int length, {
-      WebDavRequestCancellation? cancellation,
-    });
+typedef CacheRangeFetch = Future<Uint8List> Function(
+  String path,
+  int offset,
+  int length, {
+  WebDavRequestCancellation? cancellation,
+});
 
 /// Keeps only the current and next audio files as temporary storage.
 class TwoTrackAudioCache {
