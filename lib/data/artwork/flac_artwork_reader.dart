@@ -2,11 +2,8 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-typedef ArtworkRangeReader = Future<Uint8List> Function(
-  String path,
-  int offset,
-  int length,
-);
+typedef ArtworkRangeReader =
+    Future<Uint8List> Function(String path, int offset, int length);
 
 /// A verified embedded FLAC image, returned only on explicit artwork lookup.
 class FlacEmbeddedArtwork {
