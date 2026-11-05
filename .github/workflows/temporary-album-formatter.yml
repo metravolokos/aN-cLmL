@@ -1,0 +1,31 @@
+name: One-time album thumbnail formatting
+on:
+  push:
+    branches: [feature/album-cover-thumbnails-20261105]
+permissions:
+  contents: write
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - run: dart format lib test
+      - name: Save formatting to feature branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib test
+          if ! git diff --cached --quiet; then
+            git commit -m "style: format album artwork UI"
+            git push origin "HEAD:refs/heads/feature/album-cover-thumbnails-20261105"
+          fi
