@@ -21,6 +21,7 @@ dependencies:
   xml: 7.1.0
   just_audio: 0.10.6
   audio_service: 0.18.19
+  audio_session: 0.2.4
   audio_service_mpris: 0.2.1
   smtc_windows: 1.1.0
   just_audio_media_kit: 2.1.0
