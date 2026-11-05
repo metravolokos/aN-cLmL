@@ -48,10 +48,8 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
               Expanded(
                 child: ListView.builder(
                   itemCount: albumTracks.length,
-                  itemBuilder: (context, index) => _TrackTile(
-                    track: albumTracks[index],
-                    queue: albumTracks,
-                  ),
+                  itemBuilder: (context, index) =>
+                      _TrackTile(track: albumTracks[index], queue: albumTracks),
                 ),
               ),
             ],
@@ -243,17 +241,17 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
                                       first.displayAlbum,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleSmall,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleSmall,
                                     ),
                                     Text(
                                       '${first.displayArtist} · ${albumTracks.length}',
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodySmall,
                                     ),
                                   ],
                                 ),
