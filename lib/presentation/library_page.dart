@@ -6,6 +6,7 @@ import '../data/audio/playback_controller.dart';
 import '../data/library/cloud_music_service.dart';
 import '../domain/remote_track.dart';
 import '../l10n/app_localizations.dart';
+import 'album_cover_thumbnail.dart';
 
 /// Displays the actual cloud catalog. Album/artist names are placeholders
 /// until the bounded FLAC/ID3 tag scanner is enabled; no invented metadata.
@@ -154,6 +155,14 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
                   itemBuilder: (context, index) {
                     final key = keys[index];
                     return ExpansionTile(
+                      leading: destination == AppDestination.albums
+                          ? AlbumCoverThumbnail(
+                              key: ValueKey(
+                                '${groups[key]!.first.path}:${groups[key]!.first.etag}',
+                              ),
+                              track: groups[key]!.first,
+                            )
+                          : null,
                       title: Text(
                         destination == AppDestination.albums
                             ? groups[key]!.first.displayAlbum
