@@ -1,52 +1,37 @@
-# Three-platform development status — 2026-11-05
+# CloudMail Player — implementation status (2026-11-05)
 
-## Account switch and Disconnect security
+## What is integrated on main
 
-Settings now stops audio, closes its cache, and invalidates CloudMusicService
-and CloudCatalogController after a successful credential change or Disconnect.
-This discards in-memory WebDAV credentials and prevents the old session from
-being reused. See ADR 0007. Real-device logout behavior remains to be checked.
+- Flutter 3.47.9 single-codebase application with Android, Windows and Linux runners and Russian Material 3 interface.
+- Authenticated, read-only Cloud Mail.ru WebDAV rooted at `/AllMusic`, with secure OS credential storage, bounded PROPFIND and validated HTTP 206 Range GETs.
+- Hard network limit: **64 KiB per Range GET** at the transport boundary (PR #14).
+- Drift/SQLite account-scoped catalog, generation scans, FLAC/MP3 bounded metadata extraction, tracks/albums/artists views and search.
+- Native playback through just_audio on Android and media_kit-based Windows/Linux integration, seekable Cloud Range stream, queue, shuffle/repeat, mini-player and Now Playing.
+- Temporary two-track audio cache, current-first read-ahead and next-track prefetch, including cleanup on Stop.
+- Stop/track-switch generation guard with last-selection-wins behavior (PR #12).
+- Session invalidation during account change and Disconnect, including delayed secure-vault-read protection (PR #13).
 
-## Now Playing full-screen controls
+## Source implementation is not hardware acceptance
 
-A responsive Russian-language full-screen Now Playing route now opens by
-tapping the title in the persistent mini-player. It shows title, artist,
-album, seek, previous/next, play/pause, shuffle and repeat, using the
-existing shared player session. One widget test uses an injected
-Riverpod state with no credentials or network. The cover is intentionally
-a placeholder until real bounded artwork extraction is implemented.
+GitHub Quality/Android/Windows/Linux CI can validate source, unit tests and build binaries but does not prove audible playback, Bluetooth/media panel behavior, secure-store access on a real phone, or GNOME 51/Wayland integration.
 
-## Cache-to-player wiring (independent Draft)
+## Not finished / not accepted
 
-The integrated branch has a bounded two-track cache, but playback originally bypassed it. On feature/cache-playback-wiring-20261105 the PlaybackController now passes the current and next queue items into TwoTrackAudioCache, supplies WebDAV cancellation, reads cached pages through CloudRangeAudioSource, and closes the cache on stop/dispose. See ADR 0006. Offline tests/build results and real cloud/device playback must be checked before adoption; this is not a declaration of full release readiness.
+- Real authenticated Cloud Mail.ru catalog and playback acceptance on all three target platforms.
+- Android foreground MediaSession, notification/media panel, audio focus and Bluetooth behavior.
+- Windows SMTC and media keys; Linux MPRIS, GNOME 51 Wayland and Flatpak operation.
+- Album cover grid, persistent thumbnail cache and image resizing; FLAC cover parsing and Now Playing integration remain in separate PR #15 pending CI.
+- Signed/distributable release artifacts (APK, Windows ZIP/installer and Flatpak), performance acceptance and complete 50k library testing.
+- No claim of gapless or uninterrupted track switching on actual devices.
 
+## Working process
 
-## Current verified baseline
+Require green Quality + Android + Windows + Linux CI before merging source changes. Record device and real-cloud manual acceptance separately from automated tests. No credentials in code, GitHub issues, logs or CI artifacts. Keep tests purposeful; avoid stress suites without a specific defect or acceptance criterion.
 
-The work branch feature/three-platform-player-20261105 began from PR #5 commit c28bca85 after its 3/3 successful CI. Its Android and Windows M2-A build outputs and offline tests are verified, but live credentials and runtime music playback have **not** been verified. The earlier M1 shell was manually launched on Android and Windows.
+## Reference pull requests
 
-This branch addresses the expanded specification: Windows 10/11, Android without Google services, and Linux GNOME 51 Wayland. It is **not** a full player yet.
-
-## Progress and evidence
-
-- Imported the tested read-only WebDAV connection implementation from existing PR #5 without merging it to main.
-- Added Android INTERNET permission to the main manifest (required for release APK).
-- Tightened DAV XML multistatus namespace validation.
-- Created technology decisions and platform assumptions without inventing unmeasured performance.
-- Official Flutter Linux runner generated on GitHub-hosted Flutter 3.47.9; three-platform CI added. 
-- Implemented an initial cloud directory listing and seekable 64 KiB Range-to-native audio source. This is a developer vertical slice, not a complete playback/cache system.
-- Flutter dependency lock for audio packages generated by GitHub Actions. On branch c47290e, one-shot GitHub Actions run #42072286027 passed Dart formatting, flutter gen-l10n, flutter analyze (zero issues), 26 Flutter tests and 6 Python M0 tests. The new three-platform binary build workflow is pending on the Draft PR. Live WebDAV and real audio are not yet verified. 
-- All old PRs remain preserved for review; no secrets or private filenames added.
-
-## Limitations
-
-The current assistant runtime has no Flutter/Dart executable and no accessible Cloud Mail.ru secret environment variables. GitHub-hosted runners are used for verification. No real-credential traffic was performed from this chat.
-
-## Next implementation gates
-
-1. Linux runner/CI green and AOSP-safe Android release permissions.
-2. Incremental SQLite catalog and real source listing with safe bounded PROPFIND and Range.
-3. FLAC/MP3 metadata and album/artist grouping, followed by actual playback and disk cache.
-4. GNOME MPRIS / Android Media3 foreground / Windows SMTC, release packaging, manual hardware checks.
-
-For each gate distinguish: written code, green CI, and actual on-device acceptance. Never mark a full-player requirement as satisfied by a source-code-only change.
+- PR #11: consolidated three-platform development preview.
+- PR #12: Stop and rapid track-switch race fix (merged).
+- PR #13: credential-read/Disconnect race fix (merged).
+- PR #14: 64 KiB WebDAV transport limit (merged).
+- PR #15: lazy FLAC embedded artwork and Now Playing integration (under review).
