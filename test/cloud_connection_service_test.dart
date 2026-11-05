@@ -38,7 +38,10 @@ void main() {
   test('credentials are stored only after a successful verification', () async {
     final vault = _MemoryVault();
     final verifier = _FakeVerifier();
-    final service = SecureCloudConnectionService(vault: vault, verifier: verifier);
+    final service = SecureCloudConnectionService(
+      vault: vault,
+      verifier: verifier,
+    );
 
     await service.connect(
       username: ' fake@example.invalid ',
@@ -52,41 +55,60 @@ void main() {
     expect(saved.hasCredentials, isTrue);
   });
 
-  test('failed verification never writes credentials to secure storage', () async {
-    final vault = _MemoryVault();
-    final verifier = _FakeVerifier()..nextError = CloudMailErrorCode.invalidCredentials;
-    final service = SecureCloudConnectionService(vault: vault, verifier: verifier);
+  test(
+    'failed verification never writes credentials to secure storage',
+    () async {
+      final vault = _MemoryVault();
+      final verifier = _FakeVerifier()
+        ..nextError = CloudMailErrorCode.invalidCredentials;
+      final service = SecureCloudConnectionService(
+        vault: vault,
+        verifier: verifier,
+      );
 
-    await expectLater(
-      service.connect(username: 'fake@example.invalid', appPassword: 'fake-password'),
-      throwsA(
-        isA<CloudMailException>().having(
-          (error) => error.code,
-          'code',
-          CloudMailErrorCode.invalidCredentials,
+      await expectLater(
+        service.connect(
+          username: 'fake@example.invalid',
+          appPassword: 'fake-password',
         ),
-      ),
-    );
-    expect(vault.values, isEmpty);
-  });
+        throwsA(
+          isA<CloudMailException>().having(
+            (error) => error.code,
+            'code',
+            CloudMailErrorCode.invalidCredentials,
+          ),
+        ),
+      );
+      expect(vault.values, isEmpty);
+    },
+  );
 
-  test('saved app password can be reused without putting it back in the UI', () async {
-    final vault = _MemoryVault();
-    final verifier = _FakeVerifier();
-    final service = SecureCloudConnectionService(vault: vault, verifier: verifier);
-    await service.connect(
-      username: 'fake@example.invalid',
-      appPassword: 'fake-app-password',
-    );
+  test(
+    'saved app password can be reused without putting it back in the UI',
+    () async {
+      final vault = _MemoryVault();
+      final verifier = _FakeVerifier();
+      final service = SecureCloudConnectionService(
+        vault: vault,
+        verifier: verifier,
+      );
+      await service.connect(
+        username: 'fake@example.invalid',
+        appPassword: 'fake-app-password',
+      );
 
-    await service.connect(username: 'fake@example.invalid', appPassword: '');
+      await service.connect(username: 'fake@example.invalid', appPassword: '');
 
-    expect(verifier.lastCredentials?.appPassword, 'fake-app-password');
-  });
+      expect(verifier.lastCredentials?.appPassword, 'fake-app-password');
+    },
+  );
 
   test('disconnect deletes saved credentials', () async {
     final vault = _MemoryVault();
-    final service = SecureCloudConnectionService(vault: vault, verifier: _FakeVerifier());
+    final service = SecureCloudConnectionService(
+      vault: vault,
+      verifier: _FakeVerifier(),
+    );
     await service.connect(
       username: 'fake@example.invalid',
       appPassword: 'fake-app-password',

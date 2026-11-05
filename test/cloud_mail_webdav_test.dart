@@ -111,16 +111,26 @@ void main() {
   });
 
   for (final status in [401, 403, 404]) {
-    test('PROPFIND maps HTTP $status without exposing response details', () async {
-      handleRequest = (request) async => _reply(request, status, body: 'private fixture');
-      final expected = status == 404
-          ? CloudMailErrorCode.missingResource
-          : CloudMailErrorCode.invalidCredentials;
-      await expectLater(
-        client.propfind(_credentials, depth: 0),
-        throwsA(isA<CloudMailException>().having((error) => error.code, 'code', expected)),
-      );
-    });
+    test(
+      'PROPFIND maps HTTP $status without exposing response details',
+      () async {
+        handleRequest = (request) async =>
+            _reply(request, status, body: 'private fixture');
+        final expected = status == 404
+            ? CloudMailErrorCode.missingResource
+            : CloudMailErrorCode.invalidCredentials;
+        await expectLater(
+          client.propfind(_credentials, depth: 0),
+          throwsA(
+            isA<CloudMailException>().having(
+              (error) => error.code,
+              'code',
+              expected,
+            ),
+          ),
+        );
+      },
+    );
   }
 
   test('malformed multistatus XML is rejected', () async {
@@ -147,47 +157,65 @@ void main() {
     );
     await expectLater(
       client.propfind(_credentials, depth: 1),
-      throwsA(isA<CloudMailException>().having((error) => error.code, 'code', CloudMailErrorCode.invalidPath)),
+      throwsA(
+        isA<CloudMailException>().having(
+          (error) => error.code,
+          'code',
+          CloudMailErrorCode.invalidPath,
+        ),
+      ),
     );
 
     handleRequest = (request) async => _reply(
       request,
       207,
       body: _multistatus(
-        _response('https://example.invalid/AllMusic/private.mp3', '<z:resourcetype/>'),
+        _response(
+          'https://example.invalid/AllMusic/private.mp3',
+          '<z:resourcetype/>',
+        ),
       ),
     );
     await expectLater(
       client.propfind(_credentials, depth: 1),
-      throwsA(isA<CloudMailException>().having((error) => error.code, 'code', CloudMailErrorCode.invalidPath)),
+      throwsA(
+        isA<CloudMailException>().having(
+          (error) => error.code,
+          'code',
+          CloudMailErrorCode.invalidPath,
+        ),
+      ),
     );
   });
 
-  test('Range GET validates Cloud Mail.ru Content-Range and byte count', () async {
-    var seenRange = '';
-    var seenMethod = '';
-    handleRequest = (request) async {
-      seenRange = request.headers.value('range') ?? '';
-      seenMethod = request.method;
-      await _reply(
-        request,
-        206,
-        bodyBytes: <int>[3, 4, 5, 6],
-        headers: {'content-range': 'bytes=2-5/10'},
+  test(
+    'Range GET validates Cloud Mail.ru Content-Range and byte count',
+    () async {
+      var seenRange = '';
+      var seenMethod = '';
+      handleRequest = (request) async {
+        seenRange = request.headers.value('range') ?? '';
+        seenMethod = request.method;
+        await _reply(
+          request,
+          206,
+          bodyBytes: <int>[3, 4, 5, 6],
+          headers: {'content-range': 'bytes=2-5/10'},
+        );
+      };
+
+      final bytes = await client.getRange(
+        _credentials,
+        path: 'Музыка/№ 1.mp3',
+        offset: 2,
+        length: 4,
       );
-    };
 
-    final bytes = await client.getRange(
-      _credentials,
-      path: 'Музыка/№ 1.mp3',
-      offset: 2,
-      length: 4,
-    );
-
-    expect(seenMethod, 'GET');
-    expect(seenRange, 'bytes=2-5');
-    expect(bytes, <int>[3, 4, 5, 6]);
-  });
+      expect(seenMethod, 'GET');
+      expect(seenRange, 'bytes=2-5');
+      expect(bytes, <int>[3, 4, 5, 6]);
+    },
+  );
 
   test('Range GET also accepts the standard Content-Range spelling', () async {
     handleRequest = (request) async => _reply(
@@ -205,118 +233,178 @@ void main() {
     expect(bytes, <int>[0, 1, 2]);
   });
 
-  test('Range GET rejects ignored ranges, bad framing, and oversized requests', () async {
-    handleRequest = (request) async => _reply(request, 200, bodyBytes: <int>[1, 2, 3, 4]);
-    await expectLater(
-      client.getRange(_credentials, path: 'sample.mp3', offset: 0, length: 4),
-      throwsA(isA<CloudMailException>().having((error) => error.code, 'code', CloudMailErrorCode.invalidRange)),
-    );
+  test(
+    'Range GET rejects ignored ranges, bad framing, and oversized requests',
+    () async {
+      handleRequest = (request) async =>
+          _reply(request, 200, bodyBytes: <int>[1, 2, 3, 4]);
+      await expectLater(
+        client.getRange(_credentials, path: 'sample.mp3', offset: 0, length: 4),
+        throwsA(
+          isA<CloudMailException>().having(
+            (error) => error.code,
+            'code',
+            CloudMailErrorCode.invalidRange,
+          ),
+        ),
+      );
 
-    handleRequest = (request) async => _reply(
-      request,
-      206,
-      bodyBytes: <int>[1, 2, 3, 4],
-      headers: {'content-range': 'bytes=0-3/3'},
-    );
-    await expectLater(
-      client.getRange(_credentials, path: 'sample.mp3', offset: 0, length: 4),
-      throwsA(isA<CloudMailException>().having((error) => error.code, 'code', CloudMailErrorCode.invalidRange)),
-    );
+      handleRequest = (request) async => _reply(
+        request,
+        206,
+        bodyBytes: <int>[1, 2, 3, 4],
+        headers: {'content-range': 'bytes=0-3/3'},
+      );
+      await expectLater(
+        client.getRange(_credentials, path: 'sample.mp3', offset: 0, length: 4),
+        throwsA(
+          isA<CloudMailException>().having(
+            (error) => error.code,
+            'code',
+            CloudMailErrorCode.invalidRange,
+          ),
+        ),
+      );
 
-    handleRequest = (request) async => _reply(
-      request,
-      206,
-      bodyBytes: <int>[1, 2, 3, 4, 5],
-      headers: {'content-range': 'bytes=0-3/10'},
-    );
-    await expectLater(
-      client.getRange(_credentials, path: 'sample.mp3', offset: 0, length: 4),
-      throwsA(isA<CloudMailException>().having((error) => error.code, 'code', CloudMailErrorCode.invalidRange)),
-    );
+      handleRequest = (request) async => _reply(
+        request,
+        206,
+        bodyBytes: <int>[1, 2, 3, 4, 5],
+        headers: {'content-range': 'bytes=0-3/10'},
+      );
+      await expectLater(
+        client.getRange(_credentials, path: 'sample.mp3', offset: 0, length: 4),
+        throwsA(
+          isA<CloudMailException>().having(
+            (error) => error.code,
+            'code',
+            CloudMailErrorCode.invalidRange,
+          ),
+        ),
+      );
 
-    var requests = 0;
-    handleRequest = (request) async {
-      requests++;
-      await _reply(request, 206, bodyBytes: const <int>[], headers: const {});
-    };
-    await expectLater(
-      client.getRange(
+      var requests = 0;
+      handleRequest = (request) async {
+        requests++;
+        await _reply(request, 206, bodyBytes: const <int>[], headers: const {});
+      };
+      await expectLater(
+        client.getRange(
+          _credentials,
+          path: 'sample.mp3',
+          offset: 0,
+          length: CloudMailWebDavClient.maximumRangeBytes + 1,
+        ),
+        throwsA(
+          isA<CloudMailException>().having(
+            (error) => error.code,
+            'code',
+            CloudMailErrorCode.invalidRange,
+          ),
+        ),
+      );
+      expect(requests, 0);
+
+      await expectLater(
+        client.getRange(
+          _credentials,
+          path: '../outside.mp3',
+          offset: 0,
+          length: 1,
+        ),
+        throwsA(
+          isA<CloudMailException>().having(
+            (error) => error.code,
+            'code',
+            CloudMailErrorCode.invalidPath,
+          ),
+        ),
+      );
+      expect(requests, 0);
+    },
+  );
+
+  test(
+    'redirects are not followed and credentials stay on the original request',
+    () async {
+      var requests = 0;
+      handleRequest = (request) async {
+        requests++;
+        await _reply(
+          request,
+          302,
+          headers: {'location': 'https://example.invalid/steal'},
+        );
+      };
+      await expectLater(
+        client.propfind(_credentials, depth: 0),
+        throwsA(
+          isA<CloudMailException>().having(
+            (error) => error.code,
+            'code',
+            CloudMailErrorCode.serviceUnavailable,
+          ),
+        ),
+      );
+      expect(requests, 1);
+    },
+  );
+
+  test(
+    'timeouts and explicit cancellation stop a delayed local request',
+    () async {
+      client.close();
+      await createClient(timeout: const Duration(milliseconds: 100));
+      handleRequest = (request) async {
+        await Future<void>.delayed(const Duration(milliseconds: 250));
+        await _reply(request, 207, body: _rootMultistatus);
+      };
+      await expectLater(
+        client.propfind(_credentials, depth: 0),
+        throwsA(
+          isA<CloudMailException>().having(
+            (error) => error.code,
+            'code',
+            CloudMailErrorCode.timeout,
+          ),
+        ),
+      );
+
+      client.close();
+      await createClient(timeout: const Duration(seconds: 2));
+      final requestReceived = Completer<void>();
+      handleRequest = (request) async {
+        if (!requestReceived.isCompleted) requestReceived.complete();
+        await Future<void>.delayed(const Duration(milliseconds: 250));
+        await _reply(
+          request,
+          206,
+          bodyBytes: <int>[1],
+          headers: {'content-range': 'bytes=0-0/4'},
+        );
+      };
+      final cancellation = WebDavRequestCancellation();
+      final result = client.getRange(
         _credentials,
         path: 'sample.mp3',
         offset: 0,
-        length: CloudMailWebDavClient.maximumRangeBytes + 1,
-      ),
-      throwsA(isA<CloudMailException>().having((error) => error.code, 'code', CloudMailErrorCode.invalidRange)),
-    );
-    expect(requests, 0);
-
-    await expectLater(
-      client.getRange(_credentials, path: '../outside.mp3', offset: 0, length: 1),
-      throwsA(isA<CloudMailException>().having((error) => error.code, 'code', CloudMailErrorCode.invalidPath)),
-    );
-    expect(requests, 0);
-  });
-
-  test('redirects are not followed and credentials stay on the original request', () async {
-    var requests = 0;
-    handleRequest = (request) async {
-      requests++;
-      await _reply(
-        request,
-        302,
-        headers: {'location': 'https://example.invalid/steal'},
+        length: 1,
+        cancellation: cancellation,
       );
-    };
-    await expectLater(
-      client.propfind(_credentials, depth: 0),
-      throwsA(
-        isA<CloudMailException>().having(
-          (error) => error.code,
-          'code',
-          CloudMailErrorCode.serviceUnavailable,
+      await requestReceived.future.timeout(const Duration(seconds: 1));
+      cancellation.cancel();
+      await expectLater(
+        result,
+        throwsA(
+          isA<CloudMailException>().having(
+            (error) => error.code,
+            'code',
+            CloudMailErrorCode.cancelled,
+          ),
         ),
-      ),
-    );
-    expect(requests, 1);
-  });
-
-  test('timeouts and explicit cancellation stop a delayed local request', () async {
-    client.close();
-    await createClient(timeout: const Duration(milliseconds: 100));
-    handleRequest = (request) async {
-      await Future<void>.delayed(const Duration(milliseconds: 250));
-      await _reply(request, 207, body: _rootMultistatus);
-    };
-    await expectLater(
-      client.propfind(_credentials, depth: 0),
-      throwsA(isA<CloudMailException>().having((error) => error.code, 'code', CloudMailErrorCode.timeout)),
-    );
-
-    client.close();
-    await createClient(timeout: const Duration(seconds: 2));
-    final requestReceived = Completer<void>();
-    handleRequest = (request) async {
-      if (!requestReceived.isCompleted) requestReceived.complete();
-      await Future<void>.delayed(const Duration(milliseconds: 250));
-      await _reply(request, 206, bodyBytes: <int>[1], headers: {
-        'content-range': 'bytes=0-0/4',
-      });
-    };
-    final cancellation = WebDavRequestCancellation();
-    final result = client.getRange(
-      _credentials,
-      path: 'sample.mp3',
-      offset: 0,
-      length: 1,
-      cancellation: cancellation,
-    );
-    await requestReceived.future.timeout(const Duration(seconds: 1));
-    cancellation.cancel();
-    await expectLater(
-      result,
-      throwsA(isA<CloudMailException>().having((error) => error.code, 'code', CloudMailErrorCode.cancelled)),
-    );
-  });
+      );
+    },
+  );
 }
 
 const String _rootMultistatus =

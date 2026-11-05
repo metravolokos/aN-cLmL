@@ -76,11 +76,7 @@ abstract interface class CloudConnectionVerifier {
 /// beneath `/AllMusic`; redirects are disabled so Basic Auth cannot be forwarded.
 class CloudMailWebDavClient implements CloudConnectionVerifier {
   CloudMailWebDavClient({Duration timeout = const Duration(seconds: 8)})
-    : this._(
-        baseUri: _productionBaseUri,
-        timeout: timeout,
-        maxRetries: 1,
-      );
+    : this._(baseUri: _productionBaseUri, timeout: timeout, maxRetries: 1);
 
   /// Localhost-only constructor for integration tests with a fake WebDAV server.
   factory CloudMailWebDavClient.forTesting({
@@ -89,10 +85,18 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
     int maxRetries = 0,
   }) {
     if (!_isLoopback(baseUri.host) || baseUri.scheme != 'http') {
-      throw ArgumentError.value(baseUri, 'baseUri', 'Must be a loopback HTTP URI');
+      throw ArgumentError.value(
+        baseUri,
+        'baseUri',
+        'Must be a loopback HTTP URI',
+      );
     }
     if (maxRetries < 0 || maxRetries > 1) {
-      throw ArgumentError.value(maxRetries, 'maxRetries', 'Must be between 0 and 1');
+      throw ArgumentError.value(
+        maxRetries,
+        'maxRetries',
+        'Must be between 0 and 1',
+      );
     }
     _validateBaseUri(baseUri);
     return CloudMailWebDavClient._(
@@ -167,7 +171,11 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
     WebDavRequestCancellation? cancellation,
   }) async {
     if (depth != 0 && depth != 1) {
-      throw ArgumentError.value(depth, 'depth', 'Only Depth 0 and 1 are supported');
+      throw ArgumentError.value(
+        depth,
+        'depth',
+        'Only Depth 0 and 1 are supported',
+      );
     }
     final target = _uriForPath(path, trailingSlash: true);
     final response = await _send(
@@ -265,7 +273,9 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
       final requestToken = CancelToken();
       if (cancellation != null) {
         unawaited(
-          cancellation._token.whenCancel.then<void>((_) => requestToken.cancel()),
+          cancellation._token.whenCancel.then<void>(
+            (_) => requestToken.cancel(),
+          ),
         );
       }
       try {
@@ -293,18 +303,19 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
           }
           continue;
         }
-        final body = await _readBounded(
-          response.data,
-          maximumBodyBytes: maximumBodyBytes,
-          overflowCode: overflowCode,
-          requestToken: requestToken,
-        ).timeout(
-          _timeout,
-          onTimeout: () {
-            requestToken.cancel();
-            throw const CloudMailException(CloudMailErrorCode.timeout);
-          },
-        );
+        final body =
+            await _readBounded(
+              response.data,
+              maximumBodyBytes: maximumBodyBytes,
+              overflowCode: overflowCode,
+              requestToken: requestToken,
+            ).timeout(
+              _timeout,
+              onTimeout: () {
+                requestToken.cancel();
+                throw const CloudMailException(CloudMailErrorCode.timeout);
+              },
+            );
         return _WebDavHttpResponse(
           statusCode: status,
           headers: response.headers,
@@ -395,7 +406,9 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
       throw const CloudMailException(CloudMailErrorCode.invalidResponse);
     }
 
-    final responses = _walk(document).where((element) => element.name.local == 'response');
+    final responses = _walk(
+      document,
+    ).where((element) => element.name.local == 'response');
     final entries = <WebDavEntry>[];
     for (final response in responses) {
       final href = _directChild(response, 'href')?.innerText.trim();
@@ -405,7 +418,8 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
       final responseUri = _resolveHref(href, target);
       final pathSegments = _normalizedPathSegments(responseUri);
       final targetSegments = _normalizedPathSegments(target);
-      final withinTarget = pathSegments.length >= targetSegments.length &&
+      final withinTarget =
+          pathSegments.length >= targetSegments.length &&
           _hasPrefix(pathSegments, targetSegments);
       final atAllowedDepth = depth == 0
           ? pathSegments.length == targetSegments.length
@@ -450,12 +464,21 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
 
       final properties = successfulProps.expand(_walk).toList(growable: false);
       final resourceType = _firstProperty(properties, 'resourcetype');
-      final isCollection = resourceType != null &&
-          _walk(resourceType).any((element) => element.name.local == 'collection');
-      final contentLength = _firstProperty(properties, 'getcontentlength')?.innerText.trim();
+      final isCollection =
+          resourceType != null &&
+          _walk(
+            resourceType,
+          ).any((element) => element.name.local == 'collection');
+      final contentLength = _firstProperty(
+        properties,
+        'getcontentlength',
+      )?.innerText.trim();
       final size = contentLength == null ? null : int.tryParse(contentLength);
       final etag = _firstProperty(properties, 'getetag')?.innerText.trim();
-      final lastModifiedText = _firstProperty(properties, 'getlastmodified')?.innerText.trim();
+      final lastModifiedText = _firstProperty(
+        properties,
+        'getlastmodified',
+      )?.innerText.trim();
       DateTime? lastModified;
       if (lastModifiedText != null && lastModifiedText.isNotEmpty) {
         try {
@@ -491,11 +514,15 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
   }
 
   List<String> _validateRelativePath(String path) {
-    if (path.startsWith('/') || path.contains('\\') || path.contains('\u0000')) {
+    if (path.startsWith('/') ||
+        path.contains('\\') ||
+        path.contains('\u0000')) {
       throw const CloudMailException(CloudMailErrorCode.invalidPath);
     }
     if (path.isEmpty) return const <String>[];
-    final withoutTrailingSlash = path.endsWith('/') ? path.substring(0, path.length - 1) : path;
+    final withoutTrailingSlash = path.endsWith('/')
+        ? path.substring(0, path.length - 1)
+        : path;
     if (withoutTrailingSlash.isEmpty) return const <String>[];
     final segments = withoutTrailingSlash.split('/');
     if (segments.any((segment) => segment.isEmpty)) {
@@ -575,7 +602,10 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
       if (decoded == candidate) return;
       candidate = decoded;
     }
-    if (candidate == '.' || candidate == '..' || candidate.contains('/') || candidate.contains('\\')) {
+    if (candidate == '.' ||
+        candidate == '..' ||
+        candidate.contains('/') ||
+        candidate.contains('\\')) {
       throw const CloudMailException(CloudMailErrorCode.invalidPath);
     }
   }
@@ -600,7 +630,10 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
     return null;
   }
 
-  static Iterable<XmlElement> _directChildren(XmlElement parent, String name) sync* {
+  static Iterable<XmlElement> _directChildren(
+    XmlElement parent,
+    String name,
+  ) sync* {
     for (final child in parent.children.whereType<XmlElement>()) {
       if (child.name.local == name) yield child;
     }
@@ -621,8 +654,10 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
   }
 
   static int _statusCode(String status) {
-    final match = RegExp(r'^HTTP/\d(?:\.\d)?\s+(\d{3})(?:\s|$)', caseSensitive: false)
-        .firstMatch(status);
+    final match = RegExp(
+      r'^HTTP/\d(?:\.\d)?\s+(\d{3})(?:\s|$)',
+      caseSensitive: false,
+    ).firstMatch(status);
     final code = match == null ? null : int.tryParse(match.group(1)!);
     if (code == null) {
       throw const CloudMailException(CloudMailErrorCode.invalidResponse);
@@ -640,14 +675,19 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
     final start = int.tryParse(match.group(1)!);
     final end = int.tryParse(match.group(2)!);
     final total = int.tryParse(match.group(3)!);
-    if (start == null || end == null || total == null || end < start || total <= end) {
+    if (start == null ||
+        end == null ||
+        total == null ||
+        end < start ||
+        total <= end) {
       return null;
     }
     return (start: start, end: end, total: total);
   }
 
   static String _authorization(CloudCredentials credentials) {
-    if (credentials.username.trim().isEmpty || credentials.appPassword.isEmpty) {
+    if (credentials.username.trim().isEmpty ||
+        credentials.appPassword.isEmpty) {
       throw const CloudMailException(CloudMailErrorCode.credentialsRequired);
     }
     if (credentials.username.contains(':')) {
@@ -676,7 +716,9 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
       throw const CloudMailException(CloudMailErrorCode.serviceUnavailable);
     }
     throw CloudMailException(
-      rangeResponse ? CloudMailErrorCode.invalidRange : CloudMailErrorCode.invalidResponse,
+      rangeResponse
+          ? CloudMailErrorCode.invalidRange
+          : CloudMailErrorCode.invalidResponse,
     );
   }
 
@@ -694,8 +736,7 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
       error.type == DioExceptionType.sendTimeout ||
       error.type == DioExceptionType.receiveTimeout;
 
-  static bool _isLoopback(String host) =>
-      host == '127.0.0.1' || host == '::1';
+  static bool _isLoopback(String host) => host == '127.0.0.1' || host == '::1';
 
   static void _validateBaseUri(Uri uri) {
     if (uri.path != '/AllMusic/' ||
@@ -706,7 +747,11 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
             (uri.scheme != 'https' ||
                 uri.host.toLowerCase() != 'webdav.cloud.mail.ru' ||
                 uri.port != 443)) {
-      throw ArgumentError.value(uri, 'baseUri', 'Must be Cloud Mail.ru /AllMusic');
+      throw ArgumentError.value(
+        uri,
+        'baseUri',
+        'Must be Cloud Mail.ru /AllMusic',
+      );
     }
   }
 }

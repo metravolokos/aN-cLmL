@@ -26,7 +26,8 @@ class FlutterSecureCredentialVault implements CloudCredentialVault {
   Future<String?> read(String key) => _storage.read(key: key);
 
   @override
-  Future<void> write(String key, String value) => _storage.write(key: key, value: value);
+  Future<void> write(String key, String value) =>
+      _storage.write(key: key, value: value);
 
   @override
   Future<void> delete(String key) => _storage.delete(key: key);
@@ -64,10 +65,13 @@ class SecureCloudConnectionService implements CloudConnectionService {
       final password = await _vault.read(_passwordKey);
       return SavedConnectionInfo(
         username: username,
-        hasCredentials: username != null && username.isNotEmpty && password != null,
+        hasCredentials:
+            username != null && username.isNotEmpty && password != null,
       );
     } catch (_) {
-      throw const CloudMailException(CloudMailErrorCode.secureStorageUnavailable);
+      throw const CloudMailException(
+        CloudMailErrorCode.secureStorageUnavailable,
+      );
     }
   }
 
@@ -91,7 +95,9 @@ class SecureCloudConnectionService implements CloudConnectionService {
           password = savedPassword;
         }
       } catch (_) {
-        throw const CloudMailException(CloudMailErrorCode.secureStorageUnavailable);
+        throw const CloudMailException(
+          CloudMailErrorCode.secureStorageUnavailable,
+        );
       }
     }
     if (password.isEmpty) {
@@ -115,7 +121,9 @@ class SecureCloudConnectionService implements CloudConnectionService {
       } catch (_) {
         // Preserve only the safe storage error below; never expose a plugin error.
       }
-      throw const CloudMailException(CloudMailErrorCode.secureStorageUnavailable);
+      throw const CloudMailException(
+        CloudMailErrorCode.secureStorageUnavailable,
+      );
     }
   }
 
@@ -127,7 +135,9 @@ class SecureCloudConnectionService implements CloudConnectionService {
         _vault.delete(_passwordKey),
       ]);
     } catch (_) {
-      throw const CloudMailException(CloudMailErrorCode.secureStorageUnavailable);
+      throw const CloudMailException(
+        CloudMailErrorCode.secureStorageUnavailable,
+      );
     }
   }
 }

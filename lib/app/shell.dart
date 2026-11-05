@@ -162,7 +162,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   Future<void> _loadSavedConnection() async {
     try {
-      final saved = await ref.read(cloudConnectionServiceProvider).loadSavedConnection();
+      final saved = await ref
+          .read(cloudConnectionServiceProvider)
+          .loadSavedConnection();
       if (!mounted) return;
       setState(() {
         _usernameController.text = saved.username ?? '';
@@ -194,11 +196,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       _error = null;
     });
     try {
-      await ref.read(cloudConnectionServiceProvider).connect(
-        username: username,
-        appPassword: _passwordController.text,
-        cancellation: cancellation,
-      );
+      await ref
+          .read(cloudConnectionServiceProvider)
+          .connect(
+            username: username,
+            appPassword: _passwordController.text,
+            cancellation: cancellation,
+          );
       if (!mounted) return;
       setState(() {
         _hasSavedCredentials = true;
@@ -249,13 +253,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   String _messageFor(AppLocalizations strings, CloudMailErrorCode error) {
     return switch (error) {
       CloudMailErrorCode.loginRequired => strings.connectionLoginRequired,
-      CloudMailErrorCode.credentialsRequired => strings.connectionCredentialsRequired,
-      CloudMailErrorCode.invalidCredentials => strings.connectionInvalidCredentials,
-      CloudMailErrorCode.missingAllMusic || CloudMailErrorCode.missingResource =>
-        strings.connectionMissingAllMusic,
+      CloudMailErrorCode.credentialsRequired =>
+        strings.connectionCredentialsRequired,
+      CloudMailErrorCode.invalidCredentials =>
+        strings.connectionInvalidCredentials,
+      CloudMailErrorCode.missingAllMusic ||
+      CloudMailErrorCode.missingResource => strings.connectionMissingAllMusic,
       CloudMailErrorCode.timeout => strings.connectionTimeout,
       CloudMailErrorCode.cancelled => strings.connectionCancelled,
-      CloudMailErrorCode.secureStorageUnavailable => strings.connectionStorageError,
+      CloudMailErrorCode.secureStorageUnavailable =>
+        strings.connectionStorageError,
       CloudMailErrorCode.serviceUnavailable ||
       CloudMailErrorCode.invalidResponse ||
       CloudMailErrorCode.invalidPath ||

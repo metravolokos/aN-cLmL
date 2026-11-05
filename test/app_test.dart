@@ -7,17 +7,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _FakeConnectionService implements CloudConnectionService {
-  _FakeConnectionService({this.savedUsername, this.nextError});
+  _FakeConnectionService({this.nextError});
 
   String? savedUsername;
   String? savedPassword;
   CloudMailErrorCode? nextError;
 
   @override
-  Future<SavedConnectionInfo> loadSavedConnection() async => SavedConnectionInfo(
-    username: savedUsername,
-    hasCredentials: savedUsername != null && savedPassword != null,
-  );
+  Future<SavedConnectionInfo> loadSavedConnection() async =>
+      SavedConnectionInfo(
+        username: savedUsername,
+        hasCredentials: savedUsername != null && savedPassword != null,
+      );
 
   @override
   Future<void> connect({
@@ -162,10 +163,18 @@ void main() {
     await tester.tap(find.text('Настройки'));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byKey(const ValueKey('cloud-login-field')), 'fake@example.invalid');
-    await tester.enterText(find.byKey(const ValueKey('cloud-password-field')), 'test-app-password');
+    await tester.enterText(
+      find.byKey(const ValueKey('cloud-login-field')),
+      'fake@example.invalid',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('cloud-password-field')),
+      'test-app-password',
+    );
     expect(
-      tester.widget<TextField>(find.byKey(const ValueKey('cloud-password-field'))).obscureText,
+      tester
+          .widget<TextField>(find.byKey(const ValueKey('cloud-password-field')))
+          .obscureText,
       isTrue,
     );
     await tester.tap(find.byKey(const ValueKey('connect-button')));
@@ -175,31 +184,47 @@ void main() {
     expect(service.savedUsername, 'fake@example.invalid');
     expect(service.savedPassword, 'test-app-password');
     expect(
-      tester.widget<TextField>(find.byKey(const ValueKey('cloud-password-field'))).controller!.text,
+      tester
+          .widget<TextField>(find.byKey(const ValueKey('cloud-password-field')))
+          .controller!
+          .text,
       isEmpty,
     );
 
     await tester.tap(find.byKey(const ValueKey('disconnect-button')));
     await tester.pumpAndSettle();
-    expect(find.text('Сохранённые учётные данные удалены с устройства.'), findsOneWidget);
+    expect(
+      find.text('Сохранённые учётные данные удалены с устройства.'),
+      findsOneWidget,
+    );
     expect(service.savedUsername, isNull);
     expect(service.savedPassword, isNull);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('settings shows safe Russian authentication errors', (tester) async {
+  testWidgets('settings shows safe Russian authentication errors', (
+    tester,
+  ) async {
     final service = _FakeConnectionService(
       nextError: CloudMailErrorCode.invalidCredentials,
     );
     await launch(tester, const Size(390, 844), service: service);
     await tester.tap(find.text('Настройки'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byKey(const ValueKey('cloud-login-field')), 'fake@example.invalid');
-    await tester.enterText(find.byKey(const ValueKey('cloud-password-field')), 'fake-password');
+    await tester.enterText(
+      find.byKey(const ValueKey('cloud-login-field')),
+      'fake@example.invalid',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('cloud-password-field')),
+      'fake-password',
+    );
     await tester.tap(find.byKey(const ValueKey('connect-button')));
     await tester.pumpAndSettle();
     expect(
-      find.text('Не удалось войти. Проверьте логин и пароль для внешнего приложения.'),
+      find.text(
+        'Не удалось войти. Проверьте логин и пароль для внешнего приложения.',
+      ),
       findsOneWidget,
     );
     expect(find.text('fake-password'), findsNothing);
