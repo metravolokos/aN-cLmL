@@ -19,6 +19,11 @@ Future<void> initializeAndroidPlaybackControls() async {
 /// the Cloud.Mail.ru application password into media metadata or public URIs.
 Object? androidMediaTag(RemoteTrack track) {
   if (!Platform.isAndroid) return null;
+  return mediaItemForTrack(track);
+}
+
+/// Pure conversion, testable on desktop without starting a native service.
+MediaItem mediaItemForTrack(RemoteTrack track) {
   return MediaItem(
     id: track.path,
     title: track.displayTitle,
