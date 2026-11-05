@@ -9,9 +9,10 @@ import '../domain/remote_track.dart';
 /// Small lazy album-cover thumbnail. The CloudMusicService shares only the
 /// last three decoded source byte buffers across visible widgets.
 class AlbumCoverThumbnail extends ConsumerStatefulWidget {
-  const AlbumCoverThumbnail({required this.track, super.key});
+  const AlbumCoverThumbnail({required this.track, this.size = 52, super.key});
 
   final RemoteTrack track;
+  final double size;
 
   @override
   ConsumerState<AlbumCoverThumbnail> createState() =>
@@ -34,8 +35,8 @@ class _AlbumCoverThumbnailState extends ConsumerState<AlbumCoverThumbnail> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     Widget placeholder() => Container(
-      width: 52,
-      height: 52,
+      width: widget.size,
+      height: widget.size,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: colors.surfaceContainerHighest,
@@ -53,11 +54,11 @@ class _AlbumCoverThumbnailState extends ConsumerState<AlbumCoverThumbnail> {
           if (bytes == null || bytes.isEmpty) return placeholder();
           return Image.memory(
             bytes,
-            width: 52,
-            height: 52,
+            width: widget.size,
+            height: widget.size,
             fit: BoxFit.cover,
-            cacheWidth: 104,
-            cacheHeight: 104,
+            cacheWidth: (widget.size * 2).round(),
+            cacheHeight: (widget.size * 2).round(),
             errorBuilder: (context, error, stackTrace) => placeholder(),
           );
         },
