@@ -231,7 +231,7 @@ class _TrackArtworkState extends ConsumerState<_TrackArtwork> {
     _image = ref
         .read(cloudMusicServiceProvider)
         .readArtwork(widget.track)
-        .catchError((Object _, StackTrace __) => null);
+        .catchError((Object error, StackTrace stackTrace) => null);
   }
 
   @override
