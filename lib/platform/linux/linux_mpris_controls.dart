@@ -31,7 +31,9 @@ Future<void> initializeLinuxMprisControls() async {
 /// Do not expose authenticated remote paths as MPRIS track identifiers.
 MediaItem linuxMediaItemForTrack(RemoteTrack track) {
   final opaqueId = sha256
-      .convert(utf8.encode('${track.path}|${track.etag ?? ''}|${track.sizeBytes}'))
+      .convert(
+        utf8.encode('${track.path}|${track.etag ?? ''}|${track.sizeBytes}'),
+      )
       .toString();
   return MediaItem(
     id: '/com/cloudmail_player/track/t$opaqueId',
@@ -63,7 +65,9 @@ class CloudLinuxAudioHandler extends BaseAudioHandler {
     if (identity != _mediaIdentity) {
       _mediaIdentity = identity;
       mediaItem.add(track == null ? null : linuxMediaItemForTrack(track));
-      queue.add(track == null ? <MediaItem>[] : [linuxMediaItemForTrack(track)]);
+      queue.add(
+        track == null ? <MediaItem>[] : [linuxMediaItemForTrack(track)],
+      );
     }
 
     final available = track != null;
