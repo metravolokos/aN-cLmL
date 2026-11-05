@@ -1,12 +1,17 @@
-# M0 status — 2026-11-05
+# Project status — 2026-11-05
 
-- Source scaffold uploaded to this separate private GitHub repository for Codex Cloud trials.
-- Stage: M0 only. No finished Flutter/Windows/Android application.
-- Previous local attempt was blocked by DNS resolution for webdav.cloud.mail.ru, not by a confirmed invalid login.
-- Six offline tests passed in the previous local environment. Re-run the tests on the GitHub branch before relying on this upload.
-- Authenticated live WebDAV connection, Content-Range behavior, byte limits, timing, tag parsing, media playback and Cloud Mail.ru compatibility are NOT YET verified by Codex.
-- The temporary credentials belong only in the Codex Personal environment secrets; they are not in this repository.
+## M0: bounded WebDAV connectivity — completed for moving forward
 
-## Next
+A Codex Cloud agent achieved HTTPS access via its standard proxy and authenticated with read-only PROPFIND. /AllMusic was confirmed; sampled HEAD and five Range requests succeeded. Content-Range uses bytes= syntax. Six offline tests passed. See docs/webdav-notes.md.
 
-Configure Codex Cloud for this repository, with network access to webdav.cloud.mail.ru and personal environment variables WEBDAV_USERNAME and WEBDAV_PASSWORD. Launch CODEX_CLOUD_M0_TASK.md. Read its report before deciding on any further development. No M1 until confirmed by user.
+The agent reported local documentation commit b48d785da4a5a3d49254bdbc41e0f0ea4015eda9, but it was not pushed to GitHub when the M1 handoff was prepared. This status is reconstructed from its user-visible report, not a line-by-line review of that local commit.
+
+## M1: authorized, not yet implemented
+
+The user approved continuing development. Next deliverable: Flutter Windows+Android app scaffold with Russian ARB localizations, Material UI shell, tracks/albums/artists/settings navigation, theme and simple DI/state model. Use docs/M1_CODEX_TASK.md and keep changes in a feature branch/Draft PR.
+
+No Flutter builds or runtime app smoke tests have yet been confirmed. Current repository still contains the Python M0 probe, not the player.
+
+## Constraints
+
+No GMS; no telemetry; only Cloud Mail.ru /AllMusic as future source. No playlists/favorites. Do not use live credentials during M1. Real cloud integration and audio playback are out of scope until their later milestones.

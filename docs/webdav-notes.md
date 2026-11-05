@@ -1,22 +1,32 @@
 # Cloud Mail.ru WebDAV notes
 
-## Confirmed from official documentation (not live-tested here)
-- Endpoint: https://webdav.cloud.mail.ru
-- Requires a Mail.ru external application password rather than the account's ordinary password.
-- Intended music root: /AllMusic.
+## Evidence from authenticated Codex Cloud M0 probe — 2026-11-05
 
-Source: https://help.mail.ru/cloud/desktop/webdav/
+The Codex agent reported a read-only authenticated probe against the real service, using secret environment variables. Only sanitized results have been transferred to GitHub. The original detailed report was committed locally in Codex as b48d785da4a5a3d49254bdbc41e0f0ea4015eda9 but was not present on remote main at the time of this update.
 
-## Observations from earlier local attempt, 2026-11-05
-- DNS resolution to webdav.cloud.mail.ru failed in the temporary runtime.
-- No HTTP status or authenticated response was obtained. This is NOT proof of invalid credentials.
-- Offline unit tests passed but do not establish any provider behavior.
+- Direct system DNS resolution failed, but HTTPS over the Codex-provided proxy reached the WebDAV service.
+- An unauthenticated request returned HTTP 401; an authenticated PROPFIND to /AllMusic returned HTTP 207 and confirmed the collection.
+- Sampled audio resource HEAD returned 200, included ETag, and did not include Last-Modified or Accept-Ranges.
+- Five bounded HTTP Range GETs all returned 206 with the expected byte counts.
+- The tested Content-Range responses had the non-standard form bytes=first-last/total (with an equals sign); parsers must explicitly account for it.
+- The sample included an HTTP 206 for a 128 KiB requested range. This does not establish a general server-wide maximum.
+- Five Range request latencies: 584–1317 ms, median 1241 ms. Small sample only; not a playback latency benchmark.
+- Six Python offline unit tests passed.
+- Cloud data was not modified.
 
-## Open validation for Codex Cloud
-- HTTPS connection with account credentials; PROPFIND Depth 0 and 1.
-- Audio-file HEAD response and metadata presence.
-- GET Range for 4 KiB, 64 KiB, offset and 128 KiB requests, suffix request.
-- Actual 206 framing and Content-Range syntax, especially bytes= vs bytes space.
-- Bounded latency; no full-file downloads.
+## Remaining unknowns
 
-Not in scope: full indexing, high-concurrency/rate-limit stress, full audio streaming, seek latency, tag extraction, cache design, Flutter or Android builds. Record verified results with dates and mark unsupported cases as unknown, not passed.
+- Metadata/tag parsing and fallback handling; Chinese/Cyrillic/special character compatibility; full/incremental index traversal; rate limiting/concurrency.
+- Range behavior across multiple file formats, errors, caching and resume/seek during actual audio playback.
+- Android device and Windows playback, background audio, SMTC, secure storage and GMS-free APK verification.
+
+## Intended provider endpoint
+
+- WebDAV endpoint: https://webdav.cloud.mail.ru
+- Required account credential: external application password, not ordinary mail password.
+- Library root: /AllMusic, and no paths outside this root may be indexed or played.
+- Provider docs: https://help.mail.ru/cloud/desktop/webdav/
+
+## Experiment policy
+
+Do not re-run remote probes as part of M1. Stage M2 should validate library index and tag extraction with focused tests. Stage M4/M5 should validate real playback and cache behavior. Treat M0's observations as limited samples rather than broad guarantees.
