@@ -106,7 +106,7 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
             )),
             data: (_) {
               if (tracks.isEmpty) {
-                return Center(child: Padding(
+                return ListView(children: [Padding(
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -124,7 +124,7 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
                       ),
                     ],
                   ),
-                ));
+                )]);
               }
               if (groups.isNotEmpty) {
                 final keys = groups.keys.toList()..sort();
