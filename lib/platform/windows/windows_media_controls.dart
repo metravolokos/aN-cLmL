@@ -66,7 +66,7 @@ class _WindowsMediaControlsBridgeState
           rewindEnabled: false,
         ),
         enabled: false,
-        );
+      );
     } catch (_) {
       // A native SMTC failure must not prevent the player from running.
       return;
