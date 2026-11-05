@@ -7,6 +7,15 @@ and CloudCatalogController after a successful credential change or Disconnect.
 This discards in-memory WebDAV credentials and prevents the old session from
 being reused. See ADR 0007. Real-device logout behavior remains to be checked.
 
+## Now Playing full-screen controls
+
+A responsive Russian-language full-screen Now Playing route now opens by
+tapping the title in the persistent mini-player. It shows title, artist,
+album, seek, previous/next, play/pause, shuffle and repeat, using the
+existing shared player session. One widget test uses an injected
+Riverpod state with no credentials or network. The cover is intentionally
+a placeholder until real bounded artwork extraction is implemented.
+
 ## Cache-to-player wiring (independent Draft)
 
 The integrated branch has a bounded two-track cache, but playback originally bypassed it. On feature/cache-playback-wiring-20261105 the PlaybackController now passes the current and next queue items into TwoTrackAudioCache, supplies WebDAV cancellation, reads cached pages through CloudRangeAudioSource, and closes the cache on stop/dispose. See ADR 0006. Offline tests/build results and real cloud/device playback must be checked before adoption; this is not a declaration of full release readiness.

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/audio/playback_controller.dart';
 import '../domain/track_queue.dart';
 import '../l10n/app_localizations.dart';
+import 'now_playing_page.dart';
 
 class MiniPlayer extends ConsumerWidget {
   const MiniPlayer({super.key});
@@ -47,24 +48,33 @@ class MiniPlayer extends ConsumerWidget {
               const Icon(Icons.music_note),
               const SizedBox(width: 8),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      playback.track!.displayTitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      playback.failed
-                          ? strings.playbackError
-                          : playback.loading
-                          ? strings.loadingAudio
-                          : '${_time(playback.position)} / ${_time(playback.duration)}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                child: InkWell(
+                  onTap: () {
+                    Navigator.of(context).push<void>(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const NowPlayingPage(),
+                      ),
+                    );
+                  },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        playback.track!.displayTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        playback.failed
+                            ? strings.playbackError
+                            : playback.loading
+                            ? strings.loadingAudio
+                            : '${_time(playback.position)} / ${_time(playback.duration)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
                 ),
               ),
               IconButton(
