@@ -266,12 +266,12 @@ class PlaybackController extends Notifier<PlaybackView> {
 
   Future<void> stop() async {
     // Invalidate any pending setAudioSource before waiting for I/O.
-    _operationGeneration++;
+    final generation = ++_operationGeneration;
     _pendingTrack = null;
     _queue = null;
-    await _player?.stop();
     final cacheFuture = _cacheFuture;
     _cacheFuture = null;
+    await _player?.stop();
     if (cacheFuture != null) {
       try {
         await (await cacheFuture).close();
@@ -279,7 +279,9 @@ class PlaybackController extends Notifier<PlaybackView> {
         // Stopping playback must succeed even when temporary storage fails.
       }
     }
-    state = const PlaybackView();
+    if (!_closed && generation == _operationGeneration) {
+      state = const PlaybackView();
+    }
   }
 }
 
