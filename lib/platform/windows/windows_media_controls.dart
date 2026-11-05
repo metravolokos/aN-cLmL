@@ -55,18 +55,18 @@ class _WindowsMediaControlsBridgeState
     if (!Platform.isWindows || !_windowsMediaControlsInitialized) return;
     try {
       _smtc = SMTCWindows(
-      metadata: const MusicMetadata(title: 'CloudMail Player'),
-      config: const SMTCConfig(
-        playEnabled: true,
-        pauseEnabled: true,
-        nextEnabled: true,
-        prevEnabled: true,
-        stopEnabled: true,
-        fastForwardEnabled: false,
-        rewindEnabled: false,
-      ),
-      enabled: false,
-      );
+        metadata: const MusicMetadata(title: 'CloudMail Player'),
+        config: const SMTCConfig(
+          playEnabled: true,
+          pauseEnabled: true,
+          nextEnabled: true,
+          prevEnabled: true,
+          stopEnabled: true,
+          fastForwardEnabled: false,
+          rewindEnabled: false,
+        ),
+        enabled: false,
+        );
     } catch (_) {
       // A native SMTC failure must not prevent the player from running.
       return;
