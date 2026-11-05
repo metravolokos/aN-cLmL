@@ -117,8 +117,9 @@ class FlacArtworkReader {
       if (mime != 'image/jpeg' && mime != 'image/png') return null;
       final descriptionLength = takeInt();
       if (descriptionLength > 64 * 1024 ||
-          cursor + descriptionLength > bytes.length)
+          cursor + descriptionLength > bytes.length) {
         return null;
+      }
       cursor += descriptionLength;
       final width = takeInt();
       final height = takeInt();
@@ -131,8 +132,9 @@ class FlacArtworkReader {
           height > maximumDimension ||
           imageLength < 1 ||
           imageLength > maximumImageBytes ||
-          cursor + imageLength != bytes.length)
+          cursor + imageLength != bytes.length) {
         return null;
+      }
       final image = Uint8List.sublistView(bytes, cursor, cursor + imageLength);
       // Reject corrupt MIME declarations without relying on image decoding.
       final jpeg =
@@ -150,8 +152,9 @@ class FlacArtworkReader {
           image[5] == 0x0a &&
           image[6] == 0x1a &&
           image[7] == 0x0a;
-      if ((mime == 'image/jpeg' && !jpeg) || (mime == 'image/png' && !png))
+      if ((mime == 'image/jpeg' && !jpeg) || (mime == 'image/png' && !png)) {
         return null;
+      }
       return FlacEmbeddedArtwork(
         bytes: Uint8List.fromList(image),
         mimeType: mime,
