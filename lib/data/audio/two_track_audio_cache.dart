@@ -127,7 +127,8 @@ class TwoTrackAudioCache {
       final page = await _readPage(slot, index);
       final pageOffset = index * pageSize;
       final from = at - pageOffset;
-      final take = (end - at).clamp(0, page.length - from);
+      final available = page.length - from;
+      final take = end - at < available ? end - at : available;
       if (take <= 0) throw StateError('Invalid cached page');
       output.add(Uint8List.sublistView(page, from, from + take));
       at += take;
