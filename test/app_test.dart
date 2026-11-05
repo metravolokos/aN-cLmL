@@ -147,37 +147,38 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
-  testWidgets('cloud connection stores verified credentials and disconnect clears them', (
-    tester,
-  ) async {
-    final vault = _FakeVault();
-    final probe = _FakeProbe();
-    await launch(tester, const Size(390, 844), vault: vault, probe: probe);
-    await tester.tap(find.text('Настройки'));
-    await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.byKey(const ValueKey('cloud-username')),
-      'tester@example.invalid',
-    );
-    await tester.enterText(
-      find.byKey(const ValueKey('cloud-password')),
-      'dummy-password',
-    );
-    await tester.ensureVisible(find.byKey(const ValueKey('cloud-connect')));
-    await tester.tap(find.byKey(const ValueKey('cloud-connect')));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'cloud connection stores verified credentials and disconnect clears them',
+    (tester) async {
+      final vault = _FakeVault();
+      final probe = _FakeProbe();
+      await launch(tester, const Size(390, 844), vault: vault, probe: probe);
+      await tester.tap(find.text('Настройки'));
+      await tester.pumpAndSettle();
 
-    expect(probe.calls, 1);
-    expect(vault.saved?.username, 'tester@example.invalid');
-    expect(vault.saved?.password, 'dummy-password');
-    expect(find.text('Подключено: /AllMusic доступна'), findsOneWidget);
+      await tester.enterText(
+        find.byKey(const ValueKey('cloud-username')),
+        'tester@example.invalid',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('cloud-password')),
+        'dummy-password',
+      );
+      await tester.ensureVisible(find.byKey(const ValueKey('cloud-connect')));
+      await tester.tap(find.byKey(const ValueKey('cloud-connect')));
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const ValueKey('cloud-disconnect')));
-    await tester.pumpAndSettle();
-    expect(vault.saved, isNull);
-    expect(find.text('Облако не подключено'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+      expect(probe.calls, 1);
+      expect(vault.saved?.username, 'tester@example.invalid');
+      expect(vault.saved?.password, 'dummy-password');
+      expect(find.text('Подключено: /AllMusic доступна'), findsOneWidget);
 
+      await tester.tap(find.byKey(const ValueKey('cloud-disconnect')));
+      await tester.pumpAndSettle();
+      expect(vault.saved, isNull);
+      expect(find.text('Облако не подключено'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
