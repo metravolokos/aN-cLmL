@@ -15,7 +15,7 @@ Future<void> main() async {
   runApp(
     ProviderScope(
       overrides: [mediaTagFactoryProvider.overrideWithValue(androidMediaTag)],
-      child: const CloudMailApp(),
+      child: const AndroidMediaSessionBridge(child: CloudMailApp()),
     ),
   );
 }
