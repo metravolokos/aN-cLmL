@@ -1,37 +1,40 @@
-# CloudMail Player — implementation status (2026-11-05)
+# CloudMail Player — implementation status (2026-11-06)
 
-## What is integrated on main
+## Integrated on main (source and CI, not hardware acceptance)
 
-- Flutter 3.47.9 single-codebase application with Android, Windows and Linux runners and Russian Material 3 interface.
-- Authenticated, read-only Cloud Mail.ru WebDAV rooted at `/AllMusic`, with secure OS credential storage, bounded PROPFIND and validated HTTP 206 Range GETs.
-- Hard network limit: **64 KiB per Range GET** at the transport boundary (PR #14).
-- Drift/SQLite account-scoped catalog, generation scans, FLAC/MP3 bounded metadata extraction, tracks/albums/artists views and search.
-- Native playback through just_audio on Android and media_kit-based Windows/Linux integration, seekable Cloud Range stream, queue, shuffle/repeat, mini-player and Now Playing.
-- Temporary two-track audio cache, current-first read-ahead and next-track prefetch, including cleanup on Stop.
-- Stop/track-switch generation guard with last-selection-wins behavior (PR #12).
-- Session invalidation during account change and Disconnect, including delayed secure-vault-read protection (PR #13).
+- Flutter 3.47.9 one-codebase app with Russian Material 3 interface and Android, Windows, Linux build runners.
+- Authenticated, read-only Cloud Mail.ru WebDAV rooted at `/AllMusic`, secure OS credential store, bounded PROPFIND, HTTP 206 Range GET and 64 KiB network GET cap.
+- Drift/SQLite catalog, FLAC/MP3 metadata indexing, tracks/albums/artists, search and album track/disc ordering (PR #21).
+- just_audio (Android Media3) and MediaKit (Windows/Linux) playback, queue, shuffle/repeat, mini-player, Now Playing and temporary current+next cache.
+- Async Stop/track-switch and credential/Disconnect generation guards; late Play/Seek cannot restart a stopped queue (PR #23).
+- Embedded FLAC artwork, lazy album thumbnails and responsive album grid with playable disc/track-ordered album sheet (PRs #15, #18, #24).
+- Android foreground MediaSession and system/headset buttons (PR #19); Windows SMTC controls (PR #22); Linux MPRIS D-Bus bridge (PR #25). Platform adapters use the same playback controller and OS audio mixer.
 
-## Source implementation is not hardware acceptance
+## In development
 
-GitHub Quality/Android/Windows/Linux CI can validate source, unit tests and build binaries but does not prove audible playback, Bluetooth/media panel behavior, secure-store access on a real phone, or GNOME 51/Wayland integration.
+- Android music audio focus configuration (separate feature branch and CI). Hardware interruptions and headset routing unverified.
+- Persistent resized artwork thumbnail cache with bounded disk LRU; current cover cache is a small in-memory cache only.
+- Signed/distributable APK, Windows package and Linux Flatpak.
 
-## Not finished / not accepted
+## NOT yet validated on physical devices / real cloud
 
-- Real authenticated Cloud Mail.ru catalog and playback acceptance on all three target platforms.
-- Android foreground MediaSession, notification/media panel, audio focus and Bluetooth behavior.
-- Windows SMTC and media keys; Linux MPRIS, GNOME 51 Wayland and Flatpak operation.
-- Album cover grid, persistent thumbnail cache and image resizing; FLAC cover parsing and Now Playing integration remain in separate PR #15 pending CI.
-- Signed/distributable release artifacts (APK, Windows ZIP/installer and Flatpak), performance acceptance and complete 50k library testing.
-- No claim of gapless or uninterrupted track switching on actual devices.
+- Authenticated `/AllMusic` indexing and FLAC/MP3 playback on all three target platforms, including seek and cache reuse, without full-file metadata downloads.
+- Android AOSP without GMS and Huawei device media panel, Bluetooth, USB DAC, headphone disconnect, phone call interruption and real background playback.
+- Windows 11 SMTC media keys and sound on actual hardware.
+- GNOME 51 Wayland Linux launch, MPRIS media controls, Secret Service persistence and Flatpak sandbox behavior.
+- Application startup from distributable signed/packaged artifacts.
+- Large-library UX/performance; gapless playback is not claimed.
 
-## Working process
+## Process
 
-Require green Quality + Android + Windows + Linux CI before merging source changes. Record device and real-cloud manual acceptance separately from automated tests. No credentials in code, GitHub issues, logs or CI artifacts. Keep tests purposeful; avoid stress suites without a specific defect or acceptance criterion.
+Quality + Android + Windows + Linux jobs must all be green for the exact current PR head, with conflict check, before merge. CI builds validate source and artifacts, **never** actual audio, OS media panels or real Cloud Mail.ru server behavior. No credentials in code, logs or CI, and no modifications to remote music files. Run only targeted tests with a meaningful failure or acceptance gate.
 
-## Reference pull requests
+## Recent merged PRs
 
-- PR #11: consolidated three-platform development preview.
-- PR #12: Stop and rapid track-switch race fix (merged).
-- PR #13: credential-read/Disconnect race fix (merged).
-- PR #14: 64 KiB WebDAV transport limit (merged).
-- PR #15: lazy FLAC embedded artwork and Now Playing integration (under review).
+- #15 and #18 — embedded FLAC cover and album thumbnails.
+- #19 — Android foreground MediaSession.
+- #21 — album disc/track ordering.
+- #22 — Windows native SMTC.
+- #23 — stale media-command protection after Stop.
+- #24 — responsive album cover grid.
+- #25 — Linux MPRIS.
