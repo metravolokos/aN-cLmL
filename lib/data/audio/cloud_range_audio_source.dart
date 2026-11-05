@@ -5,6 +5,7 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../../domain/remote_track.dart';
@@ -15,7 +16,16 @@ typedef RangeFetcher =
 /// Converts authenticated, fixed-size WebDAV GETs into a seekable byte stream.
 /// Never embeds the user's Authorization header in a URL or local proxy.
 class CloudRangeAudioSource extends StreamAudioSource {
-  CloudRangeAudioSource(this.track, this.fetcher);
+  CloudRangeAudioSource(this.track, this.fetcher)
+      : super(
+          tag: MediaItem(
+            id: track.path,
+            title: track.displayTitle,
+            artist: track.displayArtist,
+            album: track.displayAlbum,
+            duration: track.duration,
+          ),
+        );
 
   static const int chunkSize = 64 * 1024;
 
