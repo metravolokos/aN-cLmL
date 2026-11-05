@@ -51,8 +51,10 @@ void main() {
     tester.view.physicalSize = const Size(390, 844);
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('page-albums')), findsOneWidget);
-    expect(tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
-        AppDestination.albums.index);
+    expect(
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      AppDestination.albums.index,
+    );
     tester.view.physicalSize = const Size(1200, 800);
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('page-albums')), findsOneWidget);
@@ -74,20 +76,30 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text(entry.key).last);
       await tester.pumpAndSettle();
-      expect(tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode,
-          entry.value);
+      expect(
+        tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode,
+        entry.value,
+      );
       if (entry.value != ThemeMode.system) {
-        final context = tester.element(find.byKey(const ValueKey('page-settings')));
-        expect(Theme.of(context).brightness,
-            entry.value == ThemeMode.dark ? Brightness.dark : Brightness.light);
+        final context = tester.element(
+          find.byKey(const ValueKey('page-settings')),
+        );
+        expect(
+          Theme.of(context).brightness,
+          entry.value == ThemeMode.dark ? Brightness.dark : Brightness.light,
+        );
       }
     }
-    expect(find.text('Подключение пока не реализовано. Пароль не требуется.'),
-        findsOneWidget);
+    expect(
+      find.text('Подключение пока не реализовано. Пароль не требуется.'),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('small window and enlarged text remain scrollable', (tester) async {
+  testWidgets('small window and enlarged text remain scrollable', (
+    tester,
+  ) async {
     await launch(tester, const Size(320, 480));
     tester.platformDispatcher.textScaleFactorTestValue = 1.5;
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
