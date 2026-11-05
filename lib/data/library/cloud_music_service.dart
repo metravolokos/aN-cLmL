@@ -33,6 +33,9 @@ class CloudMusicService {
     if (_credentials != null) return _credentials!;
     final user = await _vault.read(_usernameKey);
     final password = await _vault.read(_passwordKey);
+    // Vault reads are asynchronous: Disconnect may dispose this service
+    // while the secure store is still returning the previous credentials.
+    if (_closed) throw StateError('Cloud session closed');
     if (user == null || user.isEmpty || password == null || password.isEmpty) {
       throw const CloudMailException(CloudMailErrorCode.credentialsRequired);
     }
