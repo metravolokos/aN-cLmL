@@ -8,8 +8,17 @@ import 'package:smtc_windows/smtc_windows.dart';
 import '../../data/audio/playback_controller.dart';
 import '../../domain/remote_track.dart';
 
+bool _windowsMediaControlsInitialized = false;
+
 Future<void> initializeWindowsMediaControls() async {
-  if (Platform.isWindows) await SMTCWindows.initialize();
+  if (!Platform.isWindows) return;
+  try {
+    await SMTCWindows.initialize();
+    _windowsMediaControlsInitialized = true;
+  } catch (_) {
+    // System media controls are optional; audio playback must still start.
+    _windowsMediaControlsInitialized = false;
+  }
 }
 
 MusicMetadata windowsMetadataForTrack(RemoteTrack track) => MusicMetadata(
@@ -43,8 +52,9 @@ class _WindowsMediaControlsBridgeState
   @override
   void initState() {
     super.initState();
-    if (!Platform.isWindows) return;
-    _smtc = SMTCWindows(
+    if (!Platform.isWindows || !_windowsMediaControlsInitialized) return;
+    try {
+      _smtc = SMTCWindows(
       metadata: const MusicMetadata(title: 'CloudMail Player'),
       config: const SMTCConfig(
         playEnabled: true,
@@ -56,7 +66,11 @@ class _WindowsMediaControlsBridgeState
         rewindEnabled: false,
       ),
       enabled: false,
-    );
+      );
+    } catch (_) {
+      // A native SMTC failure must not prevent the player from running.
+      return;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _buttons = _smtc?.buttonPressStream.listen(_handleButton);
