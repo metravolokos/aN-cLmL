@@ -114,7 +114,8 @@ class CloudMusicService {
   Future<Uint8List?> readArtwork(RemoteTrack track) async {
     if (_closed) throw StateError('Cloud session closed');
     if (!track.isFlac) return null;
-    final key = '${track.path}\u0000${track.etag ?? ''}\u0000${track.sizeBytes}';
+    final key =
+        '${track.path}\u0000${track.etag ?? ''}\u0000${track.sizeBytes}';
     final cached = _artworkCache.remove(key);
     if (cached != null) {
       _artworkCache[key] = cached;
