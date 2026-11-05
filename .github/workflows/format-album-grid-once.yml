@@ -1,0 +1,30 @@
+name: One-time album grid Dart formatting
+on:
+  push:
+    branches:
+      - feature/album-cover-grid-20261106
+    paths:
+      - .github/workflows/format-album-grid-once.yml
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: stable
+      - run: flutter pub get --enforce-lockfile
+      - run: dart format lib/presentation/library_page.dart lib/presentation/album_cover_thumbnail.dart
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- lib/presentation/library_page.dart lib/presentation/album_cover_thumbnail.dart
+          if ! git diff --cached --quiet; then
+            git commit -m "style(albums): apply pinned Dart formatter"
+            git push origin HEAD:feature/album-cover-grid-20261106
+          fi
