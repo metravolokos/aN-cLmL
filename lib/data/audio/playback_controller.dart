@@ -8,6 +8,7 @@ import '../../domain/remote_track.dart';
 import '../../domain/track_queue.dart';
 import '../library/cloud_music_service.dart';
 import 'cloud_range_audio_source.dart';
+import 'media_tag_factory.dart';
 import 'two_track_cache.dart';
 
 class PlaybackView {
@@ -190,6 +191,7 @@ class PlaybackController extends Notifier<PlaybackView> {
           cache == null
               ? reader.readRange
               : (path, offset, length) => cache.read(path, offset, length),
+          mediaTag: ref.read(mediaTagFactoryProvider)(track),
         ),
       );
       if (_closed || generation != _operationGeneration) {
