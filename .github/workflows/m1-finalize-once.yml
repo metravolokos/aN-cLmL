@@ -1,0 +1,58 @@
+name: M1 finalize lockfile and Flutter platform templates (one-time)
+on:
+  push:
+    branches:
+      - feature/m1-flutter-scaffold
+
+permissions:
+  contents: read
+
+jobs:
+  finalize:
+    if: github.repository == 'metravolokos/cloudmail-player-m0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/m1-flutter-scaffold
+          persist-credentials: true
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: stable
+          cache: true
+      - name: Resolve genuine package lock
+        run: |
+          flutter --version
+          dart --version
+          flutter pub get
+      - name: Reconcile platform runner files using official Flutter generator
+        run: |
+          flutter create --no-pub --project-name cloudmail_player --org com.cloudmailplayer --platforms android,windows .
+          flutter pub get
+          git status --short
+      - name: Verify Flutter and M0 tests
+        run: |
+          dart format --output=none --set-exit-if-changed lib test
+          flutter gen-l10n
+          flutter analyze
+          flutter test
+          python -m unittest discover -s tests -v
+      - name: Commit and push generated lock and runner adjustments
+        run: |
+          set -eu
+          test -s pubspec.lock
+          git add pubspec.lock .metadata android windows
+          git diff --cached --check
+          git diff --cached --name-only
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'chore(m1): lock dependencies and reconcile Flutter platform runners'
+            git push origin HEAD:refs/heads/feature/m1-flutter-scaffold
+          else
+            echo 'No generated changes to commit'
+          fi
