@@ -64,7 +64,7 @@ class CloudMusicService {
     );
     final catalog = await _getCatalog();
     await catalog.applyScan(tracks);
-    return catalog.readTracks();
+    return await catalog.readTracks();
   }
 
   Future<CatalogDatabase> _getCatalog() async {
