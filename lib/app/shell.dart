@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../cloud/cloud_connection_service.dart';
 import '../cloud/cloud_mail_webdav.dart';
+import '../presentation/library_page.dart';
+import '../presentation/mini_player.dart';
 import '../l10n/app_localizations.dart';
 import 'state.dart';
 
@@ -35,7 +37,7 @@ class AppShell extends ConsumerWidget {
 
     final page = destination == AppDestination.settings
         ? const SettingsPage()
-        : LibraryEmptyState(destination: destination);
+        : CloudLibraryPage(destination: destination);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -73,9 +75,11 @@ class AppShell extends ConsumerWidget {
               ],
             ),
           ),
-          bottomNavigationBar: wide
-              ? null
-              : NavigationBar(
+          bottomNavigationBar: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const MiniPlayer(),
+                if (!wide) NavigationBar(
                   key: const ValueKey('navigation-bar'),
                   selectedIndex: destination.index,
                   onDestinationSelected: select,
@@ -87,6 +91,8 @@ class AppShell extends ConsumerWidget {
                       ),
                   ],
                 ),
+              ],
+            ),
         );
       },
     );

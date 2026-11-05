@@ -1,0 +1,32 @@
+name: Resolve player package lock once
+on:
+  push:
+    branches: [feature/three-platform-player-20261105]
+permissions:
+  contents: write
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/three-platform-player-20261105
+          persist-credentials: true
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: stable
+          cache: true
+      - name: Resolve pinned packages and update genuine lockfile
+        run: |
+          set -euo pipefail
+          flutter pub get
+          git add pubspec.lock
+          git diff --cached --check
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'chore(deps): commit Flutter-resolved audio dependencies'
+            git push origin HEAD:refs/heads/feature/three-platform-player-20261105
+          fi

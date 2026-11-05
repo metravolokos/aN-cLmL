@@ -31,5 +31,26 @@
   "connectionStorageError": "Не удалось безопасно сохранить данные на устройстве.",
   "connectionDisconnected": "Сохранённые учётные данные удалены с устройства.",
   "connectionSavedHint": "Учётные данные сохранены в защищённом хранилище. Оставьте поле пароля пустым, чтобы использовать их.",
-  "source": "Источник библиотеки: Cloud Mail.ru, /AllMusic"
+  "source": "Источник библиотеки: Cloud Mail.ru, /AllMusic",
+  "libraryRefresh": "Загрузить медиатеку",
+  "libraryLoading": "Чтение списка файлов из /AllMusic…",
+  "libraryEmpty": "В папке /AllMusic не найдены поддерживаемые аудиофайлы.",
+  "libraryError": "Не удалось загрузить медиатеку. Проверьте подключение в настройках.",
+  "libraryLoaded": "Треков в облаке: {count}",
+  "librarySearch": "Поиск",
+  "unknownAlbum": "Без альбома",
+  "unknownArtist": "Неизвестный исполнитель",
+  "play": "Воспроизвести",
+  "pause": "Пауза",
+  "next": "Следующий трек",
+  "prev": "Предыдущий трек",
+  "playbackError": "Ошибка воспроизведения. Проверьте сеть или формат файла.",
+  "loadingAudio": "Подготовка аудио…",
+  "@libraryLoaded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }
