@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../cloud/cloud_connection_service.dart';
 import '../../cloud/cloud_mail_webdav.dart';
 import '../../domain/remote_track.dart';
+import '../db/catalog_database.dart';
 
 /// Production session. Secrets remain behind this data layer, never in widgets.
 class CloudMusicService {
@@ -17,6 +19,8 @@ class CloudMusicService {
   final CloudMailWebDavClient _client;
   final CloudCredentialVault _vault;
   CloudCredentials? _credentials;
+  CatalogDatabase? _catalog;
+  String? _catalogFor;
 
   static const String _usernameKey = 'cloud_mail_username';
   static const String _passwordKey = 'cloud_mail_app_password';
@@ -58,7 +62,31 @@ class CloudMusicService {
     tracks.sort(
       (a, b) => a.fileName.toLowerCase().compareTo(b.fileName.toLowerCase()),
     );
-    return tracks;
+    final catalog = await _getCatalog();
+    await catalog.applyScan(tracks);
+    return await catalog.readTracks();
+  }
+
+  Future<CatalogDatabase> _getCatalog() async {
+    final credentials = await _sessionCredentials();
+    if (_catalog != null && _catalogFor == credentials.username) {
+      return _catalog!;
+    }
+    await _catalog?.close();
+    _catalogFor = credentials.username;
+    return _catalog = await openAccountCatalog(credentials.username);
+  }
+
+  Future<List<RemoteTrack>> readCachedCatalog() async {
+    try {
+      final catalog = await _getCatalog();
+      return await catalog.readTracks();
+    } on CloudMailException catch (error) {
+      if (error.code == CloudMailErrorCode.credentialsRequired) {
+        return const <RemoteTrack>[];
+      }
+      rethrow;
+    }
   }
 
   Future<Uint8List> readRange(String path, int offset, int length) async {
@@ -73,6 +101,10 @@ class CloudMusicService {
 
   void close() {
     _credentials = null;
+    final catalog = _catalog;
+    if (catalog != null) {
+      unawaited(catalog.close());
+    }
     _client.close();
   }
 }
@@ -85,13 +117,22 @@ final cloudMusicServiceProvider = Provider<CloudMusicService>((ref) {
 
 class CloudCatalogController extends AsyncNotifier<List<RemoteTrack>> {
   @override
+  // Do not block the first UI frame on native secure-store plugin startup.
+  // The refresh path restores the per-account SQLite snapshot, then syncs.
   Future<List<RemoteTrack>> build() async => const <RemoteTrack>[];
 
   Future<void> refresh() async {
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(
-      () => ref.read(cloudMusicServiceProvider).loadCatalog(),
-    );
+    state = await AsyncValue.guard(() async {
+      final service = ref.read(cloudMusicServiceProvider);
+      final cached = await service.readCachedCatalog();
+      try {
+        return await service.loadCatalog();
+      } catch (_) {
+        if (cached.isNotEmpty) return cached;
+        rethrow;
+      }
+    });
   }
 }
 

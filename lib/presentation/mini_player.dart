@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/audio/playback_controller.dart';
+import '../domain/track_queue.dart';
 import '../l10n/app_localizations.dart';
 
 class MiniPlayer extends ConsumerWidget {
@@ -74,10 +75,48 @@ class MiniPlayer extends ConsumerWidget {
                     .pauseOrResume(),
               ),
               IconButton(
-                tooltip: 'Стоп',
+                tooltip: strings.prev,
+                icon: const Icon(Icons.skip_previous),
+                onPressed: () => ref
+                    .read(playbackControllerProvider.notifier).previous(),
+              ),
+              IconButton(
+                tooltip: strings.next,
+                icon: const Icon(Icons.skip_next),
+                onPressed: () => ref
+                    .read(playbackControllerProvider.notifier).next(),
+              ),
+              IconButton(
+                tooltip: strings.stop,
                 icon: const Icon(Icons.stop),
                 onPressed: () =>
                     ref.read(playbackControllerProvider.notifier).stop(),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                tooltip: playback.shuffled ? strings.shuffleOn : strings.shuffleOff,
+                icon: Icon(
+                  playback.shuffled ? Icons.shuffle_on_outlined : Icons.shuffle,
+                ),
+                onPressed: () => ref.read(playbackControllerProvider.notifier)
+                    .setShuffle(!playback.shuffled),
+              ),
+              IconButton(
+                tooltip: switch (playback.repeatMode) {
+                  PlayerRepeatMode.off => strings.repeatOff,
+                  PlayerRepeatMode.all => strings.repeatAll,
+                  PlayerRepeatMode.one => strings.repeatOne,
+                },
+                icon: Icon(
+                  playback.repeatMode == PlayerRepeatMode.one
+                      ? Icons.repeat_one : Icons.repeat,
+                ),
+                onPressed: () =>
+                    ref.read(playbackControllerProvider.notifier).cycleRepeat(),
               ),
             ],
           ),

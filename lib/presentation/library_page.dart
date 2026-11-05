@@ -158,7 +158,7 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
                       subtitle: Text('${groups[key]!.length}'),
                       children: [
                         for (final track in groups[key]!)
-                          _TrackTile(track: track),
+                          _TrackTile(track: track, queue: groups[key]!),
                       ],
                     );
                   },
@@ -167,7 +167,7 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
               return ListView.builder(
                 itemCount: filtered.length,
                 itemBuilder: (context, index) =>
-                    _TrackTile(track: filtered[index]),
+                    _TrackTile(track: filtered[index], queue: filtered),
               );
             },
           ),
@@ -178,8 +178,9 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
 }
 
 class _TrackTile extends ConsumerWidget {
-  const _TrackTile({required this.track});
+  const _TrackTile({required this.track, required this.queue});
   final RemoteTrack track;
+  final List<RemoteTrack> queue;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -197,7 +198,8 @@ class _TrackTile extends ConsumerWidget {
       ),
       trailing: const Icon(Icons.play_arrow),
       onTap: () =>
-          ref.read(playbackControllerProvider.notifier).playTrack(track),
+          ref.read(playbackControllerProvider.notifier)
+              .playFromList(queue, queue.indexWhere((item) => item.path == track.path)),
     );
   }
 }
