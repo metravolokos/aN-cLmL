@@ -146,7 +146,7 @@ class PlaybackController extends Notifier<PlaybackView> {
             cancellation: cancellation,
           ),
         );
-        activeCache = await _cacheFuture;
+        activeCache = await _cacheFuture!;
         await activeCache.configure(track, _queue?.nextForPrefetch());
       } catch (_) {
         // A read-only cache is an optimization; playback can stream directly.
