@@ -53,7 +53,8 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: android-actions/setup-android@v3
+      # GitHub-hosted ubuntu-latest includes an Android SDK; avoid setup-android@v3
+      # because it invokes the removed SDK 'tools' package on this runner.
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.47.9'
