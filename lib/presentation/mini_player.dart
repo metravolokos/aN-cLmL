@@ -19,7 +19,10 @@ class MiniPlayer extends ConsumerWidget {
     if (playback.track == null) return const SizedBox.shrink();
     final strings = AppLocalizations.of(context)!;
     final max = playback.duration.inMilliseconds;
-    final position = playback.position.inMilliseconds.clamp(0, max > 0 ? max : 0);
+    final position = playback.position.inMilliseconds.clamp(
+      0,
+      max > 0 ? max : 0,
+    );
     return Material(
       elevation: 2,
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
@@ -31,7 +34,8 @@ class MiniPlayer extends ConsumerWidget {
               value: position.toDouble(),
               min: 0,
               max: max.toDouble(),
-              onChanged: (value) => ref.read(playbackControllerProvider.notifier)
+              onChanged: (value) => ref
+                  .read(playbackControllerProvider.notifier)
                   .seek(Duration(milliseconds: value.round())),
             )
           else if (playback.loading)
@@ -41,28 +45,39 @@ class MiniPlayer extends ConsumerWidget {
               const SizedBox(width: 12),
               const Icon(Icons.music_note),
               const SizedBox(width: 8),
-              Expanded(child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(playback.track!.displayTitle,
-                    maxLines: 1, overflow: TextOverflow.ellipsis),
-                  Text(playback.failed ? strings.playbackError
-                      : playback.loading ? strings.loadingAudio
-                      : '${_time(playback.position)} / ${_time(playback.duration)}',
-                      maxLines: 1, overflow: TextOverflow.ellipsis),
-                ],
-              )),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      playback.track!.displayTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      playback.failed
+                          ? strings.playbackError
+                          : playback.loading
+                          ? strings.loadingAudio
+                          : '${_time(playback.position)} / ${_time(playback.duration)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
               IconButton(
                 tooltip: playback.playing ? strings.pause : strings.play,
                 icon: Icon(playback.playing ? Icons.pause : Icons.play_arrow),
-                onPressed: () => ref.read(playbackControllerProvider.notifier)
+                onPressed: () => ref
+                    .read(playbackControllerProvider.notifier)
                     .pauseOrResume(),
               ),
               IconButton(
                 tooltip: 'Стоп',
                 icon: const Icon(Icons.stop),
-                onPressed: () => ref.read(playbackControllerProvider.notifier)
-                    .stop(),
+                onPressed: () =>
+                    ref.read(playbackControllerProvider.notifier).stop(),
               ),
             ],
           ),

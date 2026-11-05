@@ -36,14 +36,19 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
       AsyncData<List<RemoteTrack>>(:final value) => value,
       _ => const <RemoteTrack>[],
     };
-    final filtered = tracks.where((track) =>
-        track.displayTitle.toLowerCase().contains(_filter.toLowerCase())).toList();
+    final filtered = tracks
+        .where(
+          (track) =>
+              track.displayTitle.toLowerCase().contains(_filter.toLowerCase()),
+        )
+        .toList();
     final groups = <String, List<RemoteTrack>>{};
     if (destination == AppDestination.albums ||
         destination == AppDestination.artists) {
       for (final track in filtered) {
         final key = destination == AppDestination.albums
-            ? track.displayAlbum : track.displayArtist;
+            ? track.displayAlbum
+            : track.displayArtist;
         groups.putIfAbsent(key, () => []).add(track);
       }
     }
@@ -54,14 +59,19 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
           child: Row(
             children: [
-              Expanded(child: Text(title,
-                  style: Theme.of(context).textTheme.headlineSmall)),
+              Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+              ),
               IconButton(
                 key: const ValueKey('refresh-library'),
                 tooltip: strings.libraryRefresh,
                 icon: const Icon(Icons.refresh),
-                onPressed: tracksAsync.isLoading ? null :
-                    () => ref.read(cloudCatalogProvider.notifier).refresh(),
+                onPressed: tracksAsync.isLoading
+                    ? null
+                    : () => ref.read(cloudCatalogProvider.notifier).refresh(),
               ),
             ],
           ),
@@ -85,46 +95,57 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
           ),
         Expanded(
           child: tracksAsync.when(
-            loading: () => Center(child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(),
-                const SizedBox(height: 12),
-                Text(strings.libraryLoading),
-              ],
-            )),
-            error: (_, _) => Center(child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(strings.libraryError),
-                const SizedBox(height: 8),
-                OutlinedButton(
-                  onPressed: () => ref.read(cloudCatalogProvider.notifier).refresh(),
-                  child: Text(strings.libraryRefresh),
-                ),
-              ],
-            )),
+            loading: () => Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 12),
+                  Text(strings.libraryLoading),
+                ],
+              ),
+            ),
+            error: (_, _) => Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(strings.libraryError),
+                  const SizedBox(height: 8),
+                  OutlinedButton(
+                    onPressed: () =>
+                        ref.read(cloudCatalogProvider.notifier).refresh(),
+                    child: Text(strings.libraryRefresh),
+                  ),
+                ],
+              ),
+            ),
             data: (_) {
               if (tracks.isEmpty) {
-                return ListView(children: [Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.cloud_off_outlined, size: 48),
-                      const SizedBox(height: 10),
-                      Text(strings.libraryDisconnected),
-                      const SizedBox(height: 10),
-                      Text(strings.libraryHint),
-                      const SizedBox(height: 16),
-                      FilledButton(
-                        key: const ValueKey('load-library'),
-                        onPressed: () => ref.read(cloudCatalogProvider.notifier).refresh(),
-                        child: Text(strings.libraryRefresh),
+                return ListView(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.cloud_off_outlined, size: 48),
+                          const SizedBox(height: 10),
+                          Text(strings.libraryDisconnected),
+                          const SizedBox(height: 10),
+                          Text(strings.libraryHint),
+                          const SizedBox(height: 16),
+                          FilledButton(
+                            key: const ValueKey('load-library'),
+                            onPressed: () => ref
+                                .read(cloudCatalogProvider.notifier)
+                                .refresh(),
+                            child: Text(strings.libraryRefresh),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                )]);
+                    ),
+                  ],
+                );
               }
               if (groups.isNotEmpty) {
                 final keys = groups.keys.toList()..sort();
@@ -164,12 +185,19 @@ class _TrackTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return ListTile(
       leading: const Icon(Icons.audiotrack),
-      title: Text(track.displayTitle, maxLines: 1,
-          overflow: TextOverflow.ellipsis),
-      subtitle: Text(track.fileName, maxLines: 1,
-          overflow: TextOverflow.ellipsis),
+      title: Text(
+        track.displayTitle,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Text(
+        track.fileName,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
       trailing: const Icon(Icons.play_arrow),
-      onTap: () => ref.read(playbackControllerProvider.notifier).playTrack(track),
+      onTap: () =>
+          ref.read(playbackControllerProvider.notifier).playTrack(track),
     );
   }
 }

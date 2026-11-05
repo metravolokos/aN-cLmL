@@ -26,15 +26,12 @@ class RemoteTrack {
     return extension > 0 ? name.substring(0, extension) : name;
   }
 
-  String get displayArtist =>
-      artist == null || artist!.trim().isEmpty
-          ? 'Неизвестный исполнитель'
-          : artist!.trim();
+  String get displayArtist => artist == null || artist!.trim().isEmpty
+      ? 'Неизвестный исполнитель'
+      : artist!.trim();
 
   String get displayAlbum =>
-      album == null || album!.trim().isEmpty
-          ? 'Без альбома'
-          : album!.trim();
+      album == null || album!.trim().isEmpty ? 'Без альбома' : album!.trim();
 
   bool get isFlac => fileName.toLowerCase().endsWith('.flac');
   bool get isMp3 => fileName.toLowerCase().endsWith('.mp3');

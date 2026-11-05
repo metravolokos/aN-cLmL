@@ -62,28 +62,39 @@ class PlaybackController extends Notifier<PlaybackView> {
   AudioPlayer _ensurePlayer() {
     if (_player != null) return _player!;
     final audio = AudioPlayer();
-    _subscriptions.add(audio.positionStream.listen((position) {
-      if (!_closed) state = state.withUpdates(position: position);
-    }));
-    _subscriptions.add(audio.durationStream.listen((duration) {
-      if (!_closed && duration != null) {
-        state = state.withUpdates(duration: duration);
-      }
-    }));
-    _subscriptions.add(audio.playingStream.listen((playing) {
-      if (!_closed) state = state.withUpdates(playing: playing);
-    }));
-    _subscriptions.add(audio.processingStateStream.listen((processing) {
-      if (!_closed) {
-        state = state.withUpdates(
-          loading: processing == ProcessingState.loading ||
-              processing == ProcessingState.buffering,
-        );
-      }
-    }));
-    _subscriptions.add(audio.errorStream.listen((_) {
-      if (!_closed) state = state.withUpdates(failed: true, loading: false);
-    }));
+    _subscriptions.add(
+      audio.positionStream.listen((position) {
+        if (!_closed) state = state.withUpdates(position: position);
+      }),
+    );
+    _subscriptions.add(
+      audio.durationStream.listen((duration) {
+        if (!_closed && duration != null) {
+          state = state.withUpdates(duration: duration);
+        }
+      }),
+    );
+    _subscriptions.add(
+      audio.playingStream.listen((playing) {
+        if (!_closed) state = state.withUpdates(playing: playing);
+      }),
+    );
+    _subscriptions.add(
+      audio.processingStateStream.listen((processing) {
+        if (!_closed) {
+          state = state.withUpdates(
+            loading:
+                processing == ProcessingState.loading ||
+                processing == ProcessingState.buffering,
+          );
+        }
+      }),
+    );
+    _subscriptions.add(
+      audio.errorStream.listen((_) {
+        if (!_closed) state = state.withUpdates(failed: true, loading: false);
+      }),
+    );
     return _player = audio;
   }
 
@@ -92,10 +103,9 @@ class PlaybackController extends Notifier<PlaybackView> {
     try {
       final reader = ref.read(cloudMusicServiceProvider);
       final player = _ensurePlayer();
-      await player.setAudioSource(CloudRangeAudioSource(
-        track,
-        reader.readRange,
-      ));
+      await player.setAudioSource(
+        CloudRangeAudioSource(track, reader.readRange),
+      );
       unawaited(player.play());
     } catch (_) {
       state = state.withUpdates(failed: true, loading: false);
@@ -123,6 +133,4 @@ class PlaybackController extends Notifier<PlaybackView> {
 }
 
 final playbackControllerProvider =
-    NotifierProvider<PlaybackController, PlaybackView>(
-      PlaybackController.new,
-    );
+    NotifierProvider<PlaybackController, PlaybackView>(PlaybackController.new);

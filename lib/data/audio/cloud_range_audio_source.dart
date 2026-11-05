@@ -9,8 +9,8 @@ import 'package:just_audio/just_audio.dart';
 
 import '../../domain/remote_track.dart';
 
-typedef RangeFetcher = Future<Uint8List> Function(
-    String path, int offset, int length);
+typedef RangeFetcher =
+    Future<Uint8List> Function(String path, int offset, int length);
 
 /// Converts authenticated, fixed-size WebDAV GETs into a seekable byte stream.
 /// Never embeds the user's Authorization header in a URL or local proxy.

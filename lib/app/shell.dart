@@ -76,10 +76,11 @@ class AppShell extends ConsumerWidget {
             ),
           ),
           bottomNavigationBar: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const MiniPlayer(),
-                if (!wide) NavigationBar(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const MiniPlayer(),
+              if (!wide)
+                NavigationBar(
                   key: const ValueKey('navigation-bar'),
                   selectedIndex: destination.index,
                   onDestinationSelected: select,
@@ -91,8 +92,8 @@ class AppShell extends ConsumerWidget {
                       ),
                   ],
                 ),
-              ],
-            ),
+            ],
+          ),
         );
       },
     );

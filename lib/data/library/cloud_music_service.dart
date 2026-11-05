@@ -53,14 +53,11 @@ class CloudMusicService {
       }
       final size = entry.sizeBytes;
       if (size == null || size <= 0) continue;
-      tracks.add(RemoteTrack(
-        path: path,
-        sizeBytes: size,
-        etag: entry.etag,
-      ));
+      tracks.add(RemoteTrack(path: path, sizeBytes: size, etag: entry.etag));
     }
-    tracks.sort((a, b) =>
-        a.fileName.toLowerCase().compareTo(b.fileName.toLowerCase()));
+    tracks.sort(
+      (a, b) => a.fileName.toLowerCase().compareTo(b.fileName.toLowerCase()),
+    );
     return tracks;
   }
 

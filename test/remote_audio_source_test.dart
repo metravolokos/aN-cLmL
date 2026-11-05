@@ -5,25 +5,28 @@ import 'package:cloudmail_player/domain/remote_track.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('FLAC remote source requests exact 64 KiB chunks and accepts seek', () async {
-    final calls = <(int, int)>[];
-    final track = RemoteTrack(path: 'Аудио.flac', sizeBytes: 150000);
-    final source = CloudRangeAudioSource(track, (path, offset, length) async {
-      expect(path, 'Аудио.flac');
-      calls.add((offset, length));
-      return Uint8List(length);
-    });
-    final response = await source.request(50000, 150000);
-    var bytes = 0;
-    await for (final chunk in response.stream) {
-      bytes += chunk.length;
-    }
-    expect(response.sourceLength, 150000);
-    expect(response.offset, 50000);
-    expect(response.contentType, 'audio/flac');
-    expect(bytes, 100000);
-    expect(calls, [(50000, 65536), (115536, 34464)]);
-  });
+  test(
+    'FLAC remote source requests exact 64 KiB chunks and accepts seek',
+    () async {
+      final calls = <(int, int)>[];
+      final track = RemoteTrack(path: 'Аудио.flac', sizeBytes: 150000);
+      final source = CloudRangeAudioSource(track, (path, offset, length) async {
+        expect(path, 'Аудио.flac');
+        calls.add((offset, length));
+        return Uint8List(length);
+      });
+      final response = await source.request(50000, 150000);
+      var bytes = 0;
+      await for (final chunk in response.stream) {
+        bytes += chunk.length;
+      }
+      expect(response.sourceLength, 150000);
+      expect(response.offset, 50000);
+      expect(response.contentType, 'audio/flac');
+      expect(bytes, 100000);
+      expect(calls, [(50000, 65536), (115536, 34464)]);
+    },
+  );
 
   test('StreamAudioSource prevents offsets outside file size', () async {
     final source = CloudRangeAudioSource(
