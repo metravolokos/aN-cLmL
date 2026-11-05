@@ -76,12 +76,13 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
       AsyncData<List<RemoteTrack>>(:final value) => value,
       _ => const <RemoteTrack>[],
     };
-    final filtered = tracks
-        .where(
-          (track) =>
-              track.displayTitle.toLowerCase().contains(_filter.toLowerCase()),
-        )
-        .toList();
+    final query = _filter.trim().toLowerCase();
+    final filtered = tracks.where((track) {
+      if (query.isEmpty) return true;
+      return track.displayTitle.toLowerCase().contains(query) ||
+          track.displayArtist.toLowerCase().contains(query) ||
+          track.displayAlbum.toLowerCase().contains(query);
+    }).toList();
     final groups = <String, List<RemoteTrack>>{};
     if (destination == AppDestination.albums ||
         destination == AppDestination.artists) {
