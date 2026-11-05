@@ -1,0 +1,38 @@
+name: One-time queue formatter
+on:
+  push:
+    branches: [feature/queue-controls-20261105]
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/queue-controls-20261105
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: stable
+      - run: flutter pub get --enforce-lockfile
+      - name: Format, analyze and test
+        shell: bash
+        run: |
+          dart format lib test
+          flutter gen-l10n
+          flutter analyze
+          flutter test
+      - name: Commit formatter output
+        shell: bash
+        run: |
+          set -eu
+          git add lib test
+          git diff --cached --check
+          if ! git diff --cached --quiet; then
+            git config user.name github-actions[bot]
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m "style(queue): apply Dart formatter"
+            git push origin HEAD:refs/heads/feature/queue-controls-20261105
+          fi
