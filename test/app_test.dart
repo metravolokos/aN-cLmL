@@ -183,7 +183,6 @@ void main() {
 
     expect(service.savedUsername, 'fake@example.invalid');
     expect(service.savedPassword, 'test-app-password');
-    expect(find.textContaining('Подключение проверено'), findsOneWidget);
     expect(
       tester
           .widget<TextField>(find.byKey(const ValueKey('cloud-password-field')))
@@ -191,8 +190,14 @@ void main() {
           .text,
       isEmpty,
     );
+    await tester.drag(find.byType(ListView), const Offset(0, -500));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Подключение проверено'), findsOneWidget);
 
+    await tester.ensureVisible(find.byKey(const ValueKey('disconnect-button')));
     await tester.tap(find.byKey(const ValueKey('disconnect-button')));
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(ListView), const Offset(0, -500));
     await tester.pumpAndSettle();
     expect(
       find.text('Сохранённые учётные данные удалены с устройства.'),
