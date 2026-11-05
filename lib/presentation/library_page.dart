@@ -156,7 +156,8 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
                     return ExpansionTile(
                       title: Text(
                         destination == AppDestination.albums
-                            ? groups[key]!.first.displayAlbum : key,
+                            ? groups[key]!.first.displayAlbum
+                            : key,
                       ),
                       subtitle: Text(
                         destination == AppDestination.albums

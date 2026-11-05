@@ -91,8 +91,7 @@ void main() {
     await cache.close();
     final resumed = await TwoTrackAudioCache.open(
       directory: temp,
-      fetch: (path, offset, length, {cancellation}) async =>
-          Uint8List(length),
+      fetch: (path, offset, length, {cancellation}) async => Uint8List(length),
     );
     expect((await temp.list().toList()).whereType<File>(), isEmpty);
     await resumed.close();

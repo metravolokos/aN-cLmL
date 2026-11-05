@@ -10,12 +10,13 @@ import 'package:path_provider/path_provider.dart';
 import '../../cloud/cloud_mail_webdav.dart';
 import '../../domain/remote_track.dart';
 
-typedef CacheRangeFetch = Future<Uint8List> Function(
-  String path,
-  int offset,
-  int length, {
-  WebDavRequestCancellation? cancellation,
-});
+typedef CacheRangeFetch =
+    Future<Uint8List> Function(
+      String path,
+      int offset,
+      int length, {
+      WebDavRequestCancellation? cancellation,
+    });
 
 /// Keeps only the current and next audio files as temporary storage.
 class TwoTrackAudioCache {
@@ -33,7 +34,8 @@ class TwoTrackAudioCache {
     required CacheRangeFetch fetch,
     Directory? directory,
   }) async {
-    final target = directory ??
+    final target =
+        directory ??
         Directory(p.join((await getTemporaryDirectory()).path, 'cloud_audio'));
     await target.create(recursive: true);
     for (final entry in target.listSync(followLinks: false)) {
@@ -46,8 +48,12 @@ class TwoTrackAudioCache {
   }
 
   String _key(RemoteTrack track) {
-    final source = track.path + '\u0000' + (track.etag ?? '') +
-        '\u0000' + track.sizeBytes.toString();
+    final source =
+        track.path +
+        '\u0000' +
+        (track.etag ?? '') +
+        '\u0000' +
+        track.sizeBytes.toString();
     return sha256.convert(source.codeUnits).toString();
   }
 
@@ -119,8 +125,12 @@ class TwoTrackAudioCache {
         final length = math.min(rangeBytes, slot.track.sizeBytes - offset);
         final token = WebDavRequestCancellation();
         slot.cancellation = token;
-        final bytes = await _fetch(slot.track.path, offset, length,
-            cancellation: token);
+        final bytes = await _fetch(
+          slot.track.path,
+          offset,
+          length,
+          cancellation: token,
+        );
         if (slot.cancelled || _closed) return;
         if (bytes.length != length) {
           throw const FormatException('Unexpected remote chunk length');
@@ -134,7 +144,10 @@ class TwoTrackAudioCache {
       await file.close();
       file = null;
       if (slot.cancelled || _closed) return;
-      final readyPath = slot.file.path.replaceFirst(RegExp(r'\.part$'), '.ready');
+      final readyPath = slot.file.path.replaceFirst(
+        RegExp(r'\.part$'),
+        '.ready',
+      );
       slot.file = await slot.file.rename(readyPath);
       slot.complete = true;
     } catch (_) {
@@ -161,9 +174,7 @@ class TwoTrackAudioCache {
     if (slot != null && offset + length > slot.track.sizeBytes) {
       throw RangeError('Audio offset beyond end of file');
     }
-    if (slot != null &&
-        slot.downloaded >= offset + length &&
-        !slot.cancelled) {
+    if (slot != null && slot.downloaded >= offset + length && !slot.cancelled) {
       RandomAccessFile? file;
       try {
         file = await slot.file.open(mode: FileMode.read);

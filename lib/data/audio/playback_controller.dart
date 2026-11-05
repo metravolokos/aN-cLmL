@@ -71,9 +71,11 @@ class PlaybackController extends Notifier<PlaybackView> {
       if (player != null) unawaited(player.dispose());
       final cacheFuture = _cacheFuture;
       if (cacheFuture != null) {
-        unawaited(cacheFuture.then((cache) => cache.close()).onError(
-          (Object _, StackTrace __) {},
-        ));
+        unawaited(
+          cacheFuture
+              .then((cache) => cache.close())
+              .onError((Object _, StackTrace __) {}),
+        );
       }
     });
     return const PlaybackView();
@@ -134,17 +136,18 @@ class PlaybackController extends Notifier<PlaybackView> {
       TwoTrackAudioCache? activeCache;
       try {
         _cacheFuture ??= TwoTrackAudioCache.open(
-          fetch: (
-            String path,
-            int offset,
-            int length, {
-            WebDavRequestCancellation? cancellation,
-          }) => reader.readRange(
-            path,
-            offset,
-            length,
-            cancellation: cancellation,
-          ),
+          fetch:
+              (
+                String path,
+                int offset,
+                int length, {
+                WebDavRequestCancellation? cancellation,
+              }) => reader.readRange(
+                path,
+                offset,
+                length,
+                cancellation: cancellation,
+              ),
         );
         activeCache = await _cacheFuture!;
         await activeCache.configure(track, _queue?.nextForPrefetch());
@@ -153,9 +156,11 @@ class PlaybackController extends Notifier<PlaybackView> {
         final abandoned = _cacheFuture;
         _cacheFuture = null;
         if (abandoned != null) {
-          unawaited(abandoned.then((cache) => cache.close()).onError(
-            (Object _, StackTrace __) {},
-          ));
+          unawaited(
+            abandoned
+                .then((cache) => cache.close())
+                .onError((Object _, StackTrace __) {}),
+          );
         }
         activeCache = null;
       }

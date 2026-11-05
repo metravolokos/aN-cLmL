@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-typedef Mp3RangeReader = Future<Uint8List> Function(
-    String path, int offset, int length);
+typedef Mp3RangeReader =
+    Future<Uint8List> Function(String path, int offset, int length);
 
 class Mp3Tags {
   const Mp3Tags({
@@ -102,7 +102,13 @@ class Mp3TagReader {
           throw const FormatException('ID3 frame outside tag');
         }
         if (const {
-          'TIT2', 'TPE1', 'TPE2', 'TALB', 'TRCK', 'TPOS', 'TLEN',
+          'TIT2',
+          'TPE1',
+          'TPE2',
+          'TALB',
+          'TRCK',
+          'TPOS',
+          'TLEN',
         }.contains(id)) {
           if (length > maximumTextBytes) {
             throw const FormatException('Oversized ID3 text frame');
