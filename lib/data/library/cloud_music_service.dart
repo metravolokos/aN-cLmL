@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../cloud/cloud_connection_service.dart';
 import '../../cloud/cloud_mail_webdav.dart';
 import '../../domain/remote_track.dart';
+import '../artwork/flac_artwork_reader.dart';
 import '../db/catalog_database.dart';
 import '../tags/flac_tag_reader.dart';
 import '../tags/mp3_tag_reader.dart';
@@ -103,6 +104,16 @@ class CloudMusicService {
       length: length,
       cancellation: cancellation,
     );
+  }
+
+  /// Embedded artwork is loaded lazily for the displayed track only.
+  Future<Uint8List?> readArtwork(RemoteTrack track) async {
+    if (!track.isFlac) return null;
+    final artwork = await FlacArtworkReader(readRange).read(
+      track.path,
+      track.sizeBytes,
+    );
+    return artwork?.bytes;
   }
 
   /// The UI gets a usable file list immediately; tags update in background
