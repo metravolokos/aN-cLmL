@@ -5,8 +5,15 @@ A Flutter app for Windows and Android, initially using Russian Material 3 UI.
 adaptive bottom navigation / Windows rail, and system/light/dark theme mode.
 The user confirmed launches and UI operation on both platforms (2026-11-05).
 
-**Not yet implemented:** actual connection to Cloud Mail.ru, music indexing,
-artwork, playback, queues or background services. M2-A is the next step.
+**M2-A connection slice:** Settings accepts a Cloud Mail.ru login and an
+external-application password, verifies read-only access to `/AllMusic`, and
+stores both values in OS-backed secure storage. The WebDAV client only issues
+Depth 0/1 PROPFIND and bounded Range GET requests to
+`https://webdav.cloud.mail.ru/AllMusic` and descendants. It does not build a
+catalog, read tags, download complete media files, or play audio.
+
+**Not yet implemented:** local music indexing, artwork, playback, queues or
+background services. M2-B and M2-C remain separate slices.
 
 ## Development
 
@@ -36,16 +43,25 @@ the user. The GMS-free binary audit remains a release acceptance check.
 
 - lib/app: Material UI shell and Riverpod navigation/theme state.
 - lib/l10n/app_ru.arb: Russian strings, gen-l10n generated Dart classes.
-- lib/domain/services.dart: contracts, not connected implementations.
+- lib/cloud: bounded read-only WebDAV transport and secure credential service.
+- lib/domain/services.dart: contracts for later catalog and playback work.
 - android, windows: native runners; Android minimum API 24.
 - test: Flutter widgets; tests and tools: bounded Python M0 probe.
 - docs: status, roadmap, architecture decisions and focused M2-A task.
 
-## Privacy
+## Privacy and connection behavior
 
-Future cloud source is strictly https://webdav.cloud.mail.ru/AllMusic. Do not
-commit secrets or personal cloud filenames. No GMS, Firebase, telemetry,
-playlists or favorites. Android build-time Google's Maven repository does not
-imply runtime Google Mobile Services, but the final APK still needs auditing.
+Cloud requests are restricted to `https://webdav.cloud.mail.ru/AllMusic` and
+descendants; redirects are disabled. Login and app password are written to
+OS-backed secure storage only after a successful check. Android app backups are
+disabled so encrypted keys cannot be restored without their device keystore.
+Disconnect deletes both stored values. CI uses only a local anonymous fake
+server and never receives a personal Cloud Mail.ru credential.
 
-Next scope: docs/M2A_CODEX_TASK.md; comprehensive M2 plan in Issue #3.
+The Android build checks its resolved runtime dependency graph for Google Play
+Services and Firebase. The secure-storage plugin's Android cryptography
+dependency is Tink, a standalone crypto library, not Google Play Services.
+There is no telemetry, playlist, favorite, or GMS dependency.
+
+Next scope: M2-B local SQLite catalog as a separate change, tracked in
+[Issue #3](https://github.com/metravolokos/cloudmail-player-m0/issues/3).

@@ -1,4 +1,4 @@
-name: Flutter M1
+name: Flutter M2-A
 on:
   push:
     branches: [main]
@@ -22,6 +22,22 @@ jobs:
           cache: true
       - run: flutter --version
       - run: dart --version
+      # Bootstrap the new dependency lock in CI; this update is removed after
+      # the generated pubspec.lock is committed in the feature branch.
+      - run: flutter pub get
+      - run: dart format lib test
+      - uses: actions/upload-artifact@v4
+        with:
+          name: m2a-bootstrap-files
+          path: |
+            pubspec.lock
+            lib/app/shell.dart
+            lib/cloud/cloud_mail_webdav.dart
+            lib/cloud/cloud_connection_service.dart
+            lib/l10n/app_ru.arb
+            test/app_test.dart
+            test/cloud_mail_webdav_test.dart
+            test/cloud_connection_service_test.dart
       - run: flutter pub get --enforce-lockfile
       - run: flutter gen-l10n
       - run: dart format --output=none --set-exit-if-changed lib test
@@ -38,6 +54,7 @@ jobs:
           flutter-version: '3.47.9'
           channel: stable
           cache: true
+      - run: flutter pub get
       - run: flutter pub get --enforce-lockfile
       - run: flutter build windows --release
       - uses: actions/upload-artifact@v4
@@ -60,8 +77,19 @@ jobs:
           flutter-version: '3.47.9'
           channel: stable
           cache: true
+      - run: flutter pub get
       - run: flutter pub get --enforce-lockfile
       - run: flutter build apk --debug
+      - name: Audit Android runtime graph for Google Play Services
+        shell: bash
+        run: |
+          dependency_report="$RUNNER_TEMP/android-runtime-dependencies.txt"
+          ./android/gradlew -p android :app:dependencies --configuration debugRuntimeClasspath > "$dependency_report"
+          if grep -Eq 'com\.google\.android\.gms:|com\.google\.firebase:' "$dependency_report"; then
+            echo 'Google Play Services or Firebase found in the Android runtime dependency graph.'
+            exit 1
+          fi
+          echo 'No Google Play Services or Firebase runtime dependencies found.'
       - uses: actions/upload-artifact@v4
         with:
           name: cloudmail-player-android-debug

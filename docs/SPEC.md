@@ -35,8 +35,11 @@ No requirement to implement media playback, fake library data or cloud login in 
 
 The shell source implements the M1 UI slice. Navigation switches at 720 logical
 pixels; destination and theme survive layout changes in the same app session.
-Theme persistence across restarts is deferred. Capability contracts have no cloud,
-storage or player implementation. Settings never request credentials.
+Theme persistence across restarts is deferred. M1 originally shipped Settings
+without credentials; M2-A now adds an external-application password form,
+read-only `/AllMusic` verification, and OS-backed credential storage. Device
+connection and storage behavior must be confirmed by the user on Android and
+Windows.
 
 M1 acceptance: Flutter 3.47.9 / Dart 3.13.7 Quality completed with
 flutter analyze (zero issues), four widget tests, six Python M0 tests and strict
@@ -45,4 +48,5 @@ CI run #42013267771. The user confirmed both apps launch and function.
 Flutter create subsequently reconciled platform templates, and a genuine
 pubspec.lock was committed. Cloud login, media indexing, covers and playback
 are explicitly not part of the M1 shell. A GMS-free APK dependency audit remains
-required before release. M2-A is the next approved development slice.
+checked in the M2-A Android CI job. M2-B is the next approved development slice
+after M2-A device acceptance.
