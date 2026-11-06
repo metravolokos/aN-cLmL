@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
-Name=CloudMail Player
-Name[ru]=CloudMail Плеер
+Name=teStPlaYclouDE
+Name[ru]=teStPlaYclouDE
 Comment=Personal WebDAV music library player
 Comment[ru]=Плеер для личной музыкальной коллекции в облаке
 Exec=cloudmail_player

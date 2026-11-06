@@ -55,7 +55,7 @@ class _WindowsMediaControlsBridgeState
     if (!Platform.isWindows || !_windowsMediaControlsInitialized) return;
     try {
       _smtc = SMTCWindows(
-        metadata: const MusicMetadata(title: 'CloudMail Player'),
+        metadata: const MusicMetadata(title: 'teStPlaYclouDE'),
         config: const SMTCConfig(
           playEnabled: true,
           pauseEnabled: true,

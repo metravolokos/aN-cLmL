@@ -1,42 +1,30 @@
-# CloudMail Player — implementation status (2026-11-06)
+# teStPlaYclouDE — evidence-based status (2026-11-06)
 
-## Integrated on main (source and CI, not hardware acceptance)
+**Main baseline at audit start:** `8aa15507691c2ac391f05b7a00467ef98cb9b0be` (PR #30). The latest merge may be newer; always inspect GitHub before relying on this anchor.
 
-- Flutter 3.47.9 one-codebase app with Russian Material 3 interface and Android, Windows, Linux build runners.
-- Authenticated, read-only Cloud Mail.ru WebDAV rooted at `/AllMusic`, secure OS credential store, bounded PROPFIND, HTTP 206 Range GET and 64 KiB network GET cap.
-- Drift/SQLite catalog, FLAC/MP3 metadata indexing, tracks/albums/artists, search and album track/disc ordering (PR #21).
-- just_audio (Android Media3) and MediaKit (Windows/Linux) playback, queue, shuffle/repeat, mini-player, Now Playing and temporary current+next cache.
-- Async Stop/track-switch and credential/Disconnect generation guards; late Play/Seek cannot restart a stopped queue (PR #23).
-- Embedded FLAC artwork, lazy album thumbnails and responsive album grid with playable disc/track-ordered album sheet (PRs #15, #18, #24).
-- Android foreground MediaSession and system/headset buttons (PR #19); Windows SMTC controls (PR #22); Linux MPRIS D-Bus bridge (PR #25). Platform adapters use the same playback controller and OS audio mixer.
+## Implemented in main and checked by source/CI
 
-## In development
+- Flutter 3.47.9, Dart 3.13.7, Russian Material 3 UI; Android, Windows and Linux builds.
+- Read-only HTTPS Cloud Mail.ru `/AllMusic`, secure OS vault, bounded Depth:1 PROPFIND, strict 206 ranges with hard 64 KiB per GET, no redirect credentials.
+- Drift/SQLite per-account single-table catalog with generation-based refresh; FLAC/MP3 bounded tag parsing and filename fallback; tracks/albums/artists/search and disc/track ordering.
+- FLAC embedded cover ranges, album grid, resizable 640px thumbnails, persistent 64 MiB per-account cover LRU; transient in-memory Now Playing artwork.
+- just_audio/Media3 (Android), just_audio_media_kit/libmpv (Windows/Linux); single logical queue, seek, shuffle/repeat, mini-player/Now Playing; temporary current+next disk cache (512 MiB total cap), prefetch and stop/disconnect generation protections.
+- Android audio_service foreground MediaSession and audio_session music focus, Windows native SMTC, Linux MPRIS; all bridge to existing controller.
+- CI: Quality + Android debug + Windows release folder + Linux release bundle; optional ARM64 debug-signed Android release-mode preview and GNOME 51 Flatpak preview. Flatpak packaging tests exported executable, ICU and direct ELF dependencies in sandbox.
 
-- Android music audio focus configuration is merged (PR #26); hardware interruptions and headset routing remain unverified.
-- Persistent resized artwork thumbnail cache with bounded disk LRU is in draft PR #28; hardware performance and reuse are not yet accepted.
-- ARM64 APK for device testing is available from CI with **debug signing only** (PR #27). Production-signed APK, Windows package and Linux Flatpak are still pending.
+**Representative exact-head CI:** four jobs #42130938884 and Flatpak #42130938855 passed on PR #30 head `f4d37b8`. These are **build/source/sandbox smoke evidence**, not audio playback acceptance.
 
-## NOT yet validated on physical devices / real cloud
+## Not yet implemented or not confirmed
 
-- Authenticated `/AllMusic` indexing and FLAC/MP3 playback on all three target platforms, including seek and cache reuse, without full-file metadata downloads.
-- Android AOSP without GMS and Huawei device media panel, Bluetooth, USB DAC, headphone disconnect, phone call interruption and real background playback.
-- Windows 11 SMTC media keys and sound on actual hardware.
-- GNOME 51 Wayland Linux launch, MPRIS media controls, Secret Service persistence and Flatpak sandbox behavior.
-- Application startup from distributable signed/packaged artifacts.
-- Large-library UX/performance; gapless playback is not claimed.
+- **Not shipped**: stable production-signed APK; installer/MSIX for Windows; formally release-ready, license-audited Flatpak distribution; automated release/version/signing process.
+- **Implementation gaps**: persistent queue/theme state across restart; complete audio formats beyond proven FLAC/MP3 tag support; 50k keyset UI and FTS5 (current catalog loads full lists); robust DB migration history and targeted migration tests; advanced recovery/metrics and formal performance budgets.
+- **Hardware/live-cloud acceptance missing**: real account login/index/seek/audio on all OSes; Android GMS-free device behavior and Huawei media panel/BT/USB DAC/headphones/calls; Windows SMTC/media keys; Linux GNOME 51 Wayland, Flatpak Secret Service/MPRIS/libmpv and audible playback.
+- **Important**: absence of confirmed results is not proof of failure; equally, a successful CI build cannot be described as tested on devices.
 
-## Process
+## Non-goals
 
-Quality + Android + Windows + Linux jobs must all be green for the exact current PR head, with conflict check, before merge. CI builds validate source and artifacts, **never** actual audio, OS media panels or real Cloud Mail.ru server behavior. No credentials in code, logs or CI, and no modifications to remote music files. Run only targeted tests with a meaningful failure or acceptance gate.
+No cloud writes, playlists/favorites/EQ, GMS, telemetry or analytics. No promise of gapless playback. Remote metadata uses bounded Range, not full-media GET.
 
-## Recent merged PRs
+For history and superseded PRs see DEVELOPMENT_HISTORY; known audit concerns see PUBLIC_REPOSITORY_AUDIT; up-to-date decisions in DECISION_INDEX.
 
-- #15 and #18 — embedded FLAC cover and album thumbnails.
-- #19 — Android foreground MediaSession.
-- #21 — album disc/track ordering.
-- #22 — Windows native SMTC.
-- #23 — stale media-command protection after Stop.
-- #24 — responsive album cover grid.
-- #25 — Linux MPRIS.
-- #26 — Android music audio focus.
-- #27 — Android ARM64 test-installable APK workflow.
+**Requirement-by-requirement gap register:** [REQUIREMENTS_TRACEABILITY.md](REQUIREMENTS_TRACEABILITY.md). Manual evidence form: [TESTING_MANUAL.md](TESTING_MANUAL.md). Changelog is tracked in root CHANGELOG.md.

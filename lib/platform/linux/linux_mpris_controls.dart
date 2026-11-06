@@ -19,7 +19,7 @@ Future<void> initializeLinuxMprisControls() async {
       builder: CloudLinuxAudioHandler.new,
       config: const AudioServiceConfig(
         androidNotificationChannelId: 'cloudmail_player.mpris',
-        androidNotificationChannelName: 'CloudMail Player',
+        androidNotificationChannelName: 'teStPlaYclouDE',
         androidNotificationOngoing: false,
       ),
     );
