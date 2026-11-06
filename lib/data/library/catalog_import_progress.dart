@@ -1,5 +1,6 @@
-import '../../cloud/cloud_mail_webdav.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../cloud/cloud_mail_webdav.dart';
 
 /// Progress of one refresh. A WebDAV Depth:1 listing has no known file count
 /// until its bounded XML response is received; show transferred bytes first.
