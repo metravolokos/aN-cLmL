@@ -26,6 +26,7 @@ class CloudLibraryPage extends ConsumerStatefulWidget {
 
 class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
   final Map<AppDestination, TextEditingController> _searchControllers = {};
+  final Set<AppDestination> _expandedSearch = {};
 
   @override
   void dispose() {
@@ -51,10 +52,11 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
     final importProgress = ref.watch(catalogImportProgressProvider);
     final destination = widget.destination;
     final title = switch (destination) {
+      AppDestination.home => strings.home,
       AppDestination.tracks => strings.tracks,
       AppDestination.albums => strings.albums,
       AppDestination.artists => strings.artists,
-      AppDestination.settings => strings.settings,
+
     };
     final tracks = switch (tracksAsync) {
       AsyncData<List<RemoteTrack>>(:final value) => value,
@@ -91,6 +93,22 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
                   title,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
+              ),
+              IconButton(
+                key: ValueKey('library-search-toggle-${destination.name}'),
+                tooltip: strings.librarySearch,
+                icon: Icon(
+                  _expandedSearch.contains(destination)
+                      ? Icons.close
+                      : Icons.search,
+                ),
+                onPressed: () => setState(() {
+                  if (!_expandedSearch.remove(destination)) {
+                    _expandedSearch.add(destination);
+                  } else {
+                    _searchFor(destination).clear();
+                  }
+                }),
               ),
               IconButton(
                 key: const ValueKey('refresh-library'),
@@ -138,16 +156,27 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
               ),
             ),
           ),
-        if (tracks.isNotEmpty)
+        if (_expandedSearch.contains(destination))
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
             child: TextField(
               key: ValueKey('library-search-${destination.name}'),
+              autofocus: true,
               controller: _searchFor(destination),
+              textInputAction: TextInputAction.search,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.search),
-                labelText: strings.librarySearch,
-                border: const OutlineInputBorder(),
+                hintText: strings.librarySearch,
+                filled: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(28),
+                  borderSide: BorderSide.none,
+                ),
+                suffixIcon: IconButton(
+                  tooltip: strings.clearSearch,
+                  icon: const Icon(Icons.clear),
+                  onPressed: () => setState(() => _searchFor(destination).clear()),
+                ),
               ),
               onChanged: (_) => setState(() {}),
             ),
