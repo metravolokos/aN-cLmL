@@ -17,6 +17,7 @@ import '../artwork/cover_thumbnail_cache.dart';
 import '../db/catalog_database.dart';
 import '../tags/flac_tag_reader.dart';
 import '../tags/mp3_tag_reader.dart';
+import 'catalog_import_progress.dart';
 
 /// The only data layer that resolves protected credentials for WebDAV reads.
 class CloudMusicService {
@@ -67,9 +68,15 @@ class CloudMusicService {
     return _catalog = await openAccountCatalog(credentials.username);
   }
 
-  Future<List<RemoteTrack>> loadCatalog() async {
+  Future<List<RemoteTrack>> loadCatalog({
+    void Function(int receivedBytes)? onResponseBytes,
+  }) async {
     final credentials = await _sessionCredentials();
-    final entries = await _client.propfind(credentials, depth: 1);
+    final entries = await _client.propfind(
+      credentials,
+      depth: 1,
+      onResponseBytes: onResponseBytes,
+    );
     final tracks = <RemoteTrack>[];
     for (final entry in entries) {
       if (entry.isCollection || entry.relativePath.isEmpty) continue;
@@ -171,10 +178,12 @@ class CloudMusicService {
   /// with bounded concurrency and never consume a full audio file.
   Future<void> scanMetadata({
     void Function(List<RemoteTrack> tracks, int done, int total)? onProgress,
+    void Function(int total)? onStarted,
     bool Function()? isCancelled,
   }) async {
     final catalog = await _getCatalog();
     final pending = await catalog.unindexedTracks();
+    onStarted?.call(pending.length);
     if (pending.isEmpty) return;
     final parser = FlacTagReader(readRange);
     final mp3Parser = Mp3TagReader(readRange);
@@ -209,7 +218,7 @@ class CloudMusicService {
           duration: tags?.duration ?? id3?.duration,
         );
         completed++;
-        if (completed % 32 == 0 || completed == pending.length) {
+        if (completed % 8 == 0 || completed == pending.length) {
           final snapshot = await catalog.readTracks();
           onProgress?.call(snapshot, completed, pending.length);
         }
@@ -245,42 +254,63 @@ class CloudCatalogController extends AsyncNotifier<List<RemoteTrack>> {
     return const <RemoteTrack>[];
   }
 
+  /// Keep a readable catalog visible while the remote directory is refreshed.
+  /// A completed PROPFIND is the safe boundary for a durable SQLite generation.
   Future<void> refresh() async {
-    if (_refreshing) return;
+    if (_refreshing || _disposed) return;
     _refreshing = true;
-    state = const AsyncValue.loading();
+    final progress = ref.read(catalogImportProgressProvider.notifier);
+    final previous = state.asData?.value ?? const <RemoteTrack>[];
+    if (previous.isEmpty) state = const AsyncValue.loading();
+    progress.beginListing();
+    var visible = previous;
     try {
       final service = ref.read(cloudMusicServiceProvider);
       final cached = await service.readCachedCatalog();
       if (_disposed) return;
-      if (cached.isNotEmpty) state = AsyncValue.data(cached);
-      try {
-        final tracks = await service.loadCatalog();
-        if (_disposed) return;
-        state = AsyncValue.data(tracks);
-        unawaited(_scanMetadata(service));
-      } catch (error, trace) {
-        if (_disposed) return;
-        if (cached.isEmpty) state = AsyncValue.error(error, trace);
+      if (cached.isNotEmpty) {
+        visible = cached;
+        state = AsyncValue.data(cached);
       }
+      final tracks = await service.loadCatalog(
+        onResponseBytes: (received) {
+          if (!_disposed) progress.received(received);
+        },
+      );
+      if (_disposed) return;
+      // Filenames and sizes become playable immediately, before downloading
+      // any FLAC/ID3 tags. SQLite has committed this complete listing.
+      visible = tracks;
+      state = AsyncValue.data(tracks);
+      await _scanMetadata(service, progress);
+      if (!_disposed) progress.finish();
     } catch (error, trace) {
-      if (!_disposed) state = AsyncValue.error(error, trace);
+      if (_disposed) return;
+      progress.fail();
+      // A network failure must not hide previously saved tracks.
+      if (visible.isEmpty) state = AsyncValue.error(error, trace);
     } finally {
       _refreshing = false;
     }
   }
 
-  Future<void> _scanMetadata(CloudMusicService service) async {
-    try {
-      await service.scanMetadata(
-        isCancelled: () => _disposed,
-        onProgress: (tracks, done, total) {
-          if (!_disposed) state = AsyncValue.data(tracks);
-        },
-      );
-    } catch (_) {
-      // Retain a valid file list even if tag scanning is interrupted.
-    }
+  Future<void> _scanMetadata(
+    CloudMusicService service,
+    CatalogImportProgressController progress,
+  ) async {
+    await service.scanMetadata(
+      isCancelled: () => _disposed,
+      onStarted: (total) {
+        if (!_disposed) progress.beginMetadata(total);
+      },
+      onProgress: (tracks, done, total) {
+        if (_disposed) return;
+        // Each batch is persisted before publication, so interruption leaves
+        // a usable catalog and the next launch resumes unindexed records.
+        state = AsyncValue.data(tracks);
+        progress.metadata(done, total);
+      },
+    );
   }
 }
 

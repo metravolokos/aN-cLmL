@@ -12,8 +12,34 @@ import '../presentation/mini_player.dart';
 import '../l10n/app_localizations.dart';
 import 'state.dart';
 
-class AppShell extends ConsumerWidget {
+class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key});
+
+  @override
+  ConsumerState<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends ConsumerState<AppShell> {
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_restoreSavedLibrary());
+  }
+
+  Future<void> _restoreSavedLibrary() async {
+    try {
+      final saved = await ref
+          .read(cloudConnectionServiceProvider)
+          .loadSavedConnection();
+      if (!mounted || !saved.hasCredentials) return;
+      // Authentication remains exclusively in the OS secure store. An app
+      // restart automatically opens the cached library and refreshes WebDAV.
+      unawaited(ref.read(cloudCatalogProvider.notifier).refresh());
+    } catch (_) {
+      // The Settings page exposes credential/keyring errors without trying to
+      // reconnect using stale or missing secrets.
+    }
+  }
 
   static const railBreakpoint = 720.0;
   static const icons = [
@@ -219,6 +245,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         _hasSavedCredentials = true;
         _connected = true;
       });
+      // A successful connection must start library import without an extra
+      // manual button and must never wait for metadata before showing tracks.
+      unawaited(ref.read(cloudCatalogProvider.notifier).refresh());
     } on CloudMailException catch (error) {
       if (!mounted) return;
       setState(() => _error = error.code);

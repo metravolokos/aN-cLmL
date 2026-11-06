@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../app/state.dart';
 import '../data/audio/playback_controller.dart';
 import '../data/library/cloud_music_service.dart';
+import '../data/library/catalog_import_progress.dart';
 import '../domain/remote_track.dart';
 import '../domain/album_track_order.dart';
 import '../l10n/app_localizations.dart';
@@ -63,6 +64,7 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context)!;
     final tracksAsync = ref.watch(cloudCatalogProvider);
+    final importProgress = ref.watch(catalogImportProgressProvider);
     final destination = widget.destination;
     final title = switch (destination) {
       AppDestination.tracks => strings.tracks,
@@ -113,13 +115,50 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
                 key: const ValueKey('refresh-library'),
                 tooltip: strings.libraryRefresh,
                 icon: const Icon(Icons.refresh),
-                onPressed: tracksAsync.isLoading
+                onPressed: importProgress.inProgress
                     ? null
                     : () => ref.read(cloudCatalogProvider.notifier).refresh(),
               ),
             ],
           ),
         ),
+        if (importProgress.inProgress || importProgress.failed)
+          Padding(
+            key: const ValueKey('library-import-progress'),
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
+            child: Semantics(
+              liveRegion: true,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    switch (importProgress.phase) {
+                      CatalogImportPhase.listing =>
+                        strings.libraryReceiveProgress(
+                          importProgress.receivedBytes ~/ 1024,
+                        ),
+                      CatalogImportPhase.metadata =>
+                        strings.libraryMetadataProgress(
+                          importProgress.done,
+                          importProgress.total,
+                        ),
+                      CatalogImportPhase.failed => strings.libraryError,
+                      _ => '',
+                    },
+                    key: const ValueKey('library-progress-label'),
+                  ),
+                  const SizedBox(height: 6),
+                  if (importProgress.inProgress)
+                    LinearProgressIndicator(
+                      value: importProgress.phase == CatalogImportPhase.metadata &&
+                              importProgress.total > 0
+                          ? importProgress.done / importProgress.total
+                          : null,
+                    ),
+                ],
+              ),
+            ),
+          ),
         if (tracks.isNotEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
