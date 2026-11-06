@@ -21,6 +21,7 @@ class CloudRangeAudioSource extends StreamAudioSource {
     this.fetcher, {
     Object? mediaTag,
     this.onRangeFailure,
+    this.onRangeSuccess,
   }) : super(tag: mediaTag);
 
   static const int chunkSize = 64 * 1024;
@@ -30,6 +31,9 @@ class CloudRangeAudioSource extends StreamAudioSource {
 
   /// Emits only fixed error codes, never authenticated URLs or exceptions.
   final void Function(String code)? onRangeFailure;
+
+  /// Signals a successfully received byte chunk, never exposing media bytes.
+  final void Function()? onRangeSuccess;
 
   @override
   Future<StreamAudioResponse> request([int? start, int? end]) async {
@@ -58,6 +62,7 @@ class CloudRangeAudioSource extends StreamAudioSource {
           onRangeFailure?.call('P12');
           throw StateError('Remote response has unexpected byte count');
         }
+        onRangeSuccess?.call();
         yield part;
       } on CloudMailException catch (error) {
         // P11 means an authenticated WebDAV range failed; suffix is a safe
