@@ -102,6 +102,34 @@ void main() {
     expect(find.byKey(const ValueKey('library-import-progress')), findsNothing);
   });
 
+  testWidgets('settings displays import progress during automatic refresh', (
+    tester,
+  ) async {
+    final service = _ImportService();
+    addTearDown(service.close);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          cloudConnectionServiceProvider.overrideWithValue(_SavedConnection()),
+          cloudMusicServiceProvider.overrideWithValue(service),
+        ],
+        child: const CloudMailApp(),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    await tester.tap(find.text('Настройки').last);
+    await tester.pump();
+    expect(find.byKey(const ValueKey('settings-import-progress')), findsOneWidget);
+    expect(find.textContaining('4 КБ'), findsOneWidget);
+    service.remote.complete(const [
+      RemoteTrack(path: 'Сохранённый.flac', sizeBytes: 123),
+      RemoteTrack(path: 'Добавленный.flac', sizeBytes: 456),
+    ]);
+    await tester.pump();
+    await tester.pump();
+  });
+
   test('progress counts track metadata separately from listing bytes', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
