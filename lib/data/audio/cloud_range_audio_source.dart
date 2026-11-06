@@ -31,6 +31,7 @@ class CloudRangeAudioSource extends StreamAudioSource {
 
   /// Emits only fixed error codes, never authenticated URLs or exceptions.
   final void Function(String code)? onRangeFailure;
+
   /// Signals a successfully received byte chunk, never exposing media bytes.
   final void Function()? onRangeSuccess;
 

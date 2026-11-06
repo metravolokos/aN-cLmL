@@ -138,7 +138,8 @@ class PlaybackController extends Notifier<PlaybackView> {
             failed: true,
             playing: false,
             loading: false,
-            failureCode: state.failureCode ??
+            failureCode:
+                state.failureCode ??
                 'P03-${error.code}-${_streamDeliveredBytes ? 'data' : 'no-data'}',
           );
         }

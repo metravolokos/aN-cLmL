@@ -52,18 +52,20 @@ void main() {
       expect(next.failureCode, 'P01');
     },
   );
-  test('successful upstream chunk is observable without exposing bytes', () async {
-    var chunksReceived = 0;
-    final source = CloudRangeAudioSource(
-      track,
-      (path, offset, length) async => Uint8List(length),
-      onRangeSuccess: () => chunksReceived++,
-    );
-    final response = await source.request(0, 12);
-    final received = await response.stream.toList();
-    expect(received, hasLength(1));
-    expect(received.single.length, 12);
-    expect(chunksReceived, 1);
-  });
-
+  test(
+    'successful upstream chunk is observable without exposing bytes',
+    () async {
+      var chunksReceived = 0;
+      final source = CloudRangeAudioSource(
+        track,
+        (path, offset, length) async => Uint8List(length),
+        onRangeSuccess: () => chunksReceived++,
+      );
+      final response = await source.request(0, 12);
+      final received = await response.stream.toList();
+      expect(received, hasLength(1));
+      expect(received.single.length, 12);
+      expect(chunksReceived, 1);
+    },
+  );
 }
