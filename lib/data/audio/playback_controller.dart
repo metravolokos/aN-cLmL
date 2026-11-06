@@ -198,7 +198,20 @@ class PlaybackController extends Notifier<PlaybackView> {
         await player.stop();
         return;
       }
-      unawaited(player.play());
+      // Reflect the user's requested Play immediately. Some backends emit a
+      // delayed/duplicate "playing=false" while replacing their source.
+      state = state.withUpdates(playing: true, loading: false, failed: false);
+      unawaited(
+        player.play().catchError((Object _) {
+          if (!_closed && generation == _operationGeneration) {
+            state = state.withUpdates(
+              playing: false,
+              loading: false,
+              failed: true,
+            );
+          }
+        }),
+      );
     } catch (_) {
       // A cancelled open must not resurrect a failed state after Stop.
       if (!_closed && generation == _operationGeneration) {
