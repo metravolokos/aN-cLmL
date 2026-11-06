@@ -67,21 +67,16 @@ void main() {
     await launch(tester, const Size(390, 844));
     expect(find.byType(NavigationBar), findsOneWidget);
     expect(find.byType(NavigationRail), findsNothing);
+    expect(find.byKey(const ValueKey('page-home')), findsOneWidget);
     expect(find.text('Библиотека не подключена'), findsOneWidget);
-    for (final entry in {
-      'Альбомы': 'albums',
-      'Исполнители': 'artists',
-      'Настройки': 'settings',
-      'Треки': 'tracks',
-    }.entries) {
-      await tester.tap(
-        find.descendant(
-          of: find.byType(NavigationBar),
-          matching: find.text(entry.key),
-        ),
-      );
+    expect(
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).labelBehavior,
+      NavigationDestinationLabelBehavior.alwaysHide,
+    );
+    for (final name in ['tracks', 'albums', 'artists', 'home']) {
+      await tester.tap(find.byKey(ValueKey('nav-$name')));
       await tester.pumpAndSettle();
-      expect(find.byKey(ValueKey('page-${entry.value}')), findsOneWidget);
+      expect(find.byKey(ValueKey('page-$name')), findsOneWidget);
       expect(tester.takeException(), isNull);
     }
     expect(find.byType(TextField), findsNothing);
@@ -93,7 +88,7 @@ void main() {
     await launch(tester, const Size(1200, 800));
     expect(find.byType(NavigationRail), findsOneWidget);
     expect(find.byType(NavigationBar), findsNothing);
-    await tester.tap(find.text('Альбомы'));
+    await tester.tap(find.byKey(const ValueKey('nav-albums')));
     await tester.pumpAndSettle();
     tester.view.physicalSize = const Size(390, 844);
     await tester.pumpAndSettle();
@@ -112,7 +107,7 @@ void main() {
     tester,
   ) async {
     await launch(tester, const Size(390, 844));
-    await tester.tap(find.text('Настройки'));
+    await tester.tap(find.byKey(const ValueKey('home-settings')));
     await tester.pumpAndSettle();
     for (final entry in {
       'Тёмная': ThemeMode.dark,
@@ -147,7 +142,7 @@ void main() {
     await launch(tester, const Size(320, 480));
     tester.platformDispatcher.textScaleFactorTestValue = 1.5;
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-    await tester.tap(find.text('Настройки'));
+    await tester.tap(find.byKey(const ValueKey('home-settings')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('theme-selector')), findsOneWidget);
     await tester.drag(find.byType(ListView), const Offset(0, -200));
@@ -160,7 +155,7 @@ void main() {
   ) async {
     final service = _FakeConnectionService();
     await launch(tester, const Size(390, 844), service: service);
-    await tester.tap(find.text('Настройки'));
+    await tester.tap(find.byKey(const ValueKey('home-settings')));
     await tester.pumpAndSettle();
 
     await tester.enterText(
@@ -186,7 +181,9 @@ void main() {
     // Connecting must reveal the library rather than leave the user on
     // Settings with a seemingly empty collection.
     expect(find.byKey(const ValueKey('page-tracks')), findsOneWidget);
-    await tester.tap(find.text('Настройки'));
+    await tester.tap(find.byKey(const ValueKey('nav-home')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('home-settings')));
     await tester.pumpAndSettle();
     expect(
       tester
@@ -222,7 +219,7 @@ void main() {
       nextError: CloudMailErrorCode.invalidCredentials,
     );
     await launch(tester, const Size(390, 844), service: service);
-    await tester.tap(find.text('Настройки'));
+    await tester.tap(find.byKey(const ValueKey('home-settings')));
     await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(const ValueKey('cloud-login-field')),
