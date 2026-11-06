@@ -126,10 +126,20 @@ class NowPlayingPage extends ConsumerWidget {
                       if (playback.failed)
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: Text(
-                            labels.playbackError,
-                            style: TextStyle(color: colors.error),
-                            textAlign: TextAlign.center,
+                          child: Column(
+                            children: [
+                              Text(
+                                labels.playbackError,
+                                style: TextStyle(color: colors.error),
+                                textAlign: TextAlign.center,
+                              ),
+                              if (playback.failureCode case final code?)
+                                Text(
+                                  labels.playbackErrorCode(code),
+                                  key: const ValueKey('playback-diagnostic-code'),
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                            ],
                           ),
                         ),
                       if (playback.loading)
