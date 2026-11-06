@@ -8,6 +8,11 @@ Significant source changes to **teStPlaYclouDE** are tracked here. This is a dev
 - Adopt exact public product name teStPlaYclouDE in Flutter/Android/Windows/Linux/Flatpak display labels. Internal package IDs and GitHub slug intentionally remain stable for future install/data migration.
 - Publish a full handover: source audit, requirements traceability, PR history, defect decisions, ADR index, security policy, license, contribution process and release limitations.
 
+### Security and reliability
+- PR #37: use opaque MediaSession IDs to avoid publishing private cloud filenames in Android system metadata (ADR-0014).
+- PR #35: guard transport controls during asynchronous track switching.
+- PRs #32–#34: GitHub Actions runner/action dependency updates and Riverpod 3.4.3.
+
 ### Existing development preview milestones (before this handover)
 - PR #30: verify direct ELF runtime linkage inside GNOME Flatpak sandbox.
 - PR #29: GNOME 51 Flatpak packaging preview, with missing `eu-strip` fix.

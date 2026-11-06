@@ -34,6 +34,16 @@ This is a **source-grounded chronological reconstruction** of public PRs and mai
 - PR #30 merged `8aa1550`: direct ELF dependency resolution smoke *inside* Flatpak; [four-platform CI #42130938884](https://github.com/metravolokos/cloudmail-player-m0/actions/runs/42130938884) and [Flatpak CI #42130938855](https://github.com/metravolokos/cloudmail-player-m0/actions/runs/42130938855) passed.
 - Subsequent public preparation adopts exact display name `teStPlaYclouDE`, documents handoff, fixes stale descriptions and records remaining release/hardware gates. The historical repository name is retained pending a separate repository-settings migration.
 
+## Public maintenance and playback hardening on 2026-11-06
+
+- PR #31 merged `111c176`: adopted the public name **teStPlaYclouDE**, refreshed README, AGENTS, STATUS, architecture, requirements/ADR traceability, security and licensing handover. Internal app IDs remain unchanged.
+- PR #32 merged `e37fb21`: update `actions/setup-python` v5 → v7; PR #33 merged `c0da639`: checkout v4 → v7. Automated dependency maintenance requires exact-head CI, not blind approval.
+- PR #34 merged `baf78f7`: flutter_riverpod 3.0.3 → 3.4.3, actual package pin now in `pubspec.yaml`.
+- PR #35 merged `afa62ba`: guard playback transport controls during async track/source switching; this does not itself prove real-device sound or prevent every stale stream-event race.
+- PR #37 merged `acf56f6`: Android MediaSession no longer exposes relative WebDAV filename through `MediaItem.id`; opaque hash derived from track identity, regression test and ADR-0014. Exact-head [Quality + Android + Windows + Linux #42170135377](https://github.com/metravolokos/cloudmail-player-m0/actions/runs/42170135377) all passed.
+- PR #36 (draft when reviewed) addresses stale player-stream callbacks during track changes; its CI was red on then-current HEAD. Do not describe as integrated unless subsequently merged.
+- PR #38 (draft when reviewed) adds redacted Git history scanning. First scan found two `generic-api-key`-rule candidates, **not confirmed secrets**. The workflow suppresses matched values, filenames and raw logs. Do not suppress findings or claim secret-free history without private triage.
+
 ## Lessons, negative results and reproducibility
 
 - Several overlapping feature branches caused stale-base conflicts and duplicated work; use clean feature branches from *current* main and squash a single tested capability at a time.
