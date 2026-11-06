@@ -266,6 +266,7 @@ class CloudCatalogController extends AsyncNotifier<List<RemoteTrack>> {
     if (previous.isEmpty) state = const AsyncValue.loading();
     progress.beginListing();
     var visible = previous;
+    var failureStage = CatalogFailureStage.listing;
     try {
       final service = ref.read(cloudMusicServiceProvider);
       final cached = await service.readCachedCatalog();
@@ -284,11 +285,15 @@ class CloudCatalogController extends AsyncNotifier<List<RemoteTrack>> {
       // any FLAC/ID3 tags. SQLite has committed this complete listing.
       visible = tracks;
       state = AsyncValue.data(tracks);
+      failureStage = CatalogFailureStage.metadata;
       await _scanMetadata(service, progress);
       if (!_disposed) progress.finish();
     } catch (error, trace) {
       if (_disposed) return;
-      progress.fail();
+      progress.fail(
+        stage: failureStage,
+        code: error is CloudMailException ? error.code : null,
+      );
       // A network failure must not hide previously saved tracks.
       if (visible.isEmpty) state = AsyncValue.error(error, trace);
     } finally {
