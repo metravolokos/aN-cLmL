@@ -135,8 +135,12 @@ class NowPlayingPage extends ConsumerWidget {
                               ),
                               if (playback.failureCode != null)
                                 Text(
-                                  labels.playbackErrorCode(playback.failureCode!),
-                                  key: const ValueKey('playback-diagnostic-code'),
+                                  labels.playbackErrorCode(
+                                    playback.failureCode!,
+                                  ),
+                                  key: const ValueKey(
+                                    'playback-diagnostic-code',
+                                  ),
                                   style: Theme.of(context).textTheme.bodySmall,
                                 ),
                             ],

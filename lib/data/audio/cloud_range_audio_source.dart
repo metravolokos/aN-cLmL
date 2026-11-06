@@ -27,6 +27,7 @@ class CloudRangeAudioSource extends StreamAudioSource {
 
   final RemoteTrack track;
   final RangeFetcher fetcher;
+
   /// Emits only fixed error codes, never authenticated URLs or exceptions.
   final void Function(String code)? onRangeFailure;
 

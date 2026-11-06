@@ -30,6 +30,7 @@ class PlaybackView {
   final bool playing;
   final bool loading;
   final bool failed;
+
   /// Privacy-safe diagnostic classification, never an exception message.
   final String? failureCode;
   final bool shuffled;

@@ -18,7 +18,10 @@ void main() {
       onRangeFailure: (code) => diagnostic = code,
     );
     final response = await source.request(0, 12);
-    await expectLater(response.stream.toList(), throwsA(isA<CloudMailException>()));
+    await expectLater(
+      response.stream.toList(),
+      throwsA(isA<CloudMailException>()),
+    );
     expect(diagnostic, 'P11-timeout');
   });
 
@@ -34,16 +37,19 @@ void main() {
     expect(diagnostic, 'P12');
   });
 
-  test('playback view retains diagnostic classification across status updates', () {
-    const initial = PlaybackView(
-      track: track,
-      failed: true,
-      playing: false,
-      failureCode: 'P01',
-    );
-    final next = initial.withUpdates(loading: false, playing: false);
-    expect(next.failed, isTrue);
-    expect(next.playing, isFalse);
-    expect(next.failureCode, 'P01');
-  });
+  test(
+    'playback view retains diagnostic classification across status updates',
+    () {
+      const initial = PlaybackView(
+        track: track,
+        failed: true,
+        playing: false,
+        failureCode: 'P01',
+      );
+      final next = initial.withUpdates(loading: false, playing: false);
+      expect(next.failed, isTrue);
+      expect(next.playing, isFalse);
+      expect(next.failureCode, 'P01');
+    },
+  );
 }
