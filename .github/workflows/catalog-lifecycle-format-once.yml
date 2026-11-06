@@ -2,7 +2,11 @@ name: One-time catalog lifecycle formatter and targeted test
 on:
   push:
     branches: [fix/await-catalog-listing-20261106]
-    paths: [.github/workflows/catalog-lifecycle-format-once.yml]
+    paths:
+      - .github/workflows/catalog-lifecycle-format-once.yml
+      - lib/data/library/cloud_music_service.dart
+      - lib/app/shell.dart
+      - test/settings_connect_listing_gate_test.dart
 permissions:
   contents: write
 jobs:
