@@ -40,3 +40,5 @@ No playlists, favorites, analytics, telemetry, Google services or writes to remo
 ## License
 
 Source is provided under the [MIT License](LICENSE). This does **not** relicense Flutter, transitive plugins, MediaKit, libmpv, codecs, fonts or bundled libraries. Binary redistribution requires a verified dependency and native-codec license inventory; see [release and licensing gates](docs/RELEASE_AND_LICENSING.md).
+
+See also [requirements traceability](docs/REQUIREMENTS_TRACEABILITY.md), [manual acceptance checklist](docs/TESTING_MANUAL.md) and [changelog](CHANGELOG.md).

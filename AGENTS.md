@@ -42,3 +42,5 @@ bash tools/check_layers.sh
 `flutter build apk --debug` (Android), `flutter build windows --release` (Windows), `flutter build linux --release` (Linux). Windows also needs Rust for `smtc_windows`. No secrets in CI. Platform acceptance instructions: docs/PLATFORMS.md and docs/RELEASE_AND_LICENSING.md.
 
 Before adding dependencies, compare maintainability, supported platforms, GMS independence and licenses; pin exact versions, update the lockfile and ADR. Avoid repeated load/endurance tests unless investigating a measured defect.
+
+Before labeling any item complete, check docs/REQUIREMENTS_TRACEABILITY.md. Use docs/TESTING_MANUAL.md for real hardware checks; do not invent results.

@@ -26,3 +26,5 @@
 No cloud writes, playlists/favorites/EQ, GMS, telemetry or analytics. No promise of gapless playback. Remote metadata uses bounded Range, not full-media GET.
 
 For history and superseded PRs see DEVELOPMENT_HISTORY; known audit concerns see PUBLIC_REPOSITORY_AUDIT; up-to-date decisions in DECISION_INDEX.
+
+**Requirement-by-requirement gap register:** [REQUIREMENTS_TRACEABILITY.md](REQUIREMENTS_TRACEABILITY.md). Manual evidence form: [TESTING_MANUAL.md](TESTING_MANUAL.md). Changelog is tracked in root CHANGELOG.md.

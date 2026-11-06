@@ -18,3 +18,5 @@ This is a prioritized engineering backlog, **not** an assertion of device accept
 M0/M1 engineering baseline; M2 WebDAV/index/tags; M3 library/artwork; M4 playback; M5 current+next cache; M6 queue; M7 Android/Windows/Linux media sessions; M8 robustness/scalability; M9 distribution. **Many source slices M2–M7 are merged, but none may be called fully accepted on actual target devices without evidence.** M8 and M9 remain incomplete.
 
 Always tackle the smallest confirmed failure; keep one feature per PR, tests and CI for exact current HEAD. History is in DEVELOPMENT_HISTORY.md.
+
+A section-by-section mapping of the full user spec, including unimplemented UI/platform/format/test requirements, is maintained in [REQUIREMENTS_TRACEABILITY.md](REQUIREMENTS_TRACEABILITY.md).
