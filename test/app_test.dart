@@ -183,6 +183,11 @@ void main() {
 
     expect(service.savedUsername, 'fake@example.invalid');
     expect(service.savedPassword, 'test-app-password');
+    // Connecting must reveal the library rather than leave the user on
+    // Settings with a seemingly empty collection.
+    expect(find.byKey(const ValueKey('page-tracks')), findsOneWidget);
+    await tester.tap(find.text('Настройки'));
+    await tester.pumpAndSettle();
     expect(
       tester
           .widget<TextField>(find.byKey(const ValueKey('cloud-password-field')))
