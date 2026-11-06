@@ -36,10 +36,7 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
   }
 
   TextEditingController _searchFor(AppDestination destination) =>
-      _searchControllers.putIfAbsent(
-        destination,
-        TextEditingController.new,
-      );
+      _searchControllers.putIfAbsent(destination, TextEditingController.new);
 
   void _openAlbum(BuildContext context, List<RemoteTrack> tracks) {
     Navigator.of(context).push<void>(
