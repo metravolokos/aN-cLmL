@@ -99,7 +99,7 @@ class TwoTrackAudioCache {
     }
     if (now != null && current.sizeBytes > 0) {
       onCurrentProgress?.call(
-        (now.downloaded / current.sizeBytes).clamp(0.0, 1.0),
+        (now.downloaded / current.sizeBytes).clamp(0.0, 1.0).toDouble(),
       );
     }
     final following = next == null ? null : _slots[_key(next)];
@@ -153,7 +153,7 @@ class TwoTrackAudioCache {
         final percent = (fraction * 100).floor();
         if (percent != slot.reportedPercent) {
           slot.reportedPercent = percent;
-          slot.onProgress?.call(fraction.clamp(0.0, 1.0));
+          slot.onProgress?.call(fraction.clamp(0.0, 1.0).toDouble());
         }
         offset += length;
         slot.cancellation = null;
