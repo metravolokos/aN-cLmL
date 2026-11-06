@@ -247,6 +247,17 @@ final cloudMusicServiceProvider = Provider<CloudMusicService>((ref) {
 class CloudCatalogController extends AsyncNotifier<List<RemoteTrack>> {
   bool _disposed = false;
   bool _refreshing = false;
+  int _sessionGeneration = 0;
+
+  /// Clear the previous account without disposing this UI-bound notifier.
+  /// Outstanding imports from the previous session cannot publish results.
+  void resetSession() {
+    _sessionGeneration++;
+    _refreshing = false;
+    state = const AsyncValue.data(<RemoteTrack>[]);
+    ref.read(catalogImportProgressProvider.notifier).reset();
+  }
+
 
   @override
   List<RemoteTrack> build() {
@@ -273,6 +284,8 @@ class CloudCatalogController extends AsyncNotifier<List<RemoteTrack>> {
     }
 
     _refreshing = true;
+    final generation = _sessionGeneration;
+    bool inactive() => _disposed || generation != _sessionGeneration;
     final progress = ref.read(catalogImportProgressProvider.notifier);
     final previous = state.asData?.value ?? const <RemoteTrack>[];
     if (previous.isEmpty) state = const AsyncValue.loading();
@@ -282,17 +295,17 @@ class CloudCatalogController extends AsyncNotifier<List<RemoteTrack>> {
     try {
       final service = ref.read(cloudMusicServiceProvider);
       final cached = await service.readCachedCatalog();
-      if (_disposed) return;
+      if (inactive()) return;
       if (cached.isNotEmpty) {
         visible = cached;
         state = AsyncValue.data(cached);
       }
       final tracks = await service.loadCatalog(
         onResponseBytes: (received) {
-          if (!_disposed) progress.received(received);
+          if (!inactive()) progress.received(received);
         },
       );
-      if (_disposed) return;
+      if (inactive()) return;
       // Filenames and sizes become playable immediately, before downloading
       // any FLAC/ID3 tags. SQLite has committed this complete listing.
       visible = tracks;
@@ -301,9 +314,9 @@ class CloudCatalogController extends AsyncNotifier<List<RemoteTrack>> {
       resolveListing(true);
       failureStage = CatalogFailureStage.metadata;
       await _scanMetadata(service, progress);
-      if (!_disposed) progress.finish();
+      if (!inactive()) progress.finish();
     } catch (error, trace) {
-      if (_disposed) {
+      if (inactive()) {
         resolveListing(false);
         return;
       }
@@ -316,7 +329,7 @@ class CloudCatalogController extends AsyncNotifier<List<RemoteTrack>> {
       if (visible.isEmpty) state = AsyncValue.error(error, trace);
     } finally {
       resolveListing(false);
-      _refreshing = false;
+      if (!inactive()) _refreshing = false;
     }
   }
 
@@ -330,7 +343,7 @@ class CloudCatalogController extends AsyncNotifier<List<RemoteTrack>> {
         if (!_disposed) progress.beginMetadata(total);
       },
       onProgress: (tracks, done, total) {
-        if (_disposed) return;
+        if (inactive()) return;
         // Each batch is persisted before publication, so interruption leaves
         // a usable catalog and the next launch resumes unindexed records.
         state = AsyncValue.data(tracks);
