@@ -1,8 +1,11 @@
+import '../../cloud/cloud_mail_webdav.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Progress of one refresh. A WebDAV Depth:1 listing has no known file count
 /// until its bounded XML response is received; show transferred bytes first.
 enum CatalogImportPhase { idle, listing, metadata, finished, failed }
+
+enum CatalogFailureStage { listing, metadata }
 
 class CatalogImportProgress {
   const CatalogImportProgress({
@@ -10,12 +13,16 @@ class CatalogImportProgress {
     this.receivedBytes = 0,
     this.done = 0,
     this.total = 0,
+    this.failureStage,
+    this.failureCode,
   });
 
   final CatalogImportPhase phase;
   final int receivedBytes;
   final int done;
   final int total;
+  final CatalogFailureStage? failureStage;
+  final CloudMailErrorCode? failureCode;
 
   bool get inProgress =>
       phase == CatalogImportPhase.listing ||
@@ -52,8 +59,14 @@ class CatalogImportProgressController extends Notifier<CatalogImportProgress> {
   void finish() =>
       state = const CatalogImportProgress(phase: CatalogImportPhase.finished);
 
-  void fail() =>
-      state = const CatalogImportProgress(phase: CatalogImportPhase.failed);
+  void fail({
+    CatalogFailureStage stage = CatalogFailureStage.listing,
+    CloudMailErrorCode? code,
+  }) => state = CatalogImportProgress(
+    phase: CatalogImportPhase.failed,
+    failureStage: stage,
+    failureCode: code,
+  );
 }
 
 final catalogImportProgressProvider =
