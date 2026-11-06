@@ -82,6 +82,49 @@ void main() {
     expect(find.byType(TextField), findsNothing);
   });
 
+  testWidgets('search unfolds inline, clears and closes per library tab', (
+    tester,
+  ) async {
+    await launch(tester, const Size(390, 844));
+    await tester.tap(find.byKey(const ValueKey('nav-tracks')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('library-search-tracks')), findsNothing);
+
+    await tester.tap(
+      find.byKey(const ValueKey('library-search-toggle-tracks')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('library-search-tracks')), findsOneWidget);
+    await tester.enterText(
+      find.byKey(const ValueKey('library-search-tracks')),
+      'Ёжик',
+    );
+    await tester.pump();
+
+    await tester.tap(find.byKey(const ValueKey('nav-albums')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('library-search-albums')), findsNothing);
+    await tester.tap(
+      find.byKey(const ValueKey('library-search-toggle-albums')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('library-search-albums')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('nav-tracks')));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<TextField>(
+        find.byKey(const ValueKey('library-search-tracks')),
+      ).controller!.text,
+      'Ёжик',
+    );
+    await tester.tap(
+      find.byKey(const ValueKey('library-search-toggle-tracks')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('library-search-tracks')), findsNothing);
+  });
+
   testWidgets('wide rail navigates and retains selection across resizing', (
     tester,
   ) async {
