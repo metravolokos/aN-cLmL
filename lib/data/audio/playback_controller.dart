@@ -18,6 +18,7 @@ class PlaybackView {
     this.duration = Duration.zero,
     this.playing = false,
     this.loading = false,
+    this.bufferedFraction = 0,
     this.failed = false,
     this.failureCode,
     this.shuffled = false,
@@ -29,6 +30,9 @@ class PlaybackView {
   final Duration duration;
   final bool playing;
   final bool loading;
+
+  /// Contiguous proportion of the current track actually downloaded to cache.
+  final double bufferedFraction;
   final bool failed;
 
   /// Privacy-safe diagnostic classification, never an exception message.
@@ -42,6 +46,7 @@ class PlaybackView {
     Duration? duration,
     bool? playing,
     bool? loading,
+    double? bufferedFraction,
     bool? failed,
     String? failureCode,
     bool? shuffled,
@@ -52,6 +57,7 @@ class PlaybackView {
     duration: duration ?? this.duration,
     playing: playing ?? this.playing,
     loading: loading ?? this.loading,
+    bufferedFraction: bufferedFraction ?? this.bufferedFraction,
     failed: failed ?? this.failed,
     failureCode: failureCode ?? this.failureCode,
     shuffled: shuffled ?? this.shuffled,
@@ -206,7 +212,18 @@ class PlaybackController extends Notifier<PlaybackView> {
               ),
         );
         activeCache = await _cacheFuture!;
-        await activeCache.configure(track, _queue?.nextForPrefetch());
+        await activeCache.configure(
+          track,
+          _queue?.nextForPrefetch(),
+          onCurrentProgress: (fraction) {
+            if (!_closed &&
+                generation == _operationGeneration &&
+                _queue != null &&
+                state.track?.path == track.path) {
+              state = state.withUpdates(bufferedFraction: fraction);
+            }
+          },
+        );
       } catch (_) {
         // A read-only cache is an optimization; playback can stream directly.
         final abandoned = _cacheFuture;

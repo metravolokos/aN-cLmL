@@ -50,6 +50,27 @@ void main() {
     expect((await temp.list().toList()).whereType<File>(), hasLength(2));
   });
 
+  test(
+    'current-track buffer reports real cached bytes and reaches 100%',
+    () async {
+      final fractions = <double>[];
+      await cache.configure(trackA, trackB, onCurrentProgress: fractions.add);
+      await waitFor(trackA);
+      expect(fractions, isNotEmpty);
+      expect(fractions.first, 0);
+      expect(fractions.last, 1);
+      expect(
+        fractions.every((fraction) => fraction >= 0 && fraction <= 1),
+        isTrue,
+      );
+      expect(
+        fractions.toList()..sort(),
+        fractions,
+        reason: 'The current cache fills contiguously from the start',
+      );
+    },
+  );
+
   test('completed track seek is served from disk with no new GET', () async {
     await cache.configure(trackA, trackB);
     await waitFor(trackA);

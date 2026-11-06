@@ -18,6 +18,8 @@ class FakePlaybackController extends PlaybackController {
     ),
     position: Duration(seconds: 12),
     duration: Duration(seconds: 45),
+    bufferedFraction: 0.75,
+    loading: true,
     playing: false,
   );
 }
@@ -46,5 +48,9 @@ void main() {
     expect(find.text('Альбом'), findsOneWidget);
     expect(find.text('0:12'), findsOneWidget);
     expect(find.text('0:45'), findsOneWidget);
+    expect(find.byKey(const ValueKey('buffered-waveform')), findsOneWidget);
+    expect(find.byKey(const ValueKey('now-playing-seek')), findsOneWidget);
+    expect(find.byType(LinearProgressIndicator), findsNothing);
+    expect(tester.takeException(), isNull);
   });
 }
