@@ -87,7 +87,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                     destinations: [
                       for (var i = 0; i < labels.length; i++)
                         NavigationRailDestination(
-                          icon: Icon(icons[i]),
+                          icon: Icon(icons[i], key: ValueKey('nav-${AppDestination.values[i].name}')),
                           label: Text(labels[i]),
                         ),
                     ],
@@ -113,7 +113,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                   destinations: [
                     for (var i = 0; i < labels.length; i++)
                       NavigationDestination(
-                        icon: Icon(icons[i]),
+                        icon: Icon(icons[i], key: ValueKey('nav-${AppDestination.values[i].name}')),
                         label: labels[i],
                       ),
                   ],
@@ -162,9 +162,9 @@ class HomePage extends ConsumerWidget {
           label: Text(strings.settings),
           onPressed: () => Navigator.of(context).push<void>(
             MaterialPageRoute<void>(
-              builder: (_) => const Scaffold(
+              builder: (_) => Scaffold(
                 appBar: AppBar(),
-                body: SettingsPage(),
+                body: const SettingsPage(),
               ),
             ),
           ),
