@@ -363,7 +363,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     }
     if (!mounted) return;
     ref.invalidate(cloudMusicServiceProvider);
-    ref.invalidate(cloudCatalogProvider);
+    // Preserve the UI-bound notifier: invalidating it here could discard the
+    // refresh launched immediately after Connect and leave the library idle.
+    ref.read(cloudCatalogProvider.notifier).resetSession();
   }
 
   Future<void> _disconnect() async {
