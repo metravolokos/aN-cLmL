@@ -1,13 +1,16 @@
-name: CloudMail Player — three platforms
+name: aN-cLmL — Android and quality
+
 on:
   push:
     branches: [main]
   pull_request:
   workflow_dispatch:
+
 permissions:
   contents: read
+
 concurrency:
-  group: three-platform-${{ github.ref }}
+  group: android-quality-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -48,6 +51,7 @@ jobs:
       - name: No GMS or Firebase runtime dependencies
         shell: bash
         run: |
+          set -euo pipefail
           report="$RUNNER_TEMP/gradle-runtime.txt"
           ./android/gradlew -p android :app:dependencies --configuration debugRuntimeClasspath > "$report"
           if grep -Eq 'com\.google\.android\.gms:|com\.google\.firebase:' "$report"; then
@@ -55,50 +59,10 @@ jobs:
             exit 1
           fi
           echo 'No GMS/Firebase dependency found'
-      - name: Audit Android release manifest INTERNET permission
-        shell: bash
-        run: |
-          grep -q 'android.permission.INTERNET' android/app/src/main/AndroidManifest.xml
+      - name: Android manifest INTERNET permission
+        run: grep -q 'android.permission.INTERNET' android/app/src/main/AndroidManifest.xml
       - uses: actions/upload-artifact@v4
         with:
-          name: cloudmail-player-android-debug
+          name: an-clml-android-debug
           path: build/app/outputs/flutter-apk/app-debug.apk
-
-  windows:
-    runs-on: windows-latest
-    timeout-minutes: 25
-    steps:
-      - uses: actions/checkout@v7
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.47.9'
-          channel: stable
-          cache: true
-      - run: flutter pub get --enforce-lockfile
-      - run: flutter build windows --release
-      - uses: actions/upload-artifact@v4
-        with:
-          name: cloudmail-player-windows
-          path: build/windows/x64/runner/Release/
-
-  linux:
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    steps:
-      - uses: actions/checkout@v7
-      - name: Linux GTK and secret store toolchain
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends clang cmake ninja-build pkg-config libgtk-3-dev libstdc++-12-dev libsecret-1-dev
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.47.9'
-          channel: stable
-          cache: true
-      - run: flutter config --enable-linux-desktop
-      - run: flutter pub get --enforce-lockfile
-      - run: flutter build linux --release
-      - uses: actions/upload-artifact@v4
-        with:
-          name: cloudmail-player-linux-x64
-          path: build/linux/x64/release/bundle/
+          if-no-files-found: error
