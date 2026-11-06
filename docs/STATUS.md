@@ -28,3 +28,7 @@ No cloud writes, playlists/favorites/EQ, GMS, telemetry or analytics. No promise
 For history and superseded PRs see DEVELOPMENT_HISTORY; known audit concerns see PUBLIC_REPOSITORY_AUDIT; up-to-date decisions in DECISION_INDEX.
 
 **Requirement-by-requirement gap register:** [REQUIREMENTS_TRACEABILITY.md](REQUIREMENTS_TRACEABILITY.md). Manual evidence form: [TESTING_MANUAL.md](TESTING_MANUAL.md). Changelog is tracked in root CHANGELOG.md.
+
+## In-flight verification (not merged)
+
+- Feature branch `feature/guard-controls-during-source-switch` guards pause/resume and seek during asynchronous audio-source replacement; pending CI and device playback checks. This is not accepted functionality until merged and verified.
