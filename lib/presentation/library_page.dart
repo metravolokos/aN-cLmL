@@ -131,26 +131,24 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    switch (importProgress.phase) {
-                      CatalogImportPhase.listing =>
-                        strings.libraryReceiveProgress(
-                          importProgress.receivedBytes ~/ 1024,
-                        ),
-                      CatalogImportPhase.metadata =>
-                        strings.libraryMetadataProgress(
-                          importProgress.done,
-                          importProgress.total,
-                        ),
-                      CatalogImportPhase.failed => strings.libraryError,
-                      _ => '',
-                    },
-                    key: const ValueKey('library-progress-label'),
-                  ),
+                  Text(switch (importProgress.phase) {
+                    CatalogImportPhase.listing =>
+                      strings.libraryReceiveProgress(
+                        importProgress.receivedBytes ~/ 1024,
+                      ),
+                    CatalogImportPhase.metadata =>
+                      strings.libraryMetadataProgress(
+                        importProgress.done,
+                        importProgress.total,
+                      ),
+                    CatalogImportPhase.failed => strings.libraryError,
+                    _ => '',
+                  }, key: const ValueKey('library-progress-label')),
                   const SizedBox(height: 6),
                   if (importProgress.inProgress)
                     LinearProgressIndicator(
-                      value: importProgress.phase == CatalogImportPhase.metadata &&
+                      value:
+                          importProgress.phase == CatalogImportPhase.metadata &&
                               importProgress.total > 0
                           ? importProgress.done / importProgress.total
                           : null,
@@ -280,17 +278,17 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
                                       first.displayAlbum,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.titleSmall,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleSmall,
                                     ),
                                     Text(
                                       '${first.displayArtist} · ${albumTracks.length}',
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.bodySmall,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall,
                                     ),
                                   ],
                                 ),

@@ -35,8 +35,8 @@ class _ImportService extends CloudMusicService {
 
   @override
   Future<List<RemoteTrack>> readCachedCatalog() async => const [
-        RemoteTrack(path: 'Сохранённый.flac', sizeBytes: 123),
-      ];
+    RemoteTrack(path: 'Сохранённый.flac', sizeBytes: 123),
+  ];
 
   @override
   Future<List<RemoteTrack>> loadCatalog({
@@ -54,16 +54,21 @@ class _ImportService extends CloudMusicService {
     bool Function()? isCancelled,
   }) async {
     onStarted?.call(2);
-    onProgress?.call(const [
-      RemoteTrack(path: 'Сохранённый.flac', sizeBytes: 123, title: 'Песня'),
-      RemoteTrack(path: 'Добавленный.flac', sizeBytes: 456),
-    ], 1, 2);
+    onProgress?.call(
+      const [
+        RemoteTrack(path: 'Сохранённый.flac', sizeBytes: 123, title: 'Песня'),
+        RemoteTrack(path: 'Добавленный.flac', sizeBytes: 456),
+      ],
+      1,
+      2,
+    );
   }
 }
 
 void main() {
-  testWidgets('startup restores cached tracks without login and refreshes',
-      (tester) async {
+  testWidgets('startup restores cached tracks without login and refreshes', (
+    tester,
+  ) async {
     final service = _ImportService();
     addTearDown(service.close);
     await tester.pumpWidget(
@@ -80,7 +85,10 @@ void main() {
     expect(service.remoteCalls, 1);
     expect(find.text('Сохранённый'), findsOneWidget);
     expect(find.textContaining('4096'), findsNothing);
-    expect(find.byKey(const ValueKey('library-import-progress')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('library-import-progress')),
+      findsOneWidget,
+    );
     expect(find.textContaining('4 КБ'), findsOneWidget);
 
     service.remote.complete(const [
