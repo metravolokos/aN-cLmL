@@ -98,7 +98,9 @@ void main() {
       final ctx = tester.element(settings);
       final scope = ProviderScope.containerOf(ctx);
       final state = scope.read(catalogImportProgressProvider);
-      debugPrint('catalog phase after completion: ${state.phase}, error: ${state.failureCode}');
+      debugPrint(
+        'catalog phase after completion: ${state.phase}, error: ${state.failureCode}',
+      );
       final status = find.byKey(const ValueKey('connection-status'));
       for (final element in status.evaluate()) {
         final value = element.widget;
