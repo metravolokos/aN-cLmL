@@ -2,11 +2,8 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-typedef FlacRangeReader = Future<Uint8List> Function(
-  String path,
-  int offset,
-  int length,
-);
+typedef FlacRangeReader =
+    Future<Uint8List> Function(String path, int offset, int length);
 
 class FlacTags {
   const FlacTags({

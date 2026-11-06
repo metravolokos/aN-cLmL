@@ -40,25 +40,28 @@ class _CatalogFixture extends CloudMusicService {
 }
 
 void main() {
-  test('first refresh publishes imported tracks, even immediately after provider creation', () async {
-    final fixture = _CatalogFixture();
-    final container = ProviderContainer(
-      overrides: [cloudMusicServiceProvider.overrideWithValue(fixture)],
-    );
-    addTearDown(container.dispose);
+  test(
+    'first refresh publishes imported tracks, even immediately after provider creation',
+    () async {
+      final fixture = _CatalogFixture();
+      final container = ProviderContainer(
+        overrides: [cloudMusicServiceProvider.overrideWithValue(fixture)],
+      );
+      addTearDown(container.dispose);
 
-    final controller = container.read(cloudCatalogProvider.notifier);
-    // This is precisely the call order used after successful login.
-    await controller.refresh();
+      final controller = container.read(cloudCatalogProvider.notifier);
+      // This is precisely the call order used after successful login.
+      await controller.refresh();
 
-    final tracks = container.read(cloudCatalogProvider).asData?.value;
-    expect(tracks, isNotNull);
-    expect(tracks, hasLength(1));
-    expect(tracks!.single.displayTitle, 'Первый трек');
-    expect(fixture.listingCalls, 1);
-    expect(
-      container.read(catalogImportProgressProvider).phase,
-      CatalogImportPhase.finished,
-    );
-  });
+      final tracks = container.read(cloudCatalogProvider).asData?.value;
+      expect(tracks, isNotNull);
+      expect(tracks, hasLength(1));
+      expect(tracks!.single.displayTitle, 'Первый трек');
+      expect(fixture.listingCalls, 1);
+      expect(
+        container.read(catalogImportProgressProvider).phase,
+        CatalogImportPhase.finished,
+      );
+    },
+  );
 }
