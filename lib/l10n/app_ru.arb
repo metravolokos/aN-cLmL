@@ -51,6 +51,8 @@
   "next": "Следующий трек",
   "prev": "Предыдущий трек",
   "playbackError": "Ошибка воспроизведения. Проверьте сеть или формат файла.",
+  "playbackErrorCode": "Код диагностики: {code}",
+  "@playbackErrorCode": {"placeholders": {"code": {"type": "String"}}},
   "loadingAudio": "Подготовка аудио…",
   "@libraryLoaded": {
     "placeholders": {

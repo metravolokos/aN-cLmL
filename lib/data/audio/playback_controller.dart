@@ -19,6 +19,7 @@ class PlaybackView {
     this.playing = false,
     this.loading = false,
     this.failed = false,
+    this.failureCode,
     this.shuffled = false,
     this.repeatMode = PlayerRepeatMode.off,
   });
@@ -29,6 +30,9 @@ class PlaybackView {
   final bool playing;
   final bool loading;
   final bool failed;
+
+  /// Privacy-safe diagnostic classification, never an exception message.
+  final String? failureCode;
   final bool shuffled;
   final PlayerRepeatMode repeatMode;
 
@@ -39,6 +43,7 @@ class PlaybackView {
     bool? playing,
     bool? loading,
     bool? failed,
+    String? failureCode,
     bool? shuffled,
     PlayerRepeatMode? repeatMode,
   }) => PlaybackView(
@@ -48,6 +53,7 @@ class PlaybackView {
     playing: playing ?? this.playing,
     loading: loading ?? this.loading,
     failed: failed ?? this.failed,
+    failureCode: failureCode ?? this.failureCode,
     shuffled: shuffled ?? this.shuffled,
     repeatMode: repeatMode ?? this.repeatMode,
   );
@@ -124,8 +130,16 @@ class PlaybackController extends Notifier<PlaybackView> {
       }),
     );
     _subscriptions.add(
-      audio.errorStream.listen((_) {
-        if (!_closed) state = state.withUpdates(failed: true, loading: false);
+      audio.errorStream.listen((error) {
+        if (!_closed && !_changingTrack) {
+          // Do not expose native error messages, URLs or HTTP headers.
+          state = state.withUpdates(
+            failed: true,
+            playing: false,
+            loading: false,
+            failureCode: state.failureCode ?? 'P03',
+          );
+        }
       }),
     );
     return _player = audio;
@@ -196,6 +210,16 @@ class PlaybackController extends Notifier<PlaybackView> {
               ? reader.readRange
               : (path, offset, length) => cache.read(path, offset, length),
           mediaTag: ref.read(mediaTagFactoryProvider)(track),
+          onRangeFailure: (code) {
+            if (!_closed && generation == _operationGeneration) {
+              state = state.withUpdates(
+                failed: true,
+                playing: false,
+                loading: false,
+                failureCode: code,
+              );
+            }
+          },
         ),
       );
       if (_closed || generation != _operationGeneration) {
@@ -212,6 +236,7 @@ class PlaybackController extends Notifier<PlaybackView> {
               playing: false,
               loading: false,
               failed: true,
+              failureCode: state.failureCode ?? 'P02',
             );
           }
         }),
@@ -219,7 +244,12 @@ class PlaybackController extends Notifier<PlaybackView> {
     } catch (_) {
       // A cancelled open must not resurrect a failed state after Stop.
       if (!_closed && generation == _operationGeneration) {
-        state = state.withUpdates(failed: true, loading: false);
+        state = state.withUpdates(
+          failed: true,
+          playing: false,
+          loading: false,
+          failureCode: state.failureCode ?? 'P01',
+        );
       }
     } finally {
       _changingTrack = false;
@@ -271,10 +301,19 @@ class PlaybackController extends Notifier<PlaybackView> {
     state = state.withUpdates(repeatMode: repeatMode);
   }
 
+  Future<void> retry() async {
+    if (_closed || _changingTrack || _queue == null) return;
+    await _open(_queue!.current);
+  }
+
   Future<void> pauseOrResume() async {
     // Do not resume an old audio source after Stop has cleared the queue.
     if (_closed || _changingTrack) return;
     if (_queue == null || state.track == null) return;
+    if (state.failed) {
+      await retry();
+      return;
+    }
     final player = _player;
     if (player == null) return;
     if (player.playing) {
