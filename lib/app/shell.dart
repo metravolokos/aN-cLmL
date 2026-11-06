@@ -296,8 +296,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       // library screen can show the imported files and import progress.
       // The provider is initialized synchronously before refresh starts.
       ref.read(destinationProvider.notifier).select(AppDestination.tracks);
+      final catalog = ref.read(cloudCatalogProvider.notifier);
+      unawaited(catalog.refresh());
       Navigator.of(context).pop();
-      unawaited(ref.read(cloudCatalogProvider.notifier).refresh());
     } on CloudMailException catch (error) {
       if (!mounted) return;
       setState(() => _error = error.code);
