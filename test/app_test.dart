@@ -197,7 +197,9 @@ void main() {
     );
     await tester.drag(find.byType(ListView), const Offset(0, -500));
     await tester.pumpAndSettle();
-    expect(find.textContaining('Подключение проверено'), findsOneWidget);
+    // Reopening Settings creates a new screen; the transient success banner
+    // is replaced by the persisted credentials hint.
+    expect(find.textContaining('Учётные данные сохранены'), findsOneWidget);
 
     await tester.ensureVisible(find.byKey(const ValueKey('disconnect-button')));
     await tester.tap(find.byKey(const ValueKey('disconnect-button')));
