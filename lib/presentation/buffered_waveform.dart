@@ -56,8 +56,8 @@ class _WaveformPainter extends CustomPainter {
     final width = math.min(3.5, step * 0.65);
     for (var i = 0; i < count; i++) {
       final fraction = (i + 0.5) / count;
-      final height = size.height *
-          (0.24 + 0.62 * (0.5 + 0.5 * math.sin(i * 1.77)));
+      final height =
+          size.height * (0.24 + 0.62 * (0.5 + 0.5 * math.sin(i * 1.77)));
       final bar = RRect.fromRectAndRadius(
         Rect.fromCenter(
           center: Offset((i + 0.5) * step, size.height / 2),
@@ -69,8 +69,8 @@ class _WaveformPainter extends CustomPainter {
       final color = fraction <= played
           ? playedColor
           : fraction <= buffered
-              ? cachedColor
-              : emptyColor;
+          ? cachedColor
+          : emptyColor;
       canvas.drawRRect(bar, Paint()..color = color);
     }
   }

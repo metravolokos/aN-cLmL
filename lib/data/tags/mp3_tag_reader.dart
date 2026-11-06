@@ -2,8 +2,11 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-typedef Mp3RangeReader =
-    Future<Uint8List> Function(String path, int offset, int length);
+typedef Mp3RangeReader = Future<Uint8List> Function(
+  String path,
+  int offset,
+  int length,
+);
 
 class Mp3Tags {
   const Mp3Tags({

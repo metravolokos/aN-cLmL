@@ -30,6 +30,7 @@ class PlaybackView {
   final Duration duration;
   final bool playing;
   final bool loading;
+
   /// Contiguous proportion of the current track actually downloaded to cache.
   final double bufferedFraction;
   final bool failed;
@@ -215,8 +216,10 @@ class PlaybackController extends Notifier<PlaybackView> {
           track,
           _queue?.nextForPrefetch(),
           onCurrentProgress: (fraction) {
-            if (!_closed && generation == _operationGeneration &&
-                _queue != null && state.track?.path == track.path) {
+            if (!_closed &&
+                generation == _operationGeneration &&
+                _queue != null &&
+                state.track?.path == track.path) {
               state = state.withUpdates(bufferedFraction: fraction);
             }
           },
