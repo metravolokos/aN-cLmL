@@ -50,7 +50,7 @@ class _AppShellState extends ConsumerState<AppShell> {
   ];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context)!;
     final labels = [
       strings.tracks,
