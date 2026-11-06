@@ -249,8 +249,10 @@ class CloudCatalogController extends AsyncNotifier<List<RemoteTrack>> {
   bool _refreshing = false;
 
   @override
-  Future<List<RemoteTrack>> build() async {
+  List<RemoteTrack> build() {
     ref.onDispose(() => _disposed = true);
+    // The initial empty state must be synchronous. Otherwise it can complete
+    // after the first refresh starts and overwrite the imported file list.
     return const <RemoteTrack>[];
   }
 
