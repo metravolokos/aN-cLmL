@@ -25,9 +25,9 @@ class NowPlayingPage extends ConsumerWidget {
   }
 
   void _openAlbum(BuildContext context, WidgetRef ref, RemoteTrack track) {
-    final albumTracks = _catalog(ref)
-        .where((candidate) => candidate.albumKey == track.albumKey)
-        .toList();
+    final albumTracks = _catalog(
+      ref,
+    ).where((candidate) => candidate.albumKey == track.albumKey).toList();
     if (albumTracks.isEmpty) return;
     Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
@@ -43,10 +43,8 @@ class NowPlayingPage extends ConsumerWidget {
     if (artistTracks.isEmpty) return;
     Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => ArtistDetailPage(
-          artist: track.displayArtist,
-          tracks: artistTracks,
-        ),
+        builder: (_) =>
+            ArtistDetailPage(artist: track.displayArtist, tracks: artistTracks),
       ),
     );
   }
@@ -74,7 +72,10 @@ class NowPlayingPage extends ConsumerWidget {
               builder: (context, constraints) {
                 final wide = constraints.maxWidth >= 850;
                 final coverSize = wide
-                    ? math.min(360.0, math.max(160.0, constraints.maxHeight - 64))
+                    ? math.min(
+                        360.0,
+                        math.max(160.0, constraints.maxHeight - 64),
+                      )
                     : math.min(360.0, math.max(0.0, constraints.maxWidth - 48));
                 final cover = Center(
                   child: SizedBox(
@@ -171,7 +172,9 @@ class NowPlayingPage extends ConsumerWidget {
                           ),
                           IconButton.filled(
                             key: const ValueKey('now-playing-play-pause'),
-                            tooltip: playback.playing ? labels.pause : labels.play,
+                            tooltip: playback.playing
+                                ? labels.pause
+                                : labels.play,
                             icon: Icon(
                               playback.playing ? Icons.pause : Icons.play_arrow,
                             ),
@@ -213,7 +216,9 @@ class NowPlayingPage extends ConsumerWidget {
                 );
                 return SingleChildScrollView(
                   child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(24),
                       child: wide
@@ -299,18 +304,15 @@ class _PlayerSeekBarState extends ConsumerState<_PlayerSeekBar> {
           onChangeEnd: totalMs > 0
               ? (value) {
                   setState(() => _draft = null);
-                  ref.read(playbackControllerProvider.notifier).seek(
-                    Duration(milliseconds: value.round()),
-                  );
+                  ref
+                      .read(playbackControllerProvider.notifier)
+                      .seek(Duration(milliseconds: value.round()));
                 }
               : null,
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(_time(sliderValue.round())),
-            Text(_time(totalMs)),
-          ],
+          children: [Text(_time(sliderValue.round())), Text(_time(totalMs))],
         ),
       ],
     );

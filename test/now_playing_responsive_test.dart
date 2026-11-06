@@ -31,9 +31,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            playbackControllerProvider.overrideWith(_Playing.new),
-          ],
+          overrides: [playbackControllerProvider.overrideWith(_Playing.new)],
           child: MaterialApp(
             locale: const Locale('ru'),
             supportedLocales: AppLocalizations.supportedLocales,
@@ -43,14 +41,17 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.byKey(const ValueKey('now-playing-play-pause')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('now-playing-play-pause')),
+        findsOneWidget,
+      );
       expect(find.byKey(const ValueKey('now-playing-seek')), findsOneWidget);
       expect(find.byKey(const ValueKey('now-playing-artist')), findsOneWidget);
       expect(find.byKey(const ValueKey('now-playing-album')), findsOneWidget);
       expect(
-        find.byKey(ValueKey(width >= 850
-            ? 'now-playing-wide'
-            : 'now-playing-portrait')),
+        find.byKey(
+          ValueKey(width >= 850 ? 'now-playing-wide' : 'now-playing-portrait'),
+        ),
         findsOneWidget,
       );
       expect(tester.takeException(), isNull);
