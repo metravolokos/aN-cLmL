@@ -560,8 +560,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     ),
                   CatalogImportPhase.failed =>
                     '${strings.libraryError} '
-                    '[${importProgress.failureStage?.name ?? 'unknown'}/'
-                    '${importProgress.failureCode?.name ?? 'unknown'}]',
+                        '[${importProgress.failureStage?.name ?? 'unknown'}/'
+                        '${importProgress.failureCode?.name ?? 'unknown'}]',
                   _ => '',
                 }, key: const ValueKey('settings-import-progress')),
                 const SizedBox(height: 8),
