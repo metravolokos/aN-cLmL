@@ -1,18 +1,20 @@
-# CloudMail Player — current roadmap (2026-11-05)
+# teStPlaYclouDE — remaining work (2026-11-06)
 
-| Stage | Implemented source status | Remaining acceptance |
+This is a prioritized engineering backlog, **not** an assertion of device acceptance. See docs/USER_SPEC_RU.md for complete acceptance criteria.
+
+| Priority | Slice | Source status and next gate |
 | --- | --- | --- |
-| M0 | Initial WebDAV behavior and multi-platform tooling documented | Real Cloud Mail.ru bounded live checks and GNOME 51 investigation |
-| M1 | Flutter shell, Russian UI, three-platform native runners and CI | Device launch check for current integrated binary on all three systems |
-| M2 | Secure WebDAV, SQLite incremental catalog and bounded FLAC/MP3 scanner | Actual authenticated indexing, recovery and performance checks |
-| M3 | Tracks/albums/artists and text search | Embedded art integration, album image grid, safe thumbnail LRU |
-| M4 | Remote seekable playback, queue, Now Playing and mini-player | Audible real-device stream, seek, Next, Pause/Resume and handoff |
-| M5 | Temporary current+next cache and background prefetch | Live cache behavior; no stale files or extra GET on cached seek |
-| M6 | Shuffle, repeat and queue logic | Persistence across app restart and end-to-end behavior |
-| M7 | Not yet integrated | Android foreground media session / BT / audio focus, Windows SMTC, Linux MPRIS |
-| M8 | Selected validations and graceful error handling | 50k indexing, artwork memory budget, UX and error recovery |
-| M9 | Development APK/Windows/Linux bundles via CI | Release signing, Windows delivery, Linux Flatpak and manual platform checks |
+| P0 | Physical playback of the existing integrated build | Use debug-signed Android ARM64 preview, Windows release folder, Flatpak on GNOME 51; test read-only real `/AllMusic` login/index/FLAC/MP3/play/pause/seek/next and record sanitized evidence; no redesign before observed failure |
+| P0 | Safety/security verification | Check full git history for secrets with independent scanner and rotate any discovered secrets; validate build artifacts contain no real credentials; confirm redirects, 64 KiB boundaries and cache cleanup in targeted tests |
+| P1 | Platform controls/device acceptance | Huawei GMS-free notification/media panel, BT/LDAC/system mixer/USB DAC/call/noisy audio; Windows 11 SMTC; Linux Wayland/MPRIS/Secret Service. Fix only reproducible defects |
+| P1 | Installable distribution | Stable Android signing and update path; Windows portable ZIP or installer with runtime dependencies; Linux Flatpak signing/permissions/libmpv, dependency licenses; release checklist |
+| P1 | Catalog reliability | Versioned schema migration tests; cancellation/recovery; cap memory/stream large lists; confirm large PROPFIND and 50k paging rather than merely accepting size threshold |
+| P2 | Media metadata / UX scope | Assess M4A/AAC, OGG/Opus, WAV support against full spec, tag/covers and format tests; album artist grouping; persistent queue/theme if required |
+| P2 | Production hardening | Clear user-facing error states, credential lifecycle, targeted crash recovery, performance/volume benchmarks; no ungated multi-hour stress tests |
+| P2 | Publication operations | Verify copyrights of every contributed file and native dependency; choose/review notices for distributed binaries, release process, issue templates, supported version and vulnerability handling |
 
-**Acceptance rule:** a source commit or successful binary build is not proof that the feature works with an authenticated account and physical devices. Avoid describing M0–M9 as complete until these acceptance checks pass.
+## Stage interpretation
 
-**Priorities:** stabilize current playback and artwork, verify real Cloud Mail.ru playback, integrate platform media sessions, then package deliverables. Do not reimplement functionality that already exists on main without a measured defect.
+M0/M1 engineering baseline; M2 WebDAV/index/tags; M3 library/artwork; M4 playback; M5 current+next cache; M6 queue; M7 Android/Windows/Linux media sessions; M8 robustness/scalability; M9 distribution. **Many source slices M2–M7 are merged, but none may be called fully accepted on actual target devices without evidence.** M8 and M9 remain incomplete.
+
+Always tackle the smallest confirmed failure; keep one feature per PR, tests and CI for exact current HEAD. History is in DEVELOPMENT_HISTORY.md.
