@@ -143,6 +143,7 @@ class HomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final strings = AppLocalizations.of(context)!;
     final catalog = ref.watch(cloudCatalogProvider);
+    final progress = ref.watch(catalogImportProgressProvider);
     final count = catalog.asData?.value.length;
     return ListView(
       key: const ValueKey('page-home'),
@@ -150,8 +151,24 @@ class HomePage extends ConsumerWidget {
       children: [
         Text(strings.home, style: Theme.of(context).textTheme.headlineMedium),
         const SizedBox(height: 12),
-        if (count != null)
+        if (progress.failed)
+          Text(
+            '${strings.libraryError} '
+            '[${progress.failureStage?.name ?? 'unknown'}/'
+            '${progress.failureCode?.name ?? 'unknown'}]',
+            key: const ValueKey('home-library-error'),
+          )
+        else if (progress.inProgress)
+          Text(
+            progress.phase == CatalogImportPhase.listing
+                ? strings.libraryReceiveProgress(progress.receivedBytes ~/ 1024)
+                : strings.libraryMetadataProgress(progress.done, progress.total),
+            key: const ValueKey('home-library-refresh-progress'),
+          )
+        else if (count != null && count > 0)
           Text(strings.libraryLoaded(count))
+        else if (progress.phase == CatalogImportPhase.finished)
+          Text(strings.libraryEmpty)
         else
           Text(strings.libraryDisconnected),
         const SizedBox(height: 16),
