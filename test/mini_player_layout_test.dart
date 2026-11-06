@@ -22,7 +22,9 @@ class _FakePlayback extends PlaybackController {
 }
 
 void main() {
-  testWidgets('mini-player stays one-row at 320 dp and scales text', (tester) async {
+  testWidgets('mini-player stays one-row at 320 dp and scales text', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(320, 640);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -30,9 +32,7 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          playbackControllerProvider.overrideWith(_FakePlayback.new),
-        ],
+        overrides: [playbackControllerProvider.overrideWith(_FakePlayback.new)],
         child: MaterialApp(
           locale: const Locale('ru'),
           supportedLocales: AppLocalizations.supportedLocales,
@@ -45,7 +45,10 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.byKey(const ValueKey('mini-player-play-pause')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('mini-player-play-pause')),
+      findsOneWidget,
+    );
     expect(find.byKey(const ValueKey('mini-player-next')), findsOneWidget);
     expect(find.byKey(const ValueKey('mini-player-previous')), findsNothing);
     expect(find.byKey(const ValueKey('mini-player-progress')), findsOneWidget);

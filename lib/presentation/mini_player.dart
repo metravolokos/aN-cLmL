@@ -23,9 +23,7 @@ class MiniPlayer extends ConsumerWidget {
 
     void openPlayer() {
       Navigator.of(context).push<void>(
-        MaterialPageRoute<void>(
-          builder: (_) => const NowPlayingPage(),
-        ),
+        MaterialPageRoute<void>(builder: (_) => const NowPlayingPage()),
       );
     }
 
@@ -101,9 +99,7 @@ class MiniPlayer extends ConsumerWidget {
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : Icon(
-                              playback.playing
-                                  ? Icons.pause
-                                  : Icons.play_arrow,
+                              playback.playing ? Icons.pause : Icons.play_arrow,
                             ),
                       onPressed: playback.loading
                           ? null
@@ -115,9 +111,8 @@ class MiniPlayer extends ConsumerWidget {
                       key: const ValueKey('mini-player-next'),
                       tooltip: labels.next,
                       icon: const Icon(Icons.skip_next),
-                      onPressed: () => ref
-                          .read(playbackControllerProvider.notifier)
-                          .next(),
+                      onPressed: () =>
+                          ref.read(playbackControllerProvider.notifier).next(),
                     ),
                     const SizedBox(width: 4),
                   ],
