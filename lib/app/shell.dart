@@ -7,6 +7,7 @@ import '../cloud/cloud_connection_service.dart';
 import '../cloud/cloud_mail_webdav.dart';
 import '../data/audio/playback_controller.dart';
 import '../data/library/cloud_music_service.dart';
+import '../data/library/catalog_import_progress.dart';
 import '../presentation/library_page.dart';
 import '../presentation/mini_player.dart';
 import '../l10n/app_localizations.dart';
@@ -327,6 +328,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context)!;
+    final importProgress = ref.watch(catalogImportProgressProvider);
     final theme = ref.watch(themeProvider);
     final labels = {
       ThemeMode.system: strings.systemTheme,
@@ -452,6 +454,39 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     key: const ValueKey('connection-status'),
                   ),
                 ),
+              ],
+            ),
+          ),
+        ],
+        if (importProgress.inProgress || importProgress.failed) ...[
+          const SizedBox(height: 16),
+          Semantics(
+            liveRegion: true,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  switch (importProgress.phase) {
+                    CatalogImportPhase.listing => strings.libraryReceiveProgress(
+                      importProgress.receivedBytes ~/ 1024,
+                    ),
+                    CatalogImportPhase.metadata => strings.libraryMetadataProgress(
+                      importProgress.done,
+                      importProgress.total,
+                    ),
+                    CatalogImportPhase.failed => strings.libraryError,
+                    _ => '',
+                  },
+                  key: const ValueKey('settings-import-progress'),
+                ),
+                const SizedBox(height: 8),
+                if (importProgress.inProgress)
+                  LinearProgressIndicator(
+                    value: importProgress.phase == CatalogImportPhase.metadata &&
+                            importProgress.total > 0
+                        ? importProgress.done / importProgress.total
+                        : null,
+                  ),
               ],
             ),
           ),
