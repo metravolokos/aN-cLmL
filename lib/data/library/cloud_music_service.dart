@@ -258,7 +258,6 @@ class CloudCatalogController extends AsyncNotifier<List<RemoteTrack>> {
     ref.read(catalogImportProgressProvider.notifier).reset();
   }
 
-
   @override
   List<RemoteTrack> build() {
     ref.onDispose(() => _disposed = true);
@@ -313,7 +312,7 @@ class CloudCatalogController extends AsyncNotifier<List<RemoteTrack>> {
       // Only now is it correct for Settings to open the track list.
       resolveListing(true);
       failureStage = CatalogFailureStage.metadata;
-      await _scanMetadata(service, progress);
+      await _scanMetadata(service, progress, generation);
       if (!inactive()) progress.finish();
     } catch (error, trace) {
       if (inactive()) {
@@ -336,11 +335,13 @@ class CloudCatalogController extends AsyncNotifier<List<RemoteTrack>> {
   Future<void> _scanMetadata(
     CloudMusicService service,
     CatalogImportProgressController progress,
+    int generation,
   ) async {
+    bool inactive() => _disposed || generation != _sessionGeneration;
     await service.scanMetadata(
-      isCancelled: () => _disposed,
+      isCancelled: inactive,
       onStarted: (total) {
-        if (!_disposed) progress.beginMetadata(total);
+        if (!inactive()) progress.beginMetadata(total);
       },
       onProgress: (tracks, done, total) {
         if (inactive()) return;
