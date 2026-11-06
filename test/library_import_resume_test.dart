@@ -120,7 +120,10 @@ void main() {
     await tester.pump();
     await tester.tap(find.text('Настройки').last);
     await tester.pump();
-    expect(find.byKey(const ValueKey('settings-import-progress')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('settings-import-progress')),
+      findsOneWidget,
+    );
     expect(find.textContaining('4 КБ'), findsOneWidget);
     service.remote.complete(const [
       RemoteTrack(path: 'Сохранённый.flac', sizeBytes: 123),

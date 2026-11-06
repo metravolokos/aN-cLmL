@@ -465,24 +465,23 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  switch (importProgress.phase) {
-                    CatalogImportPhase.listing => strings.libraryReceiveProgress(
-                      importProgress.receivedBytes ~/ 1024,
-                    ),
-                    CatalogImportPhase.metadata => strings.libraryMetadataProgress(
+                Text(switch (importProgress.phase) {
+                  CatalogImportPhase.listing => strings.libraryReceiveProgress(
+                    importProgress.receivedBytes ~/ 1024,
+                  ),
+                  CatalogImportPhase.metadata =>
+                    strings.libraryMetadataProgress(
                       importProgress.done,
                       importProgress.total,
                     ),
-                    CatalogImportPhase.failed => strings.libraryError,
-                    _ => '',
-                  },
-                  key: const ValueKey('settings-import-progress'),
-                ),
+                  CatalogImportPhase.failed => strings.libraryError,
+                  _ => '',
+                }, key: const ValueKey('settings-import-progress')),
                 const SizedBox(height: 8),
                 if (importProgress.inProgress)
                   LinearProgressIndicator(
-                    value: importProgress.phase == CatalogImportPhase.metadata &&
+                    value:
+                        importProgress.phase == CatalogImportPhase.metadata &&
                             importProgress.total > 0
                         ? importProgress.done / importProgress.total
                         : null,
