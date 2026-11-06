@@ -68,6 +68,7 @@ class PlaybackController extends Notifier<PlaybackView> {
   bool _changingTrack = false;
   RemoteTrack? _pendingTrack;
   int _operationGeneration = 0;
+  bool _streamDeliveredBytes = false;
 
   @override
   PlaybackView build() {
@@ -137,7 +138,8 @@ class PlaybackController extends Notifier<PlaybackView> {
             failed: true,
             playing: false,
             loading: false,
-            failureCode: state.failureCode ?? 'P03',
+            failureCode: state.failureCode ??
+                'P03-${error.code}-${_streamDeliveredBytes ? 'data' : 'no-data'}',
           );
         }
       }),
@@ -161,6 +163,7 @@ class PlaybackController extends Notifier<PlaybackView> {
     }
     _changingTrack = true;
     final generation = ++_operationGeneration;
+    _streamDeliveredBytes = false;
     state = PlaybackView(
       track: track,
       loading: true,
@@ -210,6 +213,11 @@ class PlaybackController extends Notifier<PlaybackView> {
               ? reader.readRange
               : (path, offset, length) => cache.read(path, offset, length),
           mediaTag: ref.read(mediaTagFactoryProvider)(track),
+          onRangeSuccess: () {
+            if (!_closed && generation == _operationGeneration) {
+              _streamDeliveredBytes = true;
+            }
+          },
           onRangeFailure: (code) {
             if (!_closed && generation == _operationGeneration) {
               state = state.withUpdates(
