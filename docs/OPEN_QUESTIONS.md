@@ -1,19 +1,19 @@
-# Open questions and active assumptions — 2026-11-05
+# teStPlaYclouDE — unresolved questions and assumptions (2026-11-06)
 
-No user interruptions are required to proceed. The following unknowns do not authorize pretending a capability has been verified.
+These are engineering gates, not reasons to stop coding or silently change the user's complete spec. Existing decisions and rationales: DECISION_INDEX.md.
 
-| Question | Current engineering assumption | Verification gate |
+| Question | Current assumption / source fact | Resolution |
 | --- | --- | --- |
-| Target Linux distribution | Arch/CachyOS is the primary developer target; ALT Linux remains secondary | Build and smoke test each distro, including GLIBC and native libraries |
-| GNOME 51 in ALT Linux | Unknown. Do not assume distribution packages GNOME 51 | Check ALT package repository and target image before declaring support |
-| GNOME 51 Flatpak runtime | Verify availability; use a supported freedesktop runtime if necessary with documented deviation | Flatpak builder smoke test on actual runtime |
-| Real credentials | This environment has no accessible account secret; keep login entirely inside OS secure storage | User-controlled device verification only |
-| WebDAV rate limits | M0 sampled short 206 ranges; no reliable sustained rate-limit data | Bounded real-cloud benchmark before setting concurrency |
-| 64 KiB or 128 KiB range cap | Prefer 64 KiB request size by default, as a conservative compatibility bound; existing isolated 128 KiB succeeded | Real measurement of 64 KiB; reject full GET |
-| FLAC/audio player on Linux Wayland | Buildable libmpv + just_audio_media_kit is a candidate, not yet verified | Actual GNOME 51 + Wayland playback smoke |
-| No GMS dependency | Audited debugRuntimeClasspath in PR #5; release binary still needs audit | Check release dependency graph and manifest |
-| Credential storage in Flatpak | flutter_secure_storage_linux uses Secret Service; portal compatibility not yet tested on GNOME 51 | Real sandbox persistence test |
-| Metadata normalization | /AllMusic appears flat; use tags for album and artist grouping, filename fallback | Verify isolated FLAC/MP3 fixtures and live sample |
-| Audio cache | Maximum current+next temporary files, no persistence across relaunches | Cache tests and on-device playback/seek |
+| Can actual Cloud Mail.ru `/AllMusic` index and playback work across all three target devices? | Only limited M0 read-only response samples and offline fixtures are published. | Perform bounded user-controlled device checks; sanitized outcomes only. |
+| Is Dio the best transport on Huawei/Windows? | Implemented and CI-tested, but fair alternative benchmarks in Issue #6 unresolved. | Compare only if a reproducible problem warrants it; no speculative replacement. |
+| How does 50k catalog scale? | Current single-table SQLite and `readTracks()` materialize whole lists; `unindexedTracks(limit:50000)` is not pagination. | Keyset query/FTS5/migration tests and targeted memory measurement. |
+| Will Huawei media panel / Bluetooth / DAC / calls work? | Android AudioService and audio_session code exists; OEM policies uncertain. | AOSP and Huawei manual acceptance with FLAC/MP3. |
+| Will GNOME 51 Flatpak run fully? | GNOME 51 Flatpak packaged, in-sandbox direct ELF check passed; no display/audio/Secret Service proof. | Real GNOME 51 Wayland, MPRIS, libmpv dynamic load and keyring verification. |
+| Does ALT Linux provide GNOME 51? | Unknown; no verified ALT image/pkgs. | Check actual distro image and repositories; no assumptions. |
+| Which other formats beyond FLAC/MP3 are accepted? | File extension listing includes AAC/M4A/OGG/Opus/WAV, but tag/parsing and end-to-end decoding are not accepted. | Decide via real representative format fixtures and explicit full-spec acceptance. |
+| What is the permanent package signing and upgrade path? | Android release preview uses ephemeral debug key; Windows installer and production Flatpak absent. | Owner-managed signing, migration/updater plan, licenses, actual OS install checks. |
+| Can the public repository claim clean history / complete licensing? | No independent all-ref secret scan and dependency/native-codec redistribution audit yet. | Run scanners privately; verify source/asset copyright, manifests and notices. |
+| Should stable app IDs or GitHub slug be renamed? | Display name teStPlaYclouDE, legacy IDs preserved to prevent upgrade/data loss. | Separate ADR, signed releases/update migration, repository settings access. |
+| What survives restart? | SQLite and artwork thumbnails do; audio cache temporary, queue/theme persistence not established. | Specify behavior, implement and test separately if part of acceptance. |
 
-No staging artifact may be labelled release-ready until the acceptance checks in docs/PLATFORMS.md have passed.
+The 64 KiB **hard upstream Range GET** cap is not open to guessing: enforced by PR #14. No client may silently issue larger remote GET requests even though one M0 sample accepted 128 KiB. Do not run multi-hour stress suites to answer bounded questions.
