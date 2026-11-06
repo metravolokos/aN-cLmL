@@ -241,8 +241,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         _hasSavedCredentials = true;
         _connected = true;
       });
-      // A successful connection must start library import without an extra
-      // manual button and must never wait for metadata before showing tracks.
+      // Connecting is not finished from the user's perspective until the
+      // library screen can show the imported files and import progress.
+      // The provider is initialized synchronously before refresh starts.
+      ref.read(destinationProvider.notifier).select(AppDestination.tracks);
       unawaited(ref.read(cloudCatalogProvider.notifier).refresh());
     } on CloudMailException catch (error) {
       if (!mounted) return;

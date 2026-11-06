@@ -183,6 +183,11 @@ void main() {
 
     expect(service.savedUsername, 'fake@example.invalid');
     expect(service.savedPassword, 'test-app-password');
+    // Connecting must reveal the library rather than leave the user on
+    // Settings with a seemingly empty collection.
+    expect(find.byKey(const ValueKey('page-tracks')), findsOneWidget);
+    await tester.tap(find.text('Настройки'));
+    await tester.pumpAndSettle();
     expect(
       tester
           .widget<TextField>(find.byKey(const ValueKey('cloud-password-field')))
@@ -192,7 +197,9 @@ void main() {
     );
     await tester.drag(find.byType(ListView), const Offset(0, -500));
     await tester.pumpAndSettle();
-    expect(find.textContaining('Подключение проверено'), findsOneWidget);
+    // Reopening Settings creates a new screen; the transient success banner
+    // is replaced by the persisted credentials hint.
+    expect(find.textContaining('Учётные данные сохранены'), findsOneWidget);
 
     await tester.ensureVisible(find.byKey(const ValueKey('disconnect-button')));
     await tester.tap(find.byKey(const ValueKey('disconnect-button')));
