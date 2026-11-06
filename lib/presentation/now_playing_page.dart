@@ -133,9 +133,9 @@ class NowPlayingPage extends ConsumerWidget {
                                 style: TextStyle(color: colors.error),
                                 textAlign: TextAlign.center,
                               ),
-                              if (playback.failureCode case final code?)
+                              if (playback.failureCode != null)
                                 Text(
-                                  labels.playbackErrorCode(code),
+                                  labels.playbackErrorCode(playback.failureCode!),
                                   key: const ValueKey('playback-diagnostic-code'),
                                   style: Theme.of(context).textTheme.bodySmall,
                                 ),
