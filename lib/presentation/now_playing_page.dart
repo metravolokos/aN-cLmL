@@ -10,6 +10,7 @@ import '../domain/remote_track.dart';
 import '../domain/track_queue.dart';
 import '../l10n/app_localizations.dart';
 import 'album_detail_page.dart';
+import 'buffered_waveform.dart';
 import 'library_page.dart';
 
 /// Responsive single-session player: portrait on phones, two columns on desktop.
@@ -146,17 +147,13 @@ class NowPlayingPage extends ConsumerWidget {
                             ],
                           ),
                         ),
-                      if (playback.loading)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8),
-                          child: LinearProgressIndicator(),
-                        ),
                       const SizedBox(height: 12),
                       _PlayerSeekBar(
                         key: ValueKey('seek-${track.path}'),
                         trackPath: track.path,
                         position: playback.position,
                         duration: playback.duration,
+                        bufferedFraction: playback.bufferedFraction,
                       ),
                       const SizedBox(height: 8),
                       Row(
@@ -269,12 +266,14 @@ class _PlayerSeekBar extends ConsumerStatefulWidget {
     required this.trackPath,
     required this.position,
     required this.duration,
+    required this.bufferedFraction,
     super.key,
   });
 
   final String trackPath;
   final Duration position;
   final Duration duration;
+  final double bufferedFraction;
 
   @override
   ConsumerState<_PlayerSeekBar> createState() => _PlayerSeekBarState();
@@ -307,22 +306,53 @@ class _PlayerSeekBarState extends ConsumerState<_PlayerSeekBar> {
     );
     return Column(
       children: [
-        Slider(
-          key: const ValueKey('now-playing-seek'),
-          value: sliderValue,
-          min: 0,
-          max: totalMs > 0 ? totalMs.toDouble() : 1,
-          onChanged: totalMs > 0
-              ? (value) => setState(() => _draft = value)
-              : null,
-          onChangeEnd: totalMs > 0
-              ? (value) {
-                  setState(() => _draft = null);
-                  ref
-                      .read(playbackControllerProvider.notifier)
-                      .seek(Duration(milliseconds: value.round()));
-                }
-              : null,
+        SizedBox(
+          height: 44,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Positioned.fill(
+                left: 20,
+                right: 20,
+                child: IgnorePointer(
+                  child: Center(
+                    child: BufferedWaveform(
+                      played: totalMs > 0 ? sliderValue / totalMs : 0,
+                      buffered: widget.bufferedFraction,
+                    ),
+                  ),
+                ),
+              ),
+              SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  trackHeight: 0,
+                  activeTrackColor: Colors.transparent,
+                  inactiveTrackColor: Colors.transparent,
+                  thumbShape: const RoundSliderThumbShape(
+                    enabledThumbRadius: 5,
+                  ),
+                  overlayShape: SliderComponentShape.noOverlay,
+                ),
+                child: Slider(
+                  key: const ValueKey('now-playing-seek'),
+                  value: sliderValue,
+                  min: 0,
+                  max: totalMs > 0 ? totalMs.toDouble() : 1,
+                  onChanged: totalMs > 0
+                      ? (value) => setState(() => _draft = value)
+                      : null,
+                  onChangeEnd: totalMs > 0
+                      ? (value) {
+                          setState(() => _draft = null);
+                          ref
+                              .read(playbackControllerProvider.notifier)
+                              .seek(Duration(milliseconds: value.round()));
+                        }
+                      : null,
+                ),
+              ),
+            ],
+          ),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
