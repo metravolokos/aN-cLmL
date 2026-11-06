@@ -6,6 +6,8 @@ on:
       - .github/workflows/android-arm64-preview.yml
       - docs/ANDROID_PREVIEW.md
       - android/**
+      - lib/**
+      - test/**
       - pubspec.yaml
       - pubspec.lock
   push:
@@ -13,6 +15,8 @@ on:
     paths:
       - .github/workflows/android-arm64-preview.yml
       - android/**
+      - lib/**
+      - test/**
       - pubspec.yaml
       - pubspec.lock
   workflow_dispatch:
