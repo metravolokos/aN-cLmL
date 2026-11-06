@@ -59,6 +59,15 @@ class PlaybackView {
   );
 }
 
+/// Whether an asynchronous audio event can update the active track's view.
+/// Source replacement and Stop both invalidate events emitted by the old source.
+bool acceptsActiveAudioEvent({
+  required bool disposed,
+  required bool switchingTrack,
+  required bool hasQueue,
+  required bool hasTrack,
+}) => !disposed && !switchingTrack && hasQueue && hasTrack;
+
 class PlaybackController extends Notifier<PlaybackView> {
   AudioPlayer? _player;
   Future<TwoTrackAudioCache>? _cacheFuture;
@@ -69,6 +78,13 @@ class PlaybackController extends Notifier<PlaybackView> {
   RemoteTrack? _pendingTrack;
   int _operationGeneration = 0;
   bool _streamDeliveredBytes = false;
+
+  bool get _acceptAudioEvent => acceptsActiveAudioEvent(
+    disposed: _closed,
+    switchingTrack: _changingTrack,
+    hasQueue: _queue != null,
+    hasTrack: state.track != null,
+  );
 
   @override
   PlaybackView build() {
@@ -98,12 +114,12 @@ class PlaybackController extends Notifier<PlaybackView> {
     final audio = AudioPlayer();
     _subscriptions.add(
       audio.positionStream.listen((position) {
-        if (!_closed) state = state.withUpdates(position: position);
+        if (_acceptAudioEvent) state = state.withUpdates(position: position);
       }),
     );
     _subscriptions.add(
       audio.durationStream.listen((duration) {
-        if (!_closed && duration != null) {
+        if (_acceptAudioEvent && duration != null) {
           state = state.withUpdates(duration: duration);
         }
       }),
@@ -112,27 +128,27 @@ class PlaybackController extends Notifier<PlaybackView> {
       audio.playingStream.listen((playing) {
         // A stale false event emitted while replacing the source must not
         // overwrite the requested Play state or flash the Play icon.
-        if (!_closed && !_changingTrack) {
+        if (_acceptAudioEvent) {
           state = state.withUpdates(playing: playing);
         }
       }),
     );
     _subscriptions.add(
       audio.processingStateStream.listen((processing) {
-        if (_closed) return;
+        if (!_acceptAudioEvent) return;
         state = state.withUpdates(
           loading:
               processing == ProcessingState.loading ||
               processing == ProcessingState.buffering,
         );
-        if (processing == ProcessingState.completed && !_changingTrack) {
+        if (processing == ProcessingState.completed) {
           unawaited(next(manual: false));
         }
       }),
     );
     _subscriptions.add(
       audio.errorStream.listen((error) {
-        if (!_closed && !_changingTrack) {
+        if (_acceptAudioEvent) {
           // Do not expose native error messages, URLs or HTTP headers.
           state = state.withUpdates(
             failed: true,
