@@ -136,7 +136,7 @@ class PlaybackController extends Notifier<PlaybackView> {
             failed: true,
             playing: false,
             loading: false,
-            failureCode: 'P03',
+            failureCode: state.failureCode ?? 'P03',
           );
         }
       }),
