@@ -1,0 +1,35 @@
+name: One-time Dart formatter for library import PR
+on:
+  push:
+    branches:
+      - feature/visible-library-import-auto-resume-20261106
+permissions:
+  contents: write
+jobs:
+  formatter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: true
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: stable
+      - name: Format changed Dart sources
+        run: |
+          dart format lib/cloud/cloud_mail_webdav.dart lib/data/library/cloud_music_service.dart lib/data/library/catalog_import_progress.dart lib/app/shell.dart lib/presentation/library_page.dart test/library_import_resume_test.dart
+      - name: Commit formatted files to this feature branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib test
+          if git diff --cached --quiet; then
+            echo "Already formatted"
+          else
+            git commit -m "style(dart): format import and resume implementation"
+            git push origin HEAD:feature/visible-library-import-auto-resume-20261106
+          fi
