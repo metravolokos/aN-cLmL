@@ -256,7 +256,7 @@ class PlaybackController extends Notifier<PlaybackView> {
 
   Future<void> pauseOrResume() async {
     // Do not resume an old audio source after Stop has cleared the queue.
-    if (_closed || _queue == null || state.track == null) return;
+    if (_closed || _changingTrack || _queue == null || state.track == null) return;
     final player = _player;
     if (player == null) return;
     if (player.playing) {
@@ -267,7 +267,7 @@ class PlaybackController extends Notifier<PlaybackView> {
   }
 
   Future<void> seek(Duration position) async {
-    if (_closed || _queue == null || state.track == null) return;
+    if (_closed || _changingTrack || _queue == null || state.track == null) return;
     await _player?.seek(position);
   }
 
