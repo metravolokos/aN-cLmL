@@ -1,0 +1,3 @@
+﻿# Verified false positives: Linux dependency names on docs/PLATFORMS.md:18.
+6f5bffce1d059b07af65493195f4ccb695faaf22:docs/PLATFORMS.md:generic-api-key:18
+a719a421de205154c03967e1dc88ad1eef94c7dd:docs/PLATFORMS.md:generic-api-key:18
