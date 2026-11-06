@@ -492,6 +492,15 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               icon: const Icon(Icons.link_off),
               label: Text(strings.disconnect),
             ),
+            if (_hasSavedCredentials)
+              OutlinedButton.icon(
+                key: const ValueKey('settings-refresh-library'),
+                onPressed: _busy || importProgress.inProgress
+                    ? null
+                    : () => ref.read(cloudCatalogProvider.notifier).refresh(),
+                icon: const Icon(Icons.refresh),
+                label: Text(strings.libraryRefresh),
+              ),
           ],
         ),
         if (_busy || _connected || _disconnected || _error != null) ...[
@@ -549,7 +558,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       importProgress.done,
                       importProgress.total,
                     ),
-                  CatalogImportPhase.failed => strings.libraryError,
+                  CatalogImportPhase.failed =>
+                    '${strings.libraryError} '
+                        '[${importProgress.failureStage?.name ?? 'unknown'}/'
+                        '${importProgress.failureCode?.name ?? 'unknown'}]',
                   _ => '',
                 }, key: const ValueKey('settings-import-progress')),
                 const SizedBox(height: 8),

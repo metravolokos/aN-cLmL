@@ -34,14 +34,29 @@
   "connectionCancelled": "Проверка подключения отменена.",
   "connectionStorageError": "Не удалось безопасно сохранить данные на устройстве.",
   "connectionDisconnected": "Сохранённые учётные данные удалены с устройства.",
-  "connectionSavedHint": "Учётные данные сохранены в защищённом хранилище. Оставьте поле пароля пустым, чтобы использовать их.",
+  "connectionSavedHint": "Учётные данные сохранены в защищённом хранилище. Это ещё не подтверждает загрузку медиатеки. Оставьте поле пароля пустым, чтобы использовать сохранённый пароль, и нажмите «Подключить» либо «Загрузить медиатеку» для повторного чтения.",
   "source": "Источник библиотеки: Cloud Mail.ru, /AllMusic",
   "libraryRefresh": "Загрузить медиатеку",
   "libraryLoading": "Чтение списка файлов из /AllMusic…",
   "libraryReceiveProgress": "Получение списка из облака: {kilobytes} КБ получено",
-  "@libraryReceiveProgress": {"placeholders": {"kilobytes": {"type": "int"}}},
+  "@libraryReceiveProgress": {
+    "placeholders": {
+      "kilobytes": {
+        "type": "int"
+      }
+    }
+  },
   "libraryMetadataProgress": "Обработка тегов: {done} из {total}. Треки уже доступны.",
-  "@libraryMetadataProgress": {"placeholders": {"done": {"type": "int"}, "total": {"type": "int"}}},
+  "@libraryMetadataProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "libraryEmpty": "В папке /AllMusic не найдены поддерживаемые аудиофайлы.",
   "libraryError": "Не удалось загрузить медиатеку. Проверьте подключение в настройках.",
   "libraryLoaded": "Треков в облаке: {count}",
@@ -54,7 +69,13 @@
   "prev": "Предыдущий трек",
   "playbackError": "Ошибка воспроизведения. Проверьте сеть или формат файла.",
   "playbackErrorCode": "Код диагностики: {code}",
-  "@playbackErrorCode": {"placeholders": {"code": {"type": "String"}}},
+  "@playbackErrorCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "loadingAudio": "Подготовка аудио…",
   "@libraryLoaded": {
     "placeholders": {
