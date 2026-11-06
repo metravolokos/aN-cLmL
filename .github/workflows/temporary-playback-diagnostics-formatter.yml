@@ -1,0 +1,30 @@
+name: Temporary playback diagnostics formatter
+on:
+  push:
+    branches: [fix/playback-failure-diagnostics-20261106]
+permissions:
+  contents: write
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - run: dart format lib/data/audio/playback_controller.dart lib/data/audio/cloud_range_audio_source.dart lib/presentation/now_playing_page.dart test/playback_failure_diagnostics_test.dart
+      - name: Commit formatted Dart
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/data/audio/playback_controller.dart lib/data/audio/cloud_range_audio_source.dart lib/presentation/now_playing_page.dart test/playback_failure_diagnostics_test.dart
+          if ! git diff --cached --quiet; then
+            git commit -m "style(audio): format playback diagnostics"
+            git push origin HEAD:refs/heads/fix/playback-failure-diagnostics-20261106
+          fi
