@@ -8,6 +8,7 @@ import 'dart:typed_data';
 import 'package:just_audio/just_audio.dart';
 
 import '../../domain/remote_track.dart';
+import '../../cloud/cloud_mail_webdav.dart';
 
 typedef RangeFetcher =
     Future<Uint8List> Function(String path, int offset, int length);
@@ -15,13 +16,19 @@ typedef RangeFetcher =
 /// Converts authenticated, fixed-size WebDAV GETs into a seekable byte stream.
 /// Never embeds the user's Authorization header in a URL or local proxy.
 class CloudRangeAudioSource extends StreamAudioSource {
-  CloudRangeAudioSource(this.track, this.fetcher, {Object? mediaTag})
-    : super(tag: mediaTag);
+  CloudRangeAudioSource(
+    this.track,
+    this.fetcher, {
+    Object? mediaTag,
+    this.onRangeFailure,
+  }) : super(tag: mediaTag);
 
   static const int chunkSize = 64 * 1024;
 
   final RemoteTrack track;
   final RangeFetcher fetcher;
+  /// Emits only fixed error codes, never authenticated URLs or exceptions.
+  final void Function(String code)? onRangeFailure;
 
   @override
   Future<StreamAudioResponse> request([int? start, int? end]) async {
@@ -44,11 +51,22 @@ class CloudRangeAudioSource extends StreamAudioSource {
   Stream<List<int>> _rangeBytes(int start, int end) async* {
     for (var offset = start; offset < end;) {
       final length = math.min(chunkSize, end - offset);
-      final part = await fetcher(track.path, offset, length);
-      if (part.length != length) {
-        throw StateError('Remote response has unexpected byte count');
+      try {
+        final part = await fetcher(track.path, offset, length);
+        if (part.length != length) {
+          onRangeFailure?.call('P12');
+          throw StateError('Remote response has unexpected byte count');
+        }
+        yield part;
+      } on CloudMailException catch (error) {
+        // P11 means an authenticated WebDAV range failed; suffix is a safe
+        // enum name, not the original server response or a user file path.
+        onRangeFailure?.call('P11-${error.code.name}');
+        rethrow;
+      } catch (_) {
+        onRangeFailure?.call('P12');
+        rethrow;
       }
-      yield part;
       offset += length;
     }
   }
