@@ -415,9 +415,8 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
       throw const CloudMailException(CloudMailErrorCode.invalidResponse);
     }
 
-    final responses = _walk(
-      document,
-    ).where((element) => element.name.local == 'response');
+    final responses = _walk(document)
+        .where((element) => element.name.local == 'response');
     final entries = <WebDavEntry>[];
     for (final response in responses) {
       final href = _directChild(response, 'href')?.innerText.trim();
@@ -475,9 +474,8 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
       final resourceType = _firstProperty(properties, 'resourcetype');
       final isCollection =
           resourceType != null &&
-          _walk(
-            resourceType,
-          ).any((element) => element.name.local == 'collection');
+          _walk(resourceType)
+              .any((element) => element.name.local == 'collection');
       final contentLength = _firstProperty(
         properties,
         'getcontentlength',

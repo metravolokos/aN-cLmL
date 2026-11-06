@@ -25,9 +25,9 @@ class NowPlayingPage extends ConsumerWidget {
   }
 
   void _openAlbum(BuildContext context, WidgetRef ref, RemoteTrack track) {
-    final albumTracks = _catalog(
-      ref,
-    ).where((candidate) => candidate.albumKey == track.albumKey).toList();
+    final albumTracks = _catalog(ref)
+        .where((candidate) => candidate.albumKey == track.albumKey)
+        .toList();
     if (albumTracks.isEmpty) return;
     Navigator.of(context).push<void>(
       MaterialPageRoute<void>(

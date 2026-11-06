@@ -56,7 +56,6 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
       AppDestination.tracks => strings.tracks,
       AppDestination.albums => strings.albums,
       AppDestination.artists => strings.artists,
-
     };
     final tracks = switch (tracksAsync) {
       AsyncData<List<RemoteTrack>>(:final value) => value,
@@ -175,7 +174,8 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
                 suffixIcon: IconButton(
                   tooltip: strings.clearSearch,
                   icon: const Icon(Icons.clear),
-                  onPressed: () => setState(() => _searchFor(destination).clear()),
+                  onPressed: () =>
+                      setState(() => _searchFor(destination).clear()),
                 ),
               ),
               onChanged: (_) => setState(() {}),
@@ -290,17 +290,17 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
                                       first.displayAlbum,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.titleSmall,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleSmall,
                                     ),
                                     Text(
                                       '${first.displayArtist} · ${albumTracks.length}',
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.bodySmall,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall,
                                     ),
                                   ],
                                 ),

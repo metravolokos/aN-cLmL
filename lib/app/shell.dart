@@ -87,7 +87,12 @@ class _AppShellState extends ConsumerState<AppShell> {
                     destinations: [
                       for (var i = 0; i < labels.length; i++)
                         NavigationRailDestination(
-                          icon: Icon(icons[i], key: ValueKey('nav-${AppDestination.values[i].name}')),
+                          icon: Icon(
+                            icons[i],
+                            key: ValueKey(
+                              'nav-${AppDestination.values[i].name}',
+                            ),
+                          ),
                           label: Text(labels[i]),
                         ),
                     ],
@@ -113,7 +118,10 @@ class _AppShellState extends ConsumerState<AppShell> {
                   destinations: [
                     for (var i = 0; i < labels.length; i++)
                       NavigationDestination(
-                        icon: Icon(icons[i], key: ValueKey('nav-${AppDestination.values[i].name}')),
+                        icon: Icon(
+                          icons[i],
+                          key: ValueKey('nav-${AppDestination.values[i].name}'),
+                        ),
                         label: labels[i],
                       ),
                   ],
@@ -162,10 +170,8 @@ class HomePage extends ConsumerWidget {
           label: Text(strings.settings),
           onPressed: () => Navigator.of(context).push<void>(
             MaterialPageRoute<void>(
-              builder: (_) => Scaffold(
-                appBar: AppBar(),
-                body: const SettingsPage(),
-              ),
+              builder: (_) =>
+                  Scaffold(appBar: AppBar(), body: const SettingsPage()),
             ),
           ),
         ),
@@ -187,7 +193,6 @@ class LibraryEmptyState extends StatelessWidget {
       AppDestination.tracks => strings.tracks,
       AppDestination.albums => strings.albums,
       AppDestination.artists => strings.artists,
-
     };
     return SingleChildScrollView(
       key: ValueKey('page-${destination.name}'),

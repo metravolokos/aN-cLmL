@@ -113,9 +113,12 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('nav-tracks')));
     await tester.pumpAndSettle();
     expect(
-      tester.widget<TextField>(
-        find.byKey(const ValueKey('library-search-tracks')),
-      ).controller!.text,
+      tester
+          .widget<TextField>(
+            find.byKey(const ValueKey('library-search-tracks')),
+          )
+          .controller!
+          .text,
       'Ёжик',
     );
     await tester.tap(
