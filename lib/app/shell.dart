@@ -317,12 +317,27 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         _hasSavedCredentials = true;
         _connected = true;
       });
-      // Connecting is not finished from the user's perspective until the
-      // library screen can show the imported files and import progress.
-      // The provider is initialized synchronously before refresh starts.
-      ref.read(destinationProvider.notifier).select(AppDestination.tracks);
+      // Verification of /AllMusic (Depth:0) is not proof that the file list
+      // (Depth:1) can be read. Keep Settings open until the actual listing
+      // has been committed; bounded metadata scanning continues afterwards.
+      final listing = Completer<bool>();
       final catalog = ref.read(cloudCatalogProvider.notifier);
-      unawaited(catalog.refresh());
+      unawaited(
+        catalog.refresh(
+          onListingResolved: (success) {
+            if (!listing.isCompleted) listing.complete(success);
+          },
+        ),
+      );
+      final listed = await listing.future;
+      if (!mounted) return;
+      if (!listed) {
+        // The catalog progress provider carries a sanitized failure stage
+        // and code. Do not navigate to a falsely disconnected track screen.
+        setState(() => _connected = false);
+        return;
+      }
+      ref.read(destinationProvider.notifier).select(AppDestination.tracks);
       Navigator.of(context).pop();
     } on CloudMailException catch (error) {
       if (!mounted) return;
@@ -348,7 +363,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     }
     if (!mounted) return;
     ref.invalidate(cloudMusicServiceProvider);
-    ref.invalidate(cloudCatalogProvider);
+    // Preserve the UI-bound notifier: invalidating it here could discard the
+    // refresh launched immediately after Connect and leave the library idle.
+    ref.read(cloudCatalogProvider.notifier).resetSession();
   }
 
   Future<void> _disconnect() async {

@@ -35,6 +35,8 @@ class CatalogImportProgressController extends Notifier<CatalogImportProgress> {
   @override
   CatalogImportProgress build() => const CatalogImportProgress();
 
+  void reset() => state = const CatalogImportProgress();
+
   void beginListing() =>
       state = const CatalogImportProgress(phase: CatalogImportPhase.listing);
 

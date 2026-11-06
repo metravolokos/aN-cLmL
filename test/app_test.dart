@@ -2,6 +2,8 @@ import 'package:cloudmail_player/app/app.dart';
 import 'package:cloudmail_player/app/state.dart';
 import 'package:cloudmail_player/cloud/cloud_connection_service.dart';
 import 'package:cloudmail_player/cloud/cloud_mail_webdav.dart';
+import 'package:cloudmail_player/data/library/cloud_music_service.dart';
+import 'package:cloudmail_player/domain/remote_track.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -39,12 +41,33 @@ class _FakeConnectionService implements CloudConnectionService {
   }
 }
 
+class _FixtureCatalog extends CloudMusicService {
+  @override
+  Future<List<RemoteTrack>> readCachedCatalog() async => const [];
+
+  @override
+  Future<List<RemoteTrack>> loadCatalog({
+    void Function(int receivedBytes)? onResponseBytes,
+  }) async => const [RemoteTrack(path: 'Fixture.flac', sizeBytes: 512)];
+
+  @override
+  Future<void> scanMetadata({
+    void Function(List<RemoteTrack> tracks, int done, int total)? onProgress,
+    void Function(int total)? onStarted,
+    bool Function()? isCancelled,
+  }) async {
+    onStarted?.call(0);
+  }
+}
+
 Future<void> launch(
   WidgetTester tester,
   Size size, {
   CloudConnectionService? service,
 }) async {
   final connectionService = service ?? _FakeConnectionService();
+  final catalog = _FixtureCatalog();
+  addTearDown(catalog.close);
   tester.view.devicePixelRatio = 1;
   tester.view.physicalSize = size;
   addTearDown(tester.view.resetPhysicalSize);
@@ -53,6 +76,7 @@ Future<void> launch(
     ProviderScope(
       overrides: [
         cloudConnectionServiceProvider.overrideWithValue(connectionService),
+        cloudMusicServiceProvider.overrideWithValue(catalog),
       ],
       child: const CloudMailApp(),
     ),
