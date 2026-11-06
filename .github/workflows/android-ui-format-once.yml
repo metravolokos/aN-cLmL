@@ -1,0 +1,36 @@
+name: One-time Dart formatting for Android UI branch
+on:
+  push:
+    branches:
+      - feature/android-integrated-buffer-waveform-20261106
+    paths:
+      - .github/workflows/android-ui-format-once.yml
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: true
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: stable
+          cache: true
+      - run: dart format lib test
+      - name: Commit formatted Dart files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add lib test
+          if git diff --cached --quiet; then
+            echo "Already formatted"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "style(android): format UI changes with pinned Dart"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
