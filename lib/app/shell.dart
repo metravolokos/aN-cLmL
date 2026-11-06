@@ -162,7 +162,10 @@ class HomePage extends ConsumerWidget {
           Text(
             progress.phase == CatalogImportPhase.listing
                 ? strings.libraryReceiveProgress(progress.receivedBytes ~/ 1024)
-                : strings.libraryMetadataProgress(progress.done, progress.total),
+                : strings.libraryMetadataProgress(
+                    progress.done,
+                    progress.total,
+                  ),
             key: const ValueKey('home-library-refresh-progress'),
           )
         else if (count != null && count > 0)

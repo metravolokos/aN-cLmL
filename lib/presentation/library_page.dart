@@ -141,8 +141,8 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
                       ),
                     CatalogImportPhase.failed =>
                       '${strings.libraryError} '
-                      '[${importProgress.failureStage?.name ?? 'unknown'}/'
-                      '${importProgress.failureCode?.name ?? 'unknown'}]',
+                          '[${importProgress.failureStage?.name ?? 'unknown'}/'
+                          '${importProgress.failureCode?.name ?? 'unknown'}]',
                     _ => '',
                   }, key: const ValueKey('library-progress-label')),
                   const SizedBox(height: 6),
@@ -299,17 +299,17 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
                                       first.displayAlbum,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.titleSmall,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleSmall,
                                     ),
                                     Text(
                                       '${first.displayArtist} · ${albumTracks.length}',
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.bodySmall,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall,
                                     ),
                                   ],
                                 ),

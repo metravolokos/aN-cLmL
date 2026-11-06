@@ -36,9 +36,9 @@ class _FailingCatalog extends CloudMusicService {
 void main() {
   test('listing failures report sanitized stage and error code', () async {
     final fixture = _FailingCatalog(failMetadata: false);
-    final container = ProviderContainer(overrides: [
-      cloudMusicServiceProvider.overrideWithValue(fixture),
-    ]);
+    final container = ProviderContainer(
+      overrides: [cloudMusicServiceProvider.overrideWithValue(fixture)],
+    );
     addTearDown(container.dispose);
     addTearDown(fixture.close);
 
@@ -53,9 +53,9 @@ void main() {
 
   test('metadata failures preserve an already loaded file list', () async {
     final fixture = _FailingCatalog(failMetadata: true);
-    final container = ProviderContainer(overrides: [
-      cloudMusicServiceProvider.overrideWithValue(fixture),
-    ]);
+    final container = ProviderContainer(
+      overrides: [cloudMusicServiceProvider.overrideWithValue(fixture)],
+    );
     addTearDown(container.dispose);
     addTearDown(fixture.close);
 
