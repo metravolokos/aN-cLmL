@@ -218,7 +218,7 @@ class CloudMusicService {
           duration: tags?.duration ?? id3?.duration,
         );
         completed++;
-        if (completed % 8 == 0 || completed == pending.length) {
+        if (completed % 32 == 0 || completed == pending.length) {
           final snapshot = await catalog.readTracks();
           onProgress?.call(snapshot, completed, pending.length);
         }
