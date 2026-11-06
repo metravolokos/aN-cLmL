@@ -1,11 +1,11 @@
 # teStPlaYclouDE — integrated dependency register (2026-11-06)
 
-This is an **implemented** stack, not a candidate list. Pins are from `pubspec.yaml` on main at audit baseline `8aa1550`. Refer to `pubspec.lock` for resolved transitive versions. Do not update any dependency without an ADR and exact-head multi-platform CI.
+This is an **implemented** stack, not a candidate list. Pins are from `pubspec.yaml` on main; originally audited at `8aa1550`, refreshed after PR #34. Refer to `pubspec.lock` for resolved transitive versions. Do not update any dependency without an ADR and exact-head multi-platform CI.
 
 | Module | Selected version | Rationale / limits |
 | --- | --- | --- |
 | Flutter / Dart | Flutter 3.47.9 / Dart 3.13.7 | One codebase, Material 3 Russian ARB, Windows/Android/Linux CI |
-| DI / state | flutter_riverpod 3.0.3 | Testable UI/service/controller state |
+| DI / state | flutter_riverpod 3.4.3 | Testable UI/service/controller state |
 | HTTP/WebDAV | dio 5.11.1 | Cancellable streamed custom PROPFIND and validated 206 Range; measured multi-transport comparison remains unresolved in Issue #6 |
 | XML | xml 7.1.0 | Bounded PROPFIND multistatus parsing; check worst-case full directory size |
 | Secure storage | flutter_secure_storage 11.2.0 | OS secret vault; actual runtime on devices still unverified |

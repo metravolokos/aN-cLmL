@@ -1,6 +1,6 @@
 # Architecture decision register and supersession map
 
-The ADR filename is the durable citation key. **Historical collisions are preserved, not silently rewritten:** both `0006-*` and both `0007-*` exist because independent workstreams used the same number. New ADRs must use **0013+** and an unambiguous slug. Do not treat the numeric prefix alone as unique.
+The ADR filename is the durable citation key. **Historical collisions are preserved, not silently rewritten:** both `0006-*` and both `0007-*` exist because independent workstreams used the same number. New ADRs must use a unique number **0015+** and an unambiguous slug. Do not treat the numeric prefix alone as unique.
 
 | Existing ADR | Decision | Current qualification |
 | --- | --- | --- |
@@ -18,7 +18,8 @@ The ADR filename is the durable citation key. **Historical collisions are preser
 | 0010-linux-mpris | audio_service_mpris + bounded metadata and opaque D-Bus IDs | Merged PR #25; real GNOME acceptance pending |
 | 0011-android-audio-focus | audio_session music configuration, avoid duplicate interruption handler | Merged PR #26; device acceptance pending |
 | 0012-persistent-cover-thumbnails | pure Dart image isolate, 640px JPEG, 64 MiB persistent LRU | Merged PR #28; memory/performance live verification pending |
-| 0013-public-identity-and-distribution | public name, stable internal IDs, publication and release/attribution boundaries | New decision; see corresponding ADR |
+| 0013-public-identity-and-distribution | public name, stable internal IDs, publication and release/attribution boundaries | Adopted PR #31 |
+| 0014-opaque-android-media-ids | Hash Android MediaSession track identity rather than expose private WebDAV filename | Merged PR #37; OS media surface hardware acceptance pending |
 
 ## Defect and corrective-decision index
 
@@ -33,6 +34,8 @@ The ADR filename is the durable citation key. **Historical collisions are preser
 | Android service lifecycle assertions and wrong logical queue callbacks | PR #19 uses custom AudioHandler, compatible notification config and guarded controller bridge |
 | Flatpak builder lacked `eu-strip` | PR #29 added `elfutils`; packaging #42129981370 passed |
 | Flatpak binary might lack direct ELF runtime libraries despite successful build | PR #30 adds in-sandbox `ldd` smoke; #42130938855 passed, not a live Wayland/audio test |
+| Android system MediaItem IDs exposed relative cloud filenames | PR #37 replaces raw filenames with stable opaque IDs; Quality/Android/Windows/Linux CI #42170135377 passed |
+| Async transport controls could race audio-source switching | PR #35 merged controller guards; PR #36 proposes additional stale-event protection, pending independent CI and merge |
 | Draft branch incompatibilities and duplicate work | PRs #4/#5/#7/#8/#9/#10/#17/#20 closed without merge; consolidated/corrected by #11, #18, #21 |
 
 References: docs/DEVELOPMENT_HISTORY.md and GitHub PR/CI permalinks. Each new bug must document reproduction, failed assumption, minimal fix, regression coverage, CI head and what remains unverified.
