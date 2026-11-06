@@ -91,24 +91,28 @@ class PlaybackController extends Notifier<PlaybackView> {
     final audio = AudioPlayer();
     _subscriptions.add(
       audio.positionStream.listen((position) {
-        if (!_closed) state = state.withUpdates(position: position);
+        if (!_closed && !_changingTrack) {
+          state = state.withUpdates(position: position);
+        }
       }),
     );
     _subscriptions.add(
       audio.durationStream.listen((duration) {
-        if (!_closed && duration != null) {
+        if (!_closed && !_changingTrack && duration != null) {
           state = state.withUpdates(duration: duration);
         }
       }),
     );
     _subscriptions.add(
       audio.playingStream.listen((playing) {
-        if (!_closed) state = state.withUpdates(playing: playing);
+        if (!_closed && !_changingTrack) {
+          state = state.withUpdates(playing: playing);
+        }
       }),
     );
     _subscriptions.add(
       audio.processingStateStream.listen((processing) {
-        if (_closed) return;
+        if (_closed || _changingTrack) return;
         state = state.withUpdates(
           loading:
               processing == ProcessingState.loading ||
@@ -121,7 +125,9 @@ class PlaybackController extends Notifier<PlaybackView> {
     );
     _subscriptions.add(
       audio.errorStream.listen((_) {
-        if (!_closed) state = state.withUpdates(failed: true, loading: false);
+        if (!_closed && !_changingTrack) {
+          state = state.withUpdates(failed: true, loading: false);
+        }
       }),
     );
     return _player = audio;
