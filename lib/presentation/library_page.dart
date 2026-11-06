@@ -9,6 +9,7 @@ import '../domain/remote_track.dart';
 import '../domain/album_track_order.dart';
 import '../l10n/app_localizations.dart';
 import 'album_cover_thumbnail.dart';
+import 'album_detail_page.dart';
 import 'mini_player.dart';
 
 /// Displays the actual cloud catalog. Album/artist names are placeholders
@@ -25,38 +26,10 @@ class CloudLibraryPage extends ConsumerStatefulWidget {
 class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
   String _filter = '';
 
-  Future<void> _showAlbumTracks(
-    BuildContext context,
-    List<RemoteTrack> albumTracks,
-  ) async {
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (sheetContext) => SafeArea(
-        child: FractionallySizedBox(
-          heightFactor: 0.72,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                child: Text(
-                  albumTracks.first.displayAlbum,
-                  style: Theme.of(sheetContext).textTheme.titleLarge,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: albumTracks.length,
-                  itemBuilder: (context, index) =>
-                      _TrackTile(track: albumTracks[index], queue: albumTracks),
-                ),
-              ),
-            ],
-          ),
-        ),
+  void _openAlbum(BuildContext context, List<RemoteTrack> tracks) {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => AlbumDetailPage(tracks: tracks),
       ),
     );
   }
@@ -250,7 +223,7 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
                         clipBehavior: Clip.antiAlias,
                         child: InkWell(
                           key: ValueKey('album-open-${first.albumKey}'),
-                          onTap: () => _showAlbumTracks(context, albumTracks),
+                          onTap: () => _openAlbum(context, albumTracks),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
@@ -428,9 +401,11 @@ class ArtistDetailPage extends ConsumerWidget {
                   clipBehavior: Clip.antiAlias,
                   child: InkWell(
                     key: ValueKey('artist-album-${first.albumKey}'),
-                    onTap: () => ref
-                        .read(playbackControllerProvider.notifier)
-                        .playFromList(albumTracks, 0),
+                    onTap: () => Navigator.of(context).push<void>(
+                      MaterialPageRoute<void>(
+                        builder: (_) => AlbumDetailPage(tracks: albumTracks),
+                      ),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
