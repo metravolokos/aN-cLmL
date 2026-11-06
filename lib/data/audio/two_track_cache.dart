@@ -60,7 +60,11 @@ class TwoTrackAudioCache {
   }
 
   /// Reuses a prefetched next-track file during promotion.
-  Future<void> configure(RemoteTrack current, RemoteTrack? next) async {
+  Future<void> configure(
+    RemoteTrack current,
+    RemoteTrack? next, {
+    void Function(double fraction)? onCurrentProgress,
+  }) async {
     if (_closed) throw StateError('Audio cache closed');
     final candidates = <RemoteTrack>[];
     if (current.sizeBytes > 0 && current.sizeBytes <= maximumBytes) {
@@ -89,6 +93,15 @@ class TwoTrackAudioCache {
       _slots.putIfAbsent(_key(track), () => _create(track));
     }
     final now = _slots[_key(current)];
+    // The previous track must stop reporting progress when promoted/retired.
+    for (final slot in _slots.values) {
+      slot.onProgress = identical(slot, now) ? onCurrentProgress : null;
+    }
+    if (now != null && current.sizeBytes > 0) {
+      onCurrentProgress?.call(
+        (now.downloaded / current.sizeBytes).clamp(0.0, 1.0),
+      );
+    }
     final following = next == null ? null : _slots[_key(next)];
     if (now != null) unawaited(_warmInOrder(now, following));
   }
@@ -134,6 +147,14 @@ class TwoTrackAudioCache {
         }
         await file.writeFrom(bytes);
         slot.downloaded += length;
+        final fraction = slot.downloaded / slot.track.sizeBytes;
+        // Limit UI notifications to percent increments; never expose bytes,
+        // file paths, or other catalog metadata in the progress callback.
+        final percent = (fraction * 100).floor();
+        if (percent != slot.reportedPercent) {
+          slot.reportedPercent = percent;
+          slot.onProgress?.call(fraction.clamp(0.0, 1.0));
+        }
         offset += length;
         slot.cancellation = null;
       }
@@ -217,12 +238,15 @@ class _CacheSlot {
   final RemoteTrack track;
   File file;
   int downloaded = 0;
+  int reportedPercent = -1;
+  void Function(double fraction)? onProgress;
   bool complete = false;
   bool cancelled = false;
   WebDavRequestCancellation? cancellation;
   Future<void>? task;
 
   void cancel() {
+    onProgress = null;
     cancelled = true;
     cancellation?.cancel();
   }
