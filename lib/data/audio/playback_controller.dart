@@ -103,7 +103,11 @@ class PlaybackController extends Notifier<PlaybackView> {
     );
     _subscriptions.add(
       audio.playingStream.listen((playing) {
-        if (!_closed) state = state.withUpdates(playing: playing);
+        // A stale false event emitted while replacing the source must not
+        // overwrite the requested Play state or flash the Play icon.
+        if (!_closed && !_changingTrack) {
+          state = state.withUpdates(playing: playing);
+        }
       }),
     );
     _subscriptions.add(
