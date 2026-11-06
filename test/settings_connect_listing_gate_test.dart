@@ -4,6 +4,7 @@ import 'package:cloudmail_player/app/app.dart';
 import 'package:cloudmail_player/cloud/cloud_connection_service.dart';
 import 'package:cloudmail_player/cloud/cloud_mail_webdav.dart';
 import 'package:cloudmail_player/data/library/cloud_music_service.dart';
+import 'package:cloudmail_player/data/library/catalog_import_progress.dart';
 import 'package:cloudmail_player/domain/remote_track.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -92,6 +93,19 @@ void main() {
     ]);
     await tester.pumpAndSettle();
     debugPrint('catalog listing calls after completion: ${catalog.loadCalls}');
+    final settings = find.byKey(const ValueKey('page-settings'));
+    if (settings.evaluate().isNotEmpty) {
+      final ctx = tester.element(settings);
+      final scope = ProviderScope.containerOf(ctx);
+      final state = scope.read(catalogImportProgressProvider);
+      debugPrint('catalog phase after completion: ${state.phase}, error: ${state.failureCode}');
+      final status = find.byKey(const ValueKey('connection-status'));
+      for (final element in status.evaluate()) {
+        final value = element.widget;
+        if (value is Text) debugPrint('connection UI: ${value.data}');
+      }
+    }
+
     expect(find.byKey(const ValueKey('page-tracks')), findsOneWidget);
     expect(find.text('Track'), findsOneWidget);
   });
