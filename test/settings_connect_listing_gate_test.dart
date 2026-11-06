@@ -27,6 +27,7 @@ class _Connection implements CloudConnectionService {
 
 class _Catalog extends CloudMusicService {
   final Completer<List<RemoteTrack>> listing = Completer<List<RemoteTrack>>();
+  int loadCalls = 0;
 
   @override
   Future<List<RemoteTrack>> readCachedCatalog() async => const [];
@@ -34,7 +35,10 @@ class _Catalog extends CloudMusicService {
   @override
   Future<List<RemoteTrack>> loadCatalog({
     void Function(int receivedBytes)? onResponseBytes,
-  }) => listing.future;
+  }) {
+    loadCalls++;
+    return listing.future;
+  }
 
   @override
   Future<void> scanMetadata({
@@ -79,6 +83,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     await _enterCredentials(tester);
+    debugPrint('catalog listing calls before completion: ${catalog.loadCalls}');
     expect(find.byKey(const ValueKey('page-settings')), findsOneWidget);
     expect(find.byKey(const ValueKey('page-tracks')), findsNothing);
 
@@ -86,6 +91,7 @@ void main() {
       RemoteTrack(path: 'Track.flac', sizeBytes: 12345),
     ]);
     await tester.pumpAndSettle();
+    debugPrint('catalog listing calls after completion: ${catalog.loadCalls}');
     expect(find.byKey(const ValueKey('page-tracks')), findsOneWidget);
     expect(find.text('Track'), findsOneWidget);
   });
@@ -106,6 +112,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     await _enterCredentials(tester);
+    debugPrint('catalog listing calls before error: ${catalog.loadCalls}');
     catalog.listing.completeError(
       const CloudMailException(CloudMailErrorCode.invalidResponse),
     );
