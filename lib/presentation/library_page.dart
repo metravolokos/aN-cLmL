@@ -139,7 +139,10 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
                         importProgress.done,
                         importProgress.total,
                       ),
-                    CatalogImportPhase.failed => strings.libraryError,
+                    CatalogImportPhase.failed =>
+                      '${strings.libraryError} '
+                      '[${importProgress.failureStage?.name ?? 'unknown'}/'
+                      '${importProgress.failureCode?.name ?? 'unknown'}]',
                     _ => '',
                   }, key: const ValueKey('library-progress-label')),
                   const SizedBox(height: 6),
@@ -223,7 +226,13 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
                         children: [
                           const Icon(Icons.cloud_off_outlined, size: 48),
                           const SizedBox(height: 10),
-                          Text(strings.libraryDisconnected),
+                          Text(
+                            importProgress.phase == CatalogImportPhase.finished
+                                ? strings.libraryEmpty
+                                : importProgress.failed
+                                ? strings.libraryError
+                                : strings.libraryDisconnected,
+                          ),
                           const SizedBox(height: 10),
                           Text(strings.libraryHint),
                           const SizedBox(height: 16),
