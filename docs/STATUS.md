@@ -32,3 +32,7 @@ For history and superseded PRs see DEVELOPMENT_HISTORY; known audit concerns see
 ## In-flight verification (not merged)
 
 - Feature branch `feature/guard-controls-during-source-switch` guards pause/resume and seek during asynchronous audio-source replacement; pending CI and device playback checks. This is not accepted functionality until merged and verified.
+
+## In-flight PR: stale player stream events (not merged)
+
+- Feature `feature/guard-stale-playback-stream-events` suppresses stale position/duration/playing/processing/error callbacks during source replacement. Added source-contract regression coverage; device playback remains unverified. Do not count as accepted until exact-head CI passes and PR is merged.
