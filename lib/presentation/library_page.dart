@@ -9,6 +9,7 @@ import '../domain/remote_track.dart';
 import '../domain/album_track_order.dart';
 import '../l10n/app_localizations.dart';
 import 'album_cover_thumbnail.dart';
+import 'mini_player.dart';
 
 /// Displays the actual cloud catalog. Album/artist names are placeholders
 /// until the bounded FLAC/ID3 tag scanner is enabled; no invented metadata.
@@ -301,16 +302,25 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
                   );
                 }
                 return ListView.builder(
+                  key: const ValueKey('artist-list'),
                   itemCount: keys.length,
                   itemBuilder: (context, index) {
-                    final key = keys[index];
-                    return ExpansionTile(
-                      title: Text(key),
-                      subtitle: Text('${groups[key]!.length}'),
-                      children: [
-                        for (final track in groups[key]!)
-                          _TrackTile(track: track, queue: groups[key]!),
-                      ],
+                    final artist = keys[index];
+                    final artistTracks = groups[artist]!;
+                    return ListTile(
+                      key: ValueKey('artist-open-$artist'),
+                      leading: const Icon(Icons.person_outline),
+                      title: Text(artist),
+                      subtitle: Text('${artistTracks.length}'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => Navigator.of(context).push<void>(
+                        MaterialPageRoute<void>(
+                          builder: (_) => ArtistDetailPage(
+                            artist: artist,
+                            tracks: artistTracks,
+                          ),
+                        ),
+                      ),
                     );
                   },
                 );
@@ -354,6 +364,110 @@ class _TrackTile extends ConsumerWidget {
             queue,
             queue.indexWhere((item) => item.path == track.path),
           ),
+    );
+  }
+}
+
+/// Artist drill-down: albums first, then every track by this artist.
+/// Uses the same album identity and track ordering as the main library.
+/// No additional WebDAV calls or album thumbnails are eagerly fetched.
+class ArtistDetailPage extends ConsumerWidget {
+  const ArtistDetailPage({
+    required this.artist,
+    required this.tracks,
+    super.key,
+  });
+
+  final String artist;
+  final List<RemoteTrack> tracks;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppLocalizations.of(context)!;
+    final albums = <String, List<RemoteTrack>>{};
+    for (final track in tracks) {
+      albums.putIfAbsent(track.albumKey, () => <RemoteTrack>[]).add(track);
+    }
+    for (final group in albums.values) {
+      group.sort(compareAlbumTracks);
+    }
+    final albumGroups = albums.values.toList()
+      ..sort((a, b) => a.first.displayAlbum.compareTo(b.first.displayAlbum));
+    final allTracks = <RemoteTrack>[for (final group in albumGroups) ...group];
+
+    return Scaffold(
+      appBar: AppBar(title: Text(artist)),
+      bottomNavigationBar: const MiniPlayer(),
+      body: CustomScrollView(
+        key: const ValueKey('artist-detail-scroll'),
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            sliver: SliverToBoxAdapter(
+              child: Text(
+                strings.albums,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            sliver: SliverGrid.builder(
+              key: const ValueKey('artist-album-grid'),
+              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 180,
+                childAspectRatio: 0.75,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+              ),
+              itemCount: albumGroups.length,
+              itemBuilder: (context, index) {
+                final albumTracks = albumGroups[index];
+                final first = albumTracks.first;
+                return Card(
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    key: ValueKey('artist-album-${first.albumKey}'),
+                    onTap: () => ref
+                        .read(playbackControllerProvider.notifier)
+                        .playFromList(albumTracks, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: AlbumCoverThumbnail(track: first, size: 160),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Text(
+                            first.displayAlbum,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
+            sliver: SliverToBoxAdapter(
+              child: Text(
+                strings.tracks,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+          ),
+          SliverList.builder(
+            itemCount: allTracks.length,
+            itemBuilder: (context, index) =>
+                _TrackTile(track: allTracks[index], queue: allTracks),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -103,7 +103,11 @@ class PlaybackController extends Notifier<PlaybackView> {
     );
     _subscriptions.add(
       audio.playingStream.listen((playing) {
-        if (!_closed) state = state.withUpdates(playing: playing);
+        // A stale false event emitted while replacing the source must not
+        // overwrite the requested Play state or flash the Play icon.
+        if (!_closed && !_changingTrack) {
+          state = state.withUpdates(playing: playing);
+        }
       }),
     );
     _subscriptions.add(
@@ -198,7 +202,20 @@ class PlaybackController extends Notifier<PlaybackView> {
         await player.stop();
         return;
       }
-      unawaited(player.play());
+      // Reflect the user's requested Play immediately. Some backends emit a
+      // delayed/duplicate "playing=false" while replacing their source.
+      state = state.withUpdates(playing: true, loading: false, failed: false);
+      unawaited(
+        player.play().catchError((Object _) {
+          if (!_closed && generation == _operationGeneration) {
+            state = state.withUpdates(
+              playing: false,
+              loading: false,
+              failed: true,
+            );
+          }
+        }),
+      );
     } catch (_) {
       // A cancelled open must not resurrect a failed state after Stop.
       if (!_closed && generation == _operationGeneration) {

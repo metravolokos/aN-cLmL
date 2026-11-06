@@ -2,18 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/audio/playback_controller.dart';
-import '../domain/track_queue.dart';
 import '../l10n/app_localizations.dart';
 import 'now_playing_page.dart';
 
 class MiniPlayer extends ConsumerWidget {
   const MiniPlayer({super.key});
-
-  String _time(Duration duration) {
-    final minutes = duration.inMinutes;
-    final seconds = duration.inSeconds % 60;
-    return '$minutes:${seconds.toString().padLeft(2, '0')}';
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -56,24 +49,12 @@ class MiniPlayer extends ConsumerWidget {
                       ),
                     );
                   },
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        playback.track!.displayTitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        playback.failed
-                            ? strings.playbackError
-                            : playback.loading
-                            ? strings.loadingAudio
-                            : '${_time(playback.position)} / ${_time(playback.duration)}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                  child: Text(
+                    playback.failed
+                        ? strings.playbackError
+                        : playback.track!.displayTitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),
@@ -96,42 +77,7 @@ class MiniPlayer extends ConsumerWidget {
                 onPressed: () =>
                     ref.read(playbackControllerProvider.notifier).next(),
               ),
-              IconButton(
-                tooltip: strings.stop,
-                icon: const Icon(Icons.stop),
-                onPressed: () =>
-                    ref.read(playbackControllerProvider.notifier).stop(),
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                tooltip: playback.shuffled
-                    ? strings.shuffleOn
-                    : strings.shuffleOff,
-                icon: Icon(
-                  playback.shuffled ? Icons.shuffle_on_outlined : Icons.shuffle,
-                ),
-                onPressed: () => ref
-                    .read(playbackControllerProvider.notifier)
-                    .setShuffle(!playback.shuffled),
-              ),
-              IconButton(
-                tooltip: switch (playback.repeatMode) {
-                  PlayerRepeatMode.off => strings.repeatOff,
-                  PlayerRepeatMode.all => strings.repeatAll,
-                  PlayerRepeatMode.one => strings.repeatOne,
-                },
-                icon: Icon(
-                  playback.repeatMode == PlayerRepeatMode.one
-                      ? Icons.repeat_one
-                      : Icons.repeat,
-                ),
-                onPressed: () =>
-                    ref.read(playbackControllerProvider.notifier).cycleRepeat(),
-              ),
+              const SizedBox(width: 4),
             ],
           ),
           const SizedBox(height: 4),
