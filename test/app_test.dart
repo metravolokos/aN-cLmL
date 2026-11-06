@@ -68,7 +68,7 @@ void main() {
     expect(find.byType(NavigationBar), findsOneWidget);
     expect(find.byType(NavigationRail), findsNothing);
     expect(find.byKey(const ValueKey('page-home')), findsOneWidget);
-    expect(find.text('Библиотека не подключена'), findsOneWidget);
+    expect(find.text('teStPlaYclouDE'), findsOneWidget);
     expect(
       tester.widget<NavigationBar>(find.byType(NavigationBar)).labelBehavior,
       NavigationDestinationLabelBehavior.alwaysHide,
