@@ -69,6 +69,37 @@ void main() {
     );
   });
 
+  test(
+    'root Depth 1 reveals audio files stored directly in /AllMusic',
+    () async {
+      handleRequest = (request) async {
+        expect(request.uri.path, '/AllMusic/');
+        expect(request.headers.value('depth'), '1');
+        await _reply(
+          request,
+          207,
+          body: _multistatus(
+            _response(
+              '/AllMusic/',
+              '<z:resourcetype><z:collection/></z:resourcetype>',
+            ),
+            _response(
+              '/AllMusic/%D0%A2%D1%80%D0%B5%D0%BA.flac',
+              '<z:resourcetype/><z:getcontentlength>12345</z:getcontentlength>',
+            ),
+          ),
+        );
+      };
+
+      final entries = await client.propfind(_credentials, depth: 1);
+      expect(entries, hasLength(2));
+      expect(entries[0].isCollection, isTrue);
+      expect(entries[1].relativePath, 'Трек.flac');
+      expect(entries[1].isCollection, isFalse);
+      expect(entries[1].sizeBytes, 12345);
+    },
+  );
+
   test('Depth 1 parses percent-encoded Cyrillic hrefs and DAV metadata', () async {
     handleRequest = (request) async {
       expect(request.headers.value('depth'), '1');
