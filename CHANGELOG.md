@@ -6,7 +6,7 @@ Significant source changes to **teStPlaYclouDE** are tracked here. This is a dev
 
 ### Changed
 - Adopt exact public product name teStPlaYclouDE in Flutter/Android/Windows/Linux/Flatpak display labels. Internal package IDs and GitHub slug intentionally remain stable for future install/data migration.
-- Publish a full handover: source audit, requirements traceability, PR history, defect decisions, ADR index, security policy, license, contribution process and release limitations.
+- Publish a full handover: source audit, requirements traceability, PR history, defect decisions, ADR index, security policy, contribution process and release limitations. The initially added MIT project license was removed at the owner's request; no replacement project license has been authorized.
 
 ### Security and reliability
 - PR #37: use opaque MediaSession IDs to avoid publishing private cloud filenames in Android system metadata (ADR-0014).
