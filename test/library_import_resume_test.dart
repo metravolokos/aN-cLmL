@@ -136,7 +136,13 @@ void main() {
       find.byKey(const ValueKey('settings-import-progress')),
       findsOneWidget,
     );
-    expect(find.textContaining('4 КБ'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('page-settings')),
+        matching: find.textContaining('4 КБ'),
+      ),
+      findsOneWidget,
+    );
     service.remote.complete(const [
       RemoteTrack(path: 'Сохранённый.flac', sizeBytes: 123),
       RemoteTrack(path: 'Добавленный.flac', sizeBytes: 456),
