@@ -30,7 +30,7 @@ Scope: GitHub main tree at `8aa15507691c2ac391f05b7a00467ef98cb9b0be`, history o
 ## Security and privacy notes
 
 - CloudMailWebDavClient must not log Authorization, authenticated URLs, PROPFIND response bodies or real filenames. Current code maps transport faults to error enums; future debug logging must redact by design.
-- Android media metadata intentionally exposes **relative path as MediaItem.id** (source `lib/platform/android/android_background_audio.dart`); not a password leak but may reveal private filename via OS media surfaces. Evaluate opaque IDs as a privacy improvement with contract tests.
+- Android MediaSession previously exposed relative WebDAV path as MediaItem.id. ADR-0014 replaces it with an opaque SHA-256-derived ID and adds a privacy regression test; real Android system-surface acceptance is still pending.
 - Audio temp cache contains local plaintext portions of remote files and is best-effort cleaned on stop/restart; OS temp storage is not guaranteed secure erasure. Persistent album JPEG cache remains on disk per account; deletion/privacy policy requires explicit verification.
 - `CloudMusicService.loadCatalog()` and Drift `readTracks()` materialize full lists; the `unindexedTracks(limit:50000)` cap is **not** a proof of 50k scalable UX.
 - Only sources reviewed here; secret/history and supply-chain scanners still required before claiming a full public security audit.

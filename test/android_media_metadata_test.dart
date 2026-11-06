@@ -15,7 +15,19 @@ void main() {
         duration: Duration(minutes: 3, seconds: 15),
       );
       final item = mediaItemForTrack(track);
-      expect(item.id, 'Тест — Песня.flac');
+      expect(item.id, startsWith('track:'));
+      expect(item.id, hasLength(70));
+      expect(item.id, isNot(contains(track.path)));
+      expect(item.id, isNot(contains('Песня.flac')));
+      expect(item.id, mediaItemForTrack(track).id);
+      const changedEtag = RemoteTrack(
+        path: 'Тест — Песня.flac',
+        sizeBytes: 750000,
+        etag: 'changed',
+        title: 'Песня',
+        artist: 'Исполнитель',
+      );
+      expect(mediaItemForTrack(changedEtag).id, isNot(item.id));
       expect(item.title, 'Песня');
       expect(item.artist, 'Исполнитель');
       expect(item.album, 'Альбом');

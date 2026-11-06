@@ -15,7 +15,7 @@ The foreground service stays active during Pause using `androidStopForegroundOnP
 
 The Android activity extends AudioServiceActivity. The manifest declares WAKE_LOCK, foreground mediaPlayback permissions, AudioService and a media button receiver. Initialize the handler before constructing the Flutter app. A platform-only Riverpod bridge forwards playback state and media metadata to the handler and installs guarded callbacks; no second decoder, WebDAV client or audio player is created.
 
-Only code in lib/platform/android imports audio_service. A platform-injected MediaTagFactory creates MediaItem metadata (relative path ID, album, artist, title and duration), never Basic Auth, app passwords, authenticated URLs or redirect targets. Windows/Linux continue using their existing audio backends.
+Only code in lib/platform/android imports audio_service. A platform-injected MediaTagFactory creates MediaItem metadata (opaque SHA-256-based ID, album, artist, title and duration), never Basic Auth, app passwords, relative WebDAV filenames as IDs, authenticated URLs or redirect targets. See ADR-0014 for the privacy hardening. Windows/Linux continue using their existing audio backends.
 
 ## Alternatives
 

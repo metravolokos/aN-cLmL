@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
+
+import 'package:crypto/crypto.dart';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/widgets.dart';
@@ -24,9 +27,18 @@ Future<void> initializeAndroidPlaybackControls() async {
   );
 }
 
-/// Pure metadata conversion, with no credentials or authenticated URI.
+/// Stable opaque identity for Android system media APIs. A relative WebDAV path
+/// can expose a private filename to OS surfaces or other media browsers.
+/// This is an identity, not a secret or an authenticated playback URL.
+String androidMediaIdForTrack(RemoteTrack track) {
+  final identity =
+      '${track.path}\u0000${track.etag ?? ''}\u0000${track.sizeBytes}';
+  return 'track:${sha256.convert(utf8.encode(identity))}';
+}
+
+/// Only deliberately user-visible display metadata reaches the OS panel.
 MediaItem mediaItemForTrack(RemoteTrack track) => MediaItem(
-  id: track.path,
+  id: androidMediaIdForTrack(track),
   title: track.displayTitle,
   artist: track.displayArtist,
   album: track.displayAlbum,
