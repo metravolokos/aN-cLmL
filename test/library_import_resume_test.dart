@@ -149,6 +149,11 @@ void main() {
     ]);
     await tester.pump();
     await tester.pump();
+    await tester.ensureVisible(find.byKey(const ValueKey('settings-refresh-library')));
+    await tester.tap(find.byKey(const ValueKey('settings-refresh-library')));
+    await tester.pump();
+    expect(service.remoteCalls, 2);
+    expect(tester.takeException(), isNull);
   });
 
   test('progress counts track metadata separately from listing bytes', () {
