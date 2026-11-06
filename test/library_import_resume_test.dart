@@ -123,6 +123,14 @@ void main() {
     await tester.pump();
     await tester.tap(find.byKey(const ValueKey('home-settings')));
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
+    // The Settings route now has its own app bar; the import indicator is
+    // below the connection form and may be outside the initial viewport.
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('settings-import-progress')),
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
     expect(
       find.byKey(const ValueKey('settings-import-progress')),
       findsOneWidget,
