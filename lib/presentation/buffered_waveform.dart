@@ -21,13 +21,13 @@ class BufferedWaveform extends StatelessWidget {
       child: CustomPaint(
         key: const ValueKey('buffered-waveform'),
         painter: _WaveformPainter(
-          played: played.clamp(0.0, 1.0),
-          buffered: buffered.clamp(0.0, 1.0),
+          played: played.clamp(0.0, 1.0).toDouble(),
+          buffered: buffered.clamp(0.0, 1.0).toDouble(),
           playedColor: colors.primary,
           cachedColor: colors.primary.withValues(alpha: 0.45),
           emptyColor: colors.onSurface.withValues(alpha: 0.16),
         ),
-        size: const Size(double.infinity, 38),
+        size: const Size(0, 38),
       ),
     );
   }
