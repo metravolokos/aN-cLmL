@@ -7,13 +7,40 @@ import '../cloud/cloud_connection_service.dart';
 import '../cloud/cloud_mail_webdav.dart';
 import '../data/audio/playback_controller.dart';
 import '../data/library/cloud_music_service.dart';
+import '../data/library/catalog_import_progress.dart';
 import '../presentation/library_page.dart';
 import '../presentation/mini_player.dart';
 import '../l10n/app_localizations.dart';
 import 'state.dart';
 
-class AppShell extends ConsumerWidget {
+class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key});
+
+  @override
+  ConsumerState<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends ConsumerState<AppShell> {
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_restoreSavedLibrary());
+  }
+
+  Future<void> _restoreSavedLibrary() async {
+    try {
+      final saved = await ref
+          .read(cloudConnectionServiceProvider)
+          .loadSavedConnection();
+      if (!mounted || !saved.hasCredentials) return;
+      // Authentication remains exclusively in the OS secure store. An app
+      // restart automatically opens the cached library and refreshes WebDAV.
+      unawaited(ref.read(cloudCatalogProvider.notifier).refresh());
+    } catch (_) {
+      // The Settings page exposes credential/keyring errors without trying to
+      // reconnect using stale or missing secrets.
+    }
+  }
 
   static const railBreakpoint = 720.0;
   static const icons = [
@@ -24,7 +51,7 @@ class AppShell extends ConsumerWidget {
   ];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context)!;
     final labels = [
       strings.tracks,
@@ -219,6 +246,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         _hasSavedCredentials = true;
         _connected = true;
       });
+      // A successful connection must start library import without an extra
+      // manual button and must never wait for metadata before showing tracks.
+      unawaited(ref.read(cloudCatalogProvider.notifier).refresh());
     } on CloudMailException catch (error) {
       if (!mounted) return;
       setState(() => _error = error.code);
@@ -298,6 +328,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context)!;
+    final importProgress = ref.watch(catalogImportProgressProvider);
     final theme = ref.watch(themeProvider);
     final labels = {
       ThemeMode.system: strings.systemTheme,
@@ -423,6 +454,38 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     key: const ValueKey('connection-status'),
                   ),
                 ),
+              ],
+            ),
+          ),
+        ],
+        if (importProgress.inProgress || importProgress.failed) ...[
+          const SizedBox(height: 16),
+          Semantics(
+            liveRegion: true,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(switch (importProgress.phase) {
+                  CatalogImportPhase.listing => strings.libraryReceiveProgress(
+                    importProgress.receivedBytes ~/ 1024,
+                  ),
+                  CatalogImportPhase.metadata =>
+                    strings.libraryMetadataProgress(
+                      importProgress.done,
+                      importProgress.total,
+                    ),
+                  CatalogImportPhase.failed => strings.libraryError,
+                  _ => '',
+                }, key: const ValueKey('settings-import-progress')),
+                const SizedBox(height: 8),
+                if (importProgress.inProgress)
+                  LinearProgressIndicator(
+                    value:
+                        importProgress.phase == CatalogImportPhase.metadata &&
+                            importProgress.total > 0
+                        ? importProgress.done / importProgress.total
+                        : null,
+                  ),
               ],
             ),
           ),

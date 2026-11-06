@@ -170,6 +170,7 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
     String path = '',
     required int depth,
     WebDavRequestCancellation? cancellation,
+    void Function(int receivedBytes)? onResponseBytes,
   }) async {
     if (depth != 0 && depth != 1) {
       throw ArgumentError.value(
@@ -185,6 +186,7 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
       cancellation: cancellation,
       maximumBodyBytes: _maximumXmlBytes,
       overflowCode: CloudMailErrorCode.invalidResponse,
+      onResponseBytes: onResponseBytes,
       options: Options(
         method: 'PROPFIND',
         headers: <String, Object?>{
@@ -265,6 +267,7 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
     required CloudMailErrorCode overflowCode,
     Object? data,
     WebDavRequestCancellation? cancellation,
+    void Function(int receivedBytes)? onResponseBytes,
   }) async {
     final authorization = _authorization(credentials);
     for (var attempt = 0; ; attempt++) {
@@ -310,6 +313,7 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
               maximumBodyBytes: maximumBodyBytes,
               overflowCode: overflowCode,
               requestToken: requestToken,
+              onResponseBytes: onResponseBytes,
             ).timeout(
               _timeout,
               onTimeout: () {
@@ -357,6 +361,7 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
     required int maximumBodyBytes,
     required CloudMailErrorCode overflowCode,
     required CancelToken requestToken,
+    void Function(int receivedBytes)? onResponseBytes,
   }) async {
     if (response == null) return const <int>[];
     final builder = BytesBuilder(copy: false);
@@ -371,6 +376,7 @@ class CloudMailWebDavClient implements CloudConnectionVerifier {
           throw CloudMailException(overflowCode);
         }
         builder.add(chunk);
+        onResponseBytes?.call(length);
       }
       return builder.takeBytes();
     } finally {
