@@ -138,9 +138,9 @@ class CloudMusicService {
       _artworkCache[key] = cached;
       return cached;
     }
-    final request = FlacArtworkReader(readRange)
-        .read(track.path, track.sizeBytes)
-        .then((artwork) => artwork?.bytes);
+    final request = FlacArtworkReader(
+      readRange,
+    ).read(track.path, track.sizeBytes).then((artwork) => artwork?.bytes);
     _artworkCache[key] = request;
     if (_artworkCache.length > 3) {
       _artworkCache.remove(_artworkCache.keys.first);
