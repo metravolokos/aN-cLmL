@@ -9,7 +9,7 @@ Windows 11 manual observation: entering the account works, but the library scree
 
 ## Decision
 
-At startup, inspect only the OS protected credential vault (never place password in source, logs or app state) and automatically open the previously persisted SQLite catalog and refresh the read-only WebDAV listing. On verified login, automatically start refresh without an extra button. During refresh keep old tracks on screen. Stream bounded PROPFIND response *byte counts* into a visible indeterminate progress banner; once the complete Depth:1 listing is received and atomically persisted, immediately show its filename-based tracks before any FLAC/ID3 tag reads. Publish metadata progress as processed / total, refresh visible titles after every eight indexed tracks, and retain committed entries after failure. On next launch resume the remaining unindexed tags via the database.
+At startup, inspect only the OS protected credential vault (never place password in source, logs or app state) and automatically open the previously persisted SQLite catalog and refresh the read-only WebDAV listing. On verified login, automatically start refresh without an extra button. During refresh keep old tracks on screen. Stream bounded PROPFIND response *byte counts* into a visible indeterminate progress banner; once the complete Depth:1 listing is received and atomically persisted, immediately show its filename-based tracks before any FLAC/ID3 tag reads. Publish metadata progress as processed / total, refresh visible titles after every 32 indexed tracks (avoiding excessive full-catalog reads), and retain committed entries after failure. On next launch resume the remaining unindexed tags via the database.
 
 ## Scope and explicit limitations
 
