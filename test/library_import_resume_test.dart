@@ -83,6 +83,9 @@ void main() {
     await tester.pump();
     await tester.pump();
     expect(service.remoteCalls, 1);
+    // The four-tab app now starts on Home; verify restored items in Tracks.
+    await tester.tap(find.byKey(const ValueKey('nav-tracks')));
+    await tester.pump();
     expect(find.text('Сохранённый'), findsOneWidget);
     expect(find.textContaining('4096'), findsNothing);
     expect(
@@ -118,7 +121,16 @@ void main() {
     );
     await tester.pump();
     await tester.pump();
-    await tester.tap(find.text('Настройки').last);
+    await tester.tap(find.byKey(const ValueKey('home-settings')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
+    // The Settings route now has its own app bar; the import indicator is
+    // below the connection form and may be outside the initial viewport.
+    expect(find.byKey(const ValueKey('page-settings')), findsOneWidget);
+    await tester.drag(
+      find.byKey(const ValueKey('page-settings')),
+      const Offset(0, -500),
+    );
     await tester.pump();
     expect(
       find.byKey(const ValueKey('settings-import-progress')),

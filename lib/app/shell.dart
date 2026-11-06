@@ -44,35 +44,37 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   static const railBreakpoint = 720.0;
   static const icons = [
+    Icons.home_outlined,
     Icons.music_note_outlined,
     Icons.album_outlined,
     Icons.people_outline,
-    Icons.settings_outlined,
   ];
 
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context)!;
     final labels = [
+      strings.home,
       strings.tracks,
       strings.albums,
       strings.artists,
-      strings.settings,
     ];
     final destination = ref.watch(destinationProvider);
     void select(int index) => ref
         .read(destinationProvider.notifier)
         .select(AppDestination.values[index]);
 
-    final page = destination == AppDestination.settings
-        ? const SettingsPage()
+    final page = destination == AppDestination.home
+        ? const HomePage()
         : CloudLibraryPage(destination: destination);
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final wide = constraints.maxWidth >= railBreakpoint;
         return Scaffold(
-          appBar: AppBar(title: Text(strings.appTitle)),
+          appBar: destination == AppDestination.home
+              ? AppBar(title: Text(strings.appTitle))
+              : null,
           body: SafeArea(
             child: Row(
               children: [
@@ -81,18 +83,23 @@ class _AppShellState extends ConsumerState<AppShell> {
                     key: const ValueKey('navigation-rail'),
                     selectedIndex: destination.index,
                     onDestinationSelected: select,
-                    labelType: NavigationRailLabelType.all,
+                    labelType: NavigationRailLabelType.none,
                     destinations: [
                       for (var i = 0; i < labels.length; i++)
                         NavigationRailDestination(
-                          icon: Icon(icons[i]),
+                          icon: Icon(
+                            icons[i],
+                            key: ValueKey(
+                              'nav-${AppDestination.values[i].name}',
+                            ),
+                          ),
                           label: Text(labels[i]),
                         ),
                     ],
                   ),
                   const VerticalDivider(width: 1),
                 ],
-                // Album grids use the full window on Windows/Linux.
+                // Keep the catalog edge-to-edge beneath its own compact header.
                 Expanded(child: page),
               ],
             ),
@@ -105,13 +112,16 @@ class _AppShellState extends ConsumerState<AppShell> {
                 NavigationBar(
                   key: const ValueKey('navigation-bar'),
                   height: 72,
-                  labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+                  labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
                   selectedIndex: destination.index,
                   onDestinationSelected: select,
                   destinations: [
                     for (var i = 0; i < labels.length; i++)
                       NavigationDestination(
-                        icon: Icon(icons[i]),
+                        icon: Icon(
+                          icons[i],
+                          key: ValueKey('nav-${AppDestination.values[i].name}'),
+                        ),
                         label: labels[i],
                       ),
                   ],
@@ -120,6 +130,52 @@ class _AppShellState extends ConsumerState<AppShell> {
           ),
         );
       },
+    );
+  }
+}
+
+/// Landing page for Android. Cloud account management stays accessible here,
+/// without consuming one of the four primary navigation destinations.
+class HomePage extends ConsumerWidget {
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppLocalizations.of(context)!;
+    final catalog = ref.watch(cloudCatalogProvider);
+    final count = catalog.asData?.value.length;
+    return ListView(
+      key: const ValueKey('page-home'),
+      padding: const EdgeInsets.all(20),
+      children: [
+        Text(strings.home, style: Theme.of(context).textTheme.headlineMedium),
+        const SizedBox(height: 12),
+        if (count != null)
+          Text(strings.libraryLoaded(count))
+        else
+          Text(strings.libraryDisconnected),
+        const SizedBox(height: 16),
+        FilledButton.icon(
+          key: const ValueKey('home-open-tracks'),
+          icon: const Icon(Icons.music_note_outlined),
+          label: Text(strings.tracks),
+          onPressed: () => ref
+              .read(destinationProvider.notifier)
+              .select(AppDestination.tracks),
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          key: const ValueKey('home-settings'),
+          icon: const Icon(Icons.settings_outlined),
+          label: Text(strings.settings),
+          onPressed: () => Navigator.of(context).push<void>(
+            MaterialPageRoute<void>(
+              builder: (_) =>
+                  Scaffold(appBar: AppBar(), body: const SettingsPage()),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -133,10 +189,10 @@ class LibraryEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context)!;
     final title = switch (destination) {
+      AppDestination.home => strings.home,
       AppDestination.tracks => strings.tracks,
       AppDestination.albums => strings.albums,
       AppDestination.artists => strings.artists,
-      AppDestination.settings => strings.settings,
     };
     return SingleChildScrollView(
       key: ValueKey('page-${destination.name}'),
@@ -245,7 +301,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       // library screen can show the imported files and import progress.
       // The provider is initialized synchronously before refresh starts.
       ref.read(destinationProvider.notifier).select(AppDestination.tracks);
-      unawaited(ref.read(cloudCatalogProvider.notifier).refresh());
+      final catalog = ref.read(cloudCatalogProvider.notifier);
+      unawaited(catalog.refresh());
+      Navigator.of(context).pop();
     } on CloudMailException catch (error) {
       if (!mounted) return;
       setState(() => _error = error.code);
