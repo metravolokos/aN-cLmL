@@ -28,9 +28,7 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
 
   void _openAlbum(BuildContext context, List<RemoteTrack> tracks) {
     Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
-        builder: (_) => AlbumDetailPage(tracks: tracks),
-      ),
+      MaterialPageRoute<void>(builder: (_) => AlbumDetailPage(tracks: tracks)),
     );
   }
 

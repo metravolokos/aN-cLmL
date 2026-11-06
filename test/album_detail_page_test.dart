@@ -6,7 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('album opens as a full page, with tracks in disc order', (tester) async {
+  testWidgets('album opens as a full page, with tracks in disc order', (
+    tester,
+  ) async {
     final tracks = [
       const RemoteTrack(
         path: '/AllMusic/02.flac',
@@ -44,7 +46,13 @@ void main() {
     expect(find.byKey(const ValueKey('album-shuffle')), findsOneWidget);
     expect(find.text('Первая'), findsOneWidget);
     expect(find.text('Вторая'), findsOneWidget);
-    expect(find.byKey(const ValueKey('album-track-/AllMusic/01.flac')), findsOneWidget);
-    expect(find.byKey(const ValueKey('album-track-/AllMusic/02.flac')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('album-track-/AllMusic/01.flac')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('album-track-/AllMusic/02.flac')),
+      findsOneWidget,
+    );
   });
 }

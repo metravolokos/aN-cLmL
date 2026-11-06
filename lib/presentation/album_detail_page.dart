@@ -25,7 +25,10 @@ class AlbumDetailPage extends ConsumerWidget {
     final labels = AppLocalizations.of(context)!;
     final sorted = List<RemoteTrack>.of(tracks)..sort(compareAlbumTracks);
     if (sorted.isEmpty) {
-      return Scaffold(appBar: AppBar(), body: Center(child: Text(labels.libraryEmpty)));
+      return Scaffold(
+        appBar: AppBar(),
+        body: Center(child: Text(labels.libraryEmpty)),
+      );
     }
     final first = sorted.first;
     final width = MediaQuery.sizeOf(context).width;
@@ -106,8 +109,10 @@ class AlbumDetailPage extends ConsumerWidget {
             itemBuilder: (context, index) {
               final track = sorted[index];
               final number = track.trackNumber ?? index + 1;
-              final discChange = track.discNumber != null &&
-                  (index == 0 || track.discNumber != sorted[index - 1].discNumber);
+              final discChange =
+                  track.discNumber != null &&
+                  (index == 0 ||
+                      track.discNumber != sorted[index - 1].discNumber);
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
