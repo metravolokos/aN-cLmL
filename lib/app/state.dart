@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Navigation and theme belong to the app, independently of window layout.
-enum AppDestination { tracks, albums, artists, settings }
+enum AppDestination { home, tracks, albums, artists }
 
 class DestinationController extends Notifier<AppDestination> {
   @override
-  AppDestination build() => AppDestination.tracks;
+  AppDestination build() => AppDestination.home;
 
   void select(AppDestination destination) => state = destination;
 }
