@@ -1,5 +1,6 @@
 name: One-time Dart formatter for library import PR
 on:
+  pull_request:
   push:
     branches:
       - feature/visible-library-import-auto-resume-20261106
@@ -12,6 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: feature/visible-library-import-auto-resume-20261106
           persist-credentials: true
       - uses: subosito/flutter-action@v2
         with:
