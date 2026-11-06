@@ -258,8 +258,20 @@ class CloudCatalogController extends AsyncNotifier<List<RemoteTrack>> {
 
   /// Keep a readable catalog visible while the remote directory is refreshed.
   /// A completed PROPFIND is the safe boundary for a durable SQLite generation.
-  Future<void> refresh() async {
-    if (_refreshing || _disposed) return;
+  /// Signals when the remote list has either been committed and published or
+  /// failed. Metadata scanning can continue after a successful signal.
+  Future<void> refresh({void Function(bool)? onListingResolved}) async {
+    if (_refreshing || _disposed) {
+      onListingResolved?.call(false);
+      return;
+    }
+    var listingResolved = false;
+    void resolveListing(bool success) {
+      if (listingResolved) return;
+      listingResolved = true;
+      onListingResolved?.call(success);
+    }
+
     _refreshing = true;
     final progress = ref.read(catalogImportProgressProvider.notifier);
     final previous = state.asData?.value ?? const <RemoteTrack>[];
@@ -285,11 +297,17 @@ class CloudCatalogController extends AsyncNotifier<List<RemoteTrack>> {
       // any FLAC/ID3 tags. SQLite has committed this complete listing.
       visible = tracks;
       state = AsyncValue.data(tracks);
+      // Only now is it correct for Settings to open the track list.
+      resolveListing(true);
       failureStage = CatalogFailureStage.metadata;
       await _scanMetadata(service, progress);
       if (!_disposed) progress.finish();
     } catch (error, trace) {
-      if (_disposed) return;
+      if (_disposed) {
+        resolveListing(false);
+        return;
+      }
+      resolveListing(false);
       progress.fail(
         stage: failureStage,
         code: error is CloudMailException ? error.code : null,
@@ -297,6 +315,7 @@ class CloudCatalogController extends AsyncNotifier<List<RemoteTrack>> {
       // A network failure must not hide previously saved tracks.
       if (visible.isEmpty) state = AsyncValue.error(error, trace);
     } finally {
+      resolveListing(false);
       _refreshing = false;
     }
   }
