@@ -1,6 +1,8 @@
 # teStPlaYclouDE — agent handover and engineering contract
 
-**Repository-grounded explanations are mandatory:** read [docs/EXPLAINABILITY_CONTRACT.md](docs/EXPLAINABILITY_CONTRACT.md). For repository questions, cite current source and ADR/PR evidence; label undocumented rationale as unknown.\n\n**Read before any change:** docs/USER_SPEC_RU.md (full user intent), docs/STATUS.md (facts), docs/ROADMAP.md (next milestones), docs/PUBLIC_REPOSITORY_AUDIT.md (risk register), docs/DECISION_INDEX.md (historical ADRs), docs/RELEASE_AND_LICENSING.md.
+**Repository-grounded explanations are mandatory:** read [docs/EXPLAINABILITY_CONTRACT.md](docs/EXPLAINABILITY_CONTRACT.md). For repository questions, cite current source and ADR/PR evidence; label undocumented rationale as unknown.
+
+**Read before any change:** docs/USER_SPEC_RU.md (full user intent), docs/STATUS.md (facts), docs/ROADMAP.md (next milestones), docs/PUBLIC_REPOSITORY_AUDIT.md (risk register), docs/DECISION_INDEX.md (historical ADRs), docs/RELEASE_AND_LICENSING.md.
 
 ## Source of truth and naming
 
