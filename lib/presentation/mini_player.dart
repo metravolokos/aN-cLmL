@@ -8,7 +8,6 @@ import 'now_playing_page.dart';
 class MiniPlayer extends ConsumerWidget {
   const MiniPlayer({super.key});
 
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final playback = ref.watch(playbackControllerProvider);

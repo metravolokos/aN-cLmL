@@ -37,9 +37,7 @@ const _tracks = [
 ];
 
 Widget _app(Widget child) => ProviderScope(
-  overrides: [
-    playbackControllerProvider.overrideWith(_PlaybackFixture.new),
-  ],
+  overrides: [playbackControllerProvider.overrideWith(_PlaybackFixture.new)],
   child: MaterialApp(
     locale: const Locale('ru'),
     localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -49,8 +47,9 @@ Widget _app(Widget child) => ProviderScope(
 );
 
 void main() {
-  testWidgets('mini-player has one control row and no stop/shuffle/repeat',
-      (tester) async {
+  testWidgets('mini-player has one control row and no stop/shuffle/repeat', (
+    tester,
+  ) async {
     await tester.pumpWidget(_app(const MiniPlayer()));
     await tester.pump();
     expect(find.byTooltip('Пауза'), findsOneWidget);
@@ -62,12 +61,12 @@ void main() {
     expect(find.text('Песня'), findsOneWidget);
   });
 
-  testWidgets('artist detail shows album cards above the track list',
-      (tester) async {
-    await tester.pumpWidget(_app(const ArtistDetailPage(
-      artist: 'Артист',
-      tracks: _tracks,
-    )));
+  testWidgets('artist detail shows album cards above the track list', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(const ArtistDetailPage(artist: 'Артист', tracks: _tracks)),
+    );
     await tester.pump();
     expect(find.text('Артист'), findsOneWidget);
     expect(find.byKey(const ValueKey('artist-album-grid')), findsOneWidget);

@@ -393,9 +393,7 @@ class ArtistDetailPage extends ConsumerWidget {
     }
     final albumGroups = albums.values.toList()
       ..sort((a, b) => a.first.displayAlbum.compareTo(b.first.displayAlbum));
-    final allTracks = <RemoteTrack>[
-      for (final group in albumGroups) ...group,
-    ];
+    final allTracks = <RemoteTrack>[for (final group in albumGroups) ...group];
 
     return Scaffold(
       appBar: AppBar(title: Text(artist)),
@@ -415,47 +413,44 @@ class ArtistDetailPage extends ConsumerWidget {
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             sliver: SliverGrid.builder(
-                key: const ValueKey('artist-album-grid'),
-                gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 180,
-                  childAspectRatio: 0.75,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                ),
-                itemCount: albumGroups.length,
-                itemBuilder: (context, index) {
-                  final albumTracks = albumGroups[index];
-                  final first = albumTracks.first;
-                  return Card(
-                    clipBehavior: Clip.antiAlias,
-                    child: InkWell(
-                      key: ValueKey('artist-album-${first.albumKey}'),
-                      onTap: () => ref
-                          .read(playbackControllerProvider.notifier)
-                          .playFromList(albumTracks, 0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Expanded(
-                            child: AlbumCoverThumbnail(
-                              track: first,
-                              size: 160,
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8),
-                            child: Text(
-                              first.displayAlbum,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+              key: const ValueKey('artist-album-grid'),
+              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 180,
+                childAspectRatio: 0.75,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
               ),
+              itemCount: albumGroups.length,
+              itemBuilder: (context, index) {
+                final albumTracks = albumGroups[index];
+                final first = albumTracks.first;
+                return Card(
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    key: ValueKey('artist-album-${first.albumKey}'),
+                    onTap: () => ref
+                        .read(playbackControllerProvider.notifier)
+                        .playFromList(albumTracks, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: AlbumCoverThumbnail(track: first, size: 160),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Text(
+                            first.displayAlbum,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
