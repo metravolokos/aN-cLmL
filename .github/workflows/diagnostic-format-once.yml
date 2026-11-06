@@ -1,0 +1,40 @@
+name: One-time Android diagnostics Dart formatter
+on:
+  push:
+    branches:
+      - fix/android-library-refresh-diagnostics-20261106
+    paths:
+      - .github/workflows/diagnostic-format-once.yml
+      - lib/app/shell.dart
+      - lib/presentation/library_page.dart
+      - lib/data/library/catalog_import_progress.dart
+      - lib/data/library/cloud_music_service.dart
+      - test/catalog_failure_diagnostics_test.dart
+      - test/cloud_mail_webdav_test.dart
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: true
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: stable
+      - run: dart format lib/app/shell.dart lib/presentation/library_page.dart lib/data/library/catalog_import_progress.dart lib/data/library/cloud_music_service.dart test/catalog_failure_diagnostics_test.dart test/cloud_mail_webdav_test.dart
+      - name: Commit formatting only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add lib/app/shell.dart lib/presentation/library_page.dart lib/data/library/catalog_import_progress.dart lib/data/library/cloud_music_service.dart test/catalog_failure_diagnostics_test.dart test/cloud_mail_webdav_test.dart
+          if git diff --cached --quiet; then
+            echo 'Files already formatted'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'style(android): format library regression diagnostics'
+          git push origin "HEAD:${GITHUB_REF_NAME}"
