@@ -1,0 +1,33 @@
+name: One-time format compact player and artist view
+on:
+  pull_request:
+permissions:
+  contents: write
+jobs:
+  format:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: feature/android-player-artist-layout-20261106
+          persist-credentials: true
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: stable
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter gen-l10n
+      - run: dart format lib test
+      - name: Commit changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib test
+          if ! git diff --cached --quiet; then
+            git commit -m "style: format artist and mini-player changes"
+            git push origin HEAD:feature/android-player-artist-layout-20261106
+          fi
