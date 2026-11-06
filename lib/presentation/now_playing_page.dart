@@ -315,11 +315,9 @@ class _PlayerSeekBarState extends ConsumerState<_PlayerSeekBar> {
                 left: 20,
                 right: 20,
                 child: IgnorePointer(
-                  child: Center(
-                    child: BufferedWaveform(
-                      played: totalMs > 0 ? sliderValue / totalMs : 0,
-                      buffered: widget.bufferedFraction,
-                    ),
+                  child: BufferedWaveform(
+                    played: totalMs > 0 ? sliderValue / totalMs : 0,
+                    buffered: widget.bufferedFraction,
                   ),
                 ),
               ),
