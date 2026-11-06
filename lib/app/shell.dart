@@ -92,15 +92,8 @@ class _AppShellState extends ConsumerState<AppShell> {
                   ),
                   const VerticalDivider(width: 1),
                 ],
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 800),
-                      child: page,
-                    ),
-                  ),
-                ),
+                // Album grids use the full window on Windows/Linux.
+                Expanded(child: page),
               ],
             ),
           ),
@@ -111,6 +104,8 @@ class _AppShellState extends ConsumerState<AppShell> {
               if (!wide)
                 NavigationBar(
                   key: const ValueKey('navigation-bar'),
+                  height: 72,
+                  labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
                   selectedIndex: destination.index,
                   onDestinationSelected: select,
                   destinations: [
