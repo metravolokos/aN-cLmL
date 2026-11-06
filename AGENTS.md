@@ -9,6 +9,12 @@
 - Source in `main` is a preview, **not** authenticated real-cloud/device accepted. No fabricated performance, hardware, app-store or GitHub CI outcomes.
 - Historical PRs are evidence, not current work. PR #11 consolidated earlier drafts. See docs/DEVELOPMENT_HISTORY.md. Check actual main/head and current CI before making claims.
 
+## Project license decision (owner instruction, 2026-11-06)
+
+- **No project-wide license has been selected or authorized.** The previously added MIT `LICENSE` was removed at the owner's request. Do not recreate it, add SPDX metadata, describe this project as MIT-licensed or make licensing decisions on the owner's behalf.
+- The historical `docs/USER_SPEC_RU.md` phrase `LICENSE (предложи MIT)` means *propose*, not approval. Preserve that source specification as a historical record; this explicit owner decision supersedes it.
+- Keep third-party notices, attribution and license-compliance checks for dependencies and native packages. Removing our project's LICENSE does not remove their obligations.
+
 ## Boundaries
 
 - Only Cloud Mail.ru HTTPS WebDAV; fixed `/AllMusic`; requests read-only. Never upload, change or delete music. No redirects with Basic Auth. Each upstream ranged GET <=64 KiB, validate 206, lengths, offsets and both supported Content-Range dialects.

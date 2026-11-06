@@ -1,6 +1,6 @@
 # Release, provenance and distribution gates
 
-**teStPlaYclouDE** source uses MIT terms in LICENSE. Third-party dependencies and native binaries **retain their own licenses**; source licensing alone does not authorize distributing all code, codecs or artwork. Release approval requires separate provenance review.
+**The project owner has not selected or authorized a project-wide source license.** Publication of the source on GitHub does not itself grant general rights to reuse, modify or redistribute it. Do not create a LICENSE file, declare MIT or another license, or release source or binaries to third parties under a project-wide license without explicit owner approval. Third-party dependencies and native binaries **retain their own licenses**; their notices and distribution obligations still apply. Release approval requires separate provenance review.
 
 ## Source prerequisites
 

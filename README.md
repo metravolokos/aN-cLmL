@@ -37,8 +37,8 @@ The display/product name is **teStPlaYclouDE**. Historical repository slug `metr
 
 No playlists, favorites, analytics, telemetry, Google services or writes to remote audio files. Third-party trademarks and Cloud Mail.ru are not affiliated with this project.
 
-## License
+## Licensing status
 
-Source is provided under the [MIT License](LICENSE). This does **not** relicense Flutter, transitive plugins, MediaKit, libmpv, codecs, fonts or bundled libraries. Binary redistribution requires a verified dependency and native-codec license inventory; see [release and licensing gates](docs/RELEASE_AND_LICENSING.md).
+**The project owner has not selected or authorized a source-code license.** No project-wide permission to use, modify, redistribute or sublicense the project's source is granted by publication of this repository. Do not add a LICENSE file or declare an SPDX project license without the owner's explicit approval. This does not affect third-party components, which remain subject to their own licenses and applicable notices. Binary redistribution still requires a verified dependency and native-codec license inventory; see [release and licensing gates](docs/RELEASE_AND_LICENSING.md).
 
 See also [requirements traceability](docs/REQUIREMENTS_TRACEABILITY.md), [manual acceptance checklist](docs/TESTING_MANUAL.md) and [changelog](CHANGELOG.md).
