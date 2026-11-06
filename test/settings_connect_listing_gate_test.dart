@@ -84,7 +84,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     await _enterCredentials(tester);
-    debugPrint('catalog listing calls before completion: ${catalog.loadCalls}');
+    expect(catalog.loadCalls, 1);
     expect(find.byKey(const ValueKey('page-settings')), findsOneWidget);
     expect(find.byKey(const ValueKey('page-tracks')), findsNothing);
 
@@ -92,22 +92,6 @@ void main() {
       RemoteTrack(path: 'Track.flac', sizeBytes: 12345),
     ]);
     await tester.pumpAndSettle();
-    debugPrint('catalog listing calls after completion: ${catalog.loadCalls}');
-    final settings = find.byKey(const ValueKey('page-settings'));
-    if (settings.evaluate().isNotEmpty) {
-      final ctx = tester.element(settings);
-      final scope = ProviderScope.containerOf(ctx);
-      final state = scope.read(catalogImportProgressProvider);
-      debugPrint(
-        'catalog phase after completion: ${state.phase}, error: ${state.failureCode}',
-      );
-      final status = find.byKey(const ValueKey('connection-status'));
-      for (final element in status.evaluate()) {
-        final value = element.widget;
-        if (value is Text) debugPrint('connection UI: ${value.data}');
-      }
-    }
-
     expect(find.byKey(const ValueKey('page-tracks')), findsOneWidget);
     expect(find.text('Track'), findsOneWidget);
   });
@@ -128,7 +112,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     await _enterCredentials(tester);
-    debugPrint('catalog listing calls before error: ${catalog.loadCalls}');
+    expect(catalog.loadCalls, 1);
     catalog.listing.completeError(
       const CloudMailException(CloudMailErrorCode.invalidResponse),
     );
@@ -136,6 +120,12 @@ void main() {
     await tester.pump();
     expect(find.byKey(const ValueKey('page-settings')), findsOneWidget);
     expect(find.byKey(const ValueKey('page-tracks')), findsNothing);
-    expect(find.textContaining('listing/invalidResponse'), findsOneWidget);
+    final scope = ProviderScope.containerOf(
+      tester.element(find.byKey(const ValueKey('page-settings'))),
+    );
+    final progress = scope.read(catalogImportProgressProvider);
+    expect(progress.phase, CatalogImportPhase.failed);
+    expect(progress.failureStage, CatalogFailureStage.listing);
+    expect(progress.failureCode, CloudMailErrorCode.invalidResponse);
   });
 }
