@@ -7,6 +7,7 @@ import '../data/library/cloud_music_service.dart';
 import '../data/library/catalog_import_progress.dart';
 import '../domain/remote_track.dart';
 import '../domain/album_track_order.dart';
+import '../domain/library_search.dart';
 import '../l10n/app_localizations.dart';
 import 'album_cover_thumbnail.dart';
 import 'album_detail_page.dart';
@@ -24,7 +25,18 @@ class CloudLibraryPage extends ConsumerStatefulWidget {
 }
 
 class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
-  String _filter = '';
+  final Map<AppDestination, TextEditingController> _searchControllers = {};
+
+  @override
+  void dispose() {
+    for (final controller in _searchControllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  TextEditingController _searchFor(AppDestination destination) =>
+      _searchControllers.putIfAbsent(destination, TextEditingController.new);
 
   void _openAlbum(BuildContext context, List<RemoteTrack> tracks) {
     Navigator.of(context).push<void>(
@@ -48,13 +60,10 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
       AsyncData<List<RemoteTrack>>(:final value) => value,
       _ => const <RemoteTrack>[],
     };
-    final query = _filter.trim().toLowerCase();
-    final filtered = tracks.where((track) {
-      if (query.isEmpty) return true;
-      return track.displayTitle.toLowerCase().contains(query) ||
-          track.displayArtist.toLowerCase().contains(query) ||
-          track.displayAlbum.toLowerCase().contains(query);
-    }).toList();
+    final query = _searchFor(destination).text;
+    final filtered = tracks
+        .where((track) => matchesLibraryQuery(track, query))
+        .toList();
     final groups = <String, List<RemoteTrack>>{};
     if (destination == AppDestination.albums ||
         destination == AppDestination.artists) {
@@ -133,12 +142,14 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: TextField(
+              key: ValueKey('library-search-${destination.name}'),
+              controller: _searchFor(destination),
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.search),
                 labelText: strings.librarySearch,
                 border: const OutlineInputBorder(),
               ),
-              onChanged: (value) => setState(() => _filter = value),
+              onChanged: (_) => setState(() {}),
             ),
           ),
         if (tracks.isNotEmpty)
