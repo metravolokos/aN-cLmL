@@ -13,8 +13,7 @@ import '../domain/library_search.dart';
 import '../l10n/app_localizations.dart';
 import 'album_cover_thumbnail.dart';
 import 'album_detail_page.dart';
-import 'mini_player.dart';
-import 'app_bottom_navigation_bar.dart';
+import 'detail_route.dart';
 import 'collection_summary.dart';
 
 /// Displays the actual cloud catalog. Album/artist names are placeholders
@@ -44,9 +43,7 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
       _searchControllers.putIfAbsent(destination, TextEditingController.new);
 
   void _openAlbum(BuildContext context, List<RemoteTrack> tracks) {
-    Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(builder: (_) => AlbumDetailPage(tracks: tracks)),
-    );
+    openLibraryDetail(context, AlbumDetailPage(tracks: tracks));
   }
 
   @override
@@ -337,12 +334,11 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
                       title: Text(artist),
                       subtitle: Text('${artistTracks.length}'),
                       trailing: const Icon(Icons.chevron_right),
-                      onTap: () => Navigator.of(context).push<void>(
-                        MaterialPageRoute<void>(
-                          builder: (_) => ArtistDetailPage(
-                            artist: artist,
-                            tracks: artistTracks,
-                          ),
+                      onTap: () => openLibraryDetail(
+                        context,
+                        ArtistDetailPage(
+                          artist: artist,
+                          tracks: artistTracks,
                         ),
                       ),
                     );
@@ -413,10 +409,9 @@ class TrackListRow extends ConsumerWidget {
             final albumTracks = queue
                 .where((candidate) => candidate.albumKey == track.albumKey)
                 .toList();
-            Navigator.of(context).push<void>(
-              MaterialPageRoute<void>(
-                builder: (_) => AlbumDetailPage(tracks: albumTracks),
-              ),
+            openLibraryDetail(
+              context,
+              AlbumDetailPage(tracks: albumTracks),
             );
           }
         },
@@ -473,14 +468,6 @@ class _ArtistDetailPageState extends ConsumerState<ArtistDetailPage> {
     final artworkTrack = albumGroups.isEmpty ? null : albumGroups.first.first;
 
     return Scaffold(
-      appBar: AppBar(),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const MiniPlayer(),
-          if (width < 720) const AppBottomNavigationBar(returnToShell: true),
-        ],
-      ),
       body: CustomScrollView(
         key: const ValueKey('artist-detail-scroll'),
         slivers: [
@@ -526,6 +513,17 @@ class _ArtistDetailPageState extends ConsumerState<ArtistDetailPage> {
                                   colors.surface.withValues(alpha: 0.98),
                                 ],
                               ),
+                            ),
+                          ),
+                          Positioned(
+                            top: 8,
+                            left: 8,
+                            child: IconButton.filledTonal(
+                              key: const ValueKey('artist-detail-back'),
+                              tooltip: MaterialLocalizations.of(context)
+                                  .backButtonTooltip,
+                              onPressed: () => Navigator.of(context).maybePop(),
+                              icon: const Icon(Icons.arrow_back),
                             ),
                           ),
                           Positioned(
@@ -666,10 +664,9 @@ class _ArtistDetailPageState extends ConsumerState<ArtistDetailPage> {
                   clipBehavior: Clip.antiAlias,
                   child: InkWell(
                     key: ValueKey('artist-album-${first.albumKey}'),
-                    onTap: () => Navigator.of(context).push<void>(
-                      MaterialPageRoute<void>(
-                        builder: (_) => AlbumDetailPage(tracks: albumTracks),
-                      ),
+                    onTap: () => openLibraryDetail(
+                      context,
+                      AlbumDetailPage(tracks: albumTracks),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
