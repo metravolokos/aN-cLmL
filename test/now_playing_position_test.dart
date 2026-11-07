@@ -67,7 +67,9 @@ void main() {
     expect(find.text('0:20'), findsOneWidget);
     expect(find.text('3:15'), findsOneWidget);
     expect(
-      tester.widget<Slider>(find.byKey(const ValueKey('now-playing-seek'))).value,
+      tester
+          .widget<Slider>(find.byKey(const ValueKey('now-playing-seek')))
+          .value,
       20000,
     );
 
@@ -76,7 +78,9 @@ void main() {
     await tester.pump();
     expect(find.text('0:43'), findsOneWidget);
     expect(
-      tester.widget<Slider>(find.byKey(const ValueKey('now-playing-seek'))).value,
+      tester
+          .widget<Slider>(find.byKey(const ValueKey('now-playing-seek')))
+          .value,
       43000,
     );
 

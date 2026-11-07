@@ -32,9 +32,9 @@ Future<void> openDetail(WidgetTester tester, Widget detail) async {
             body: Center(
               child: FilledButton(
                 key: const ValueKey('open-detail'),
-                onPressed: () => Navigator.of(context).push<void>(
-                  MaterialPageRoute<void>(builder: (_) => detail),
-                ),
+                onPressed: () => Navigator.of(
+                  context,
+                ).push<void>(MaterialPageRoute<void>(builder: (_) => detail)),
                 child: const Text('Open detail'),
               ),
             ),

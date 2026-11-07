@@ -7,10 +7,7 @@ import '../l10n/app_localizations.dart';
 /// One navigation bar shared by the library shell and artist/album details.
 /// Detail routes live above AppShell: selecting a tab returns to that shell.
 class AppBottomNavigationBar extends ConsumerWidget {
-  const AppBottomNavigationBar({
-    this.returnToShell = false,
-    super.key,
-  });
+  const AppBottomNavigationBar({this.returnToShell = false, super.key});
 
   final bool returnToShell;
 
@@ -37,9 +34,9 @@ class AppBottomNavigationBar extends ConsumerWidget {
       labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
       selectedIndex: destination.index,
       onDestinationSelected: (index) {
-        ref.read(destinationProvider.notifier).select(
-          AppDestination.values[index],
-        );
+        ref
+            .read(destinationProvider.notifier)
+            .select(AppDestination.values[index]);
         if (returnToShell) {
           Navigator.of(context).popUntil((route) => route.isFirst);
         }

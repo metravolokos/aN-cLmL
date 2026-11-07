@@ -109,8 +109,7 @@ class _AppShellState extends ConsumerState<AppShell> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const MiniPlayer(),
-              if (!wide)
-                const AppBottomNavigationBar(),
+              if (!wide) const AppBottomNavigationBar(),
             ],
           ),
         );
