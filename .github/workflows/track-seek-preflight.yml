@@ -4,6 +4,7 @@ on:
     branches: [feature/android-track-artwork-linear-seek-20261107]
     paths:
       - .github/workflows/track-seek-preflight.yml
+      - test/artist_mini_player_layout_test.dart
 permissions:
   contents: write
 jobs:
