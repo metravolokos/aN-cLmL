@@ -537,9 +537,7 @@ class _ArtistDetailPageState extends ConsumerState<ArtistDetailPage> {
                               key: const ValueKey('artist-detail-title'),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headlineLarge
+                              style: Theme.of(context).textTheme.headlineLarge
                                   ?.copyWith(fontWeight: FontWeight.bold),
                             ),
                           ),
@@ -609,18 +607,16 @@ class _ArtistDetailPageState extends ConsumerState<ArtistDetailPage> {
               child: Text(
                 strings.tracks,
                 key: const ValueKey('artist-track-preview-heading'),
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
             ),
           ),
           SliverList.builder(
             itemCount: visibleTracks.length,
-            itemBuilder: (context, index) => TrackListRow(
-              track: visibleTracks[index],
-              queue: allTracks,
-            ),
+            itemBuilder: (context, index) =>
+                TrackListRow(track: visibleTracks[index], queue: allTracks),
           ),
           if (allTracks.length > 5)
             SliverToBoxAdapter(
@@ -628,17 +624,12 @@ class _ArtistDetailPageState extends ConsumerState<ArtistDetailPage> {
                 alignment: Alignment.centerRight,
                 child: TextButton.icon(
                   key: const ValueKey('artist-expand-tracks'),
-                  onPressed: () => setState(
-                    () => _allTracksExpanded = !_allTracksExpanded,
-                  ),
+                  onPressed: () =>
+                      setState(() => _allTracksExpanded = !_allTracksExpanded),
                   icon: Icon(
-                    _allTracksExpanded
-                        ? Icons.expand_less
-                        : Icons.expand_more,
+                    _allTracksExpanded ? Icons.expand_less : Icons.expand_more,
                   ),
-                  label: Text(
-                    strings.collectionTracksCount(allTracks.length),
-                  ),
+                  label: Text(strings.collectionTracksCount(allTracks.length)),
                 ),
               ),
             ),
