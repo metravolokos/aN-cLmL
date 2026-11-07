@@ -9,6 +9,7 @@ import '../data/audio/playback_controller.dart';
 import '../data/library/cloud_music_service.dart';
 import '../data/library/catalog_import_progress.dart';
 import '../presentation/library_page.dart';
+import '../presentation/app_bottom_navigation_bar.dart';
 import '../presentation/mini_player.dart';
 import '../l10n/app_localizations.dart';
 import 'state.dart';
@@ -109,23 +110,7 @@ class _AppShellState extends ConsumerState<AppShell> {
             children: [
               const MiniPlayer(),
               if (!wide)
-                NavigationBar(
-                  key: const ValueKey('navigation-bar'),
-                  height: 72,
-                  labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
-                  selectedIndex: destination.index,
-                  onDestinationSelected: select,
-                  destinations: [
-                    for (var i = 0; i < labels.length; i++)
-                      NavigationDestination(
-                        icon: Icon(
-                          icons[i],
-                          key: ValueKey('nav-${AppDestination.values[i].name}'),
-                        ),
-                        label: labels[i],
-                      ),
-                  ],
-                ),
+                const AppBottomNavigationBar(),
             ],
           ),
         );
