@@ -13,7 +13,7 @@ This is the independently scoped Android project `metravolokos/aN-cLmL`. The sou
 ## Gates before declaring ready
 
 - The Android-only dependency lockfile must be regenerated with pinned Flutter and `flutter pub get --enforce-lockfile` must pass.
-- Android Quality and APK builds must pass on exact final HEAD. Preview remains ephemeral debug-signed.
+- Android Quality and the single standard `app-debug.apk` build must pass on exact final HEAD. The test APK remains debug-signed; there is no separate ARM64 preview pipeline.
 - **No accepted real-device playback result yet** in this destination: Huawei/GMS-free media panel, Bluetooth/USB DAC, live /AllMusic indexing and FLAC/MP3 audio must be tested explicitly.
 - Persistent queue/settings, DB migration, very-large-library paging, stable APK signing and recovery need additional work. Unmerged historical PR #36 stale stream-event guards need Android review.
 
