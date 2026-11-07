@@ -2,7 +2,7 @@ name: aN-cLmL — Android and quality
 
 on:
   push:
-    branches: [main]
+    branches: [main, fix/android-standard-buffered-seek-20261107]
   pull_request:
   workflow_dispatch:
 
