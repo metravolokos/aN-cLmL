@@ -21,6 +21,10 @@ The ADR filename is the durable citation key. **Historical collisions are preser
 | 0013-public-identity-and-distribution | public name, stable internal IDs, publication and release/attribution boundaries | Adopted PR #31 |
 | 0014-opaque-android-media-ids | Hash Android MediaSession track identity rather than expose private WebDAV filename | Merged PR #37; OS media surface hardware acceptance pending |
 
+## Active Android APK build policy (owner decision, 2026-11-07)
+
+Build one standard GMS-free Android test APK (`app-debug.apk`) via `.github/workflows/flutter.yml`. The historical ARM64 release-mode preview and its dedicated workflow are retired from the current Android project. Do not add ABI-specific or vendor-specific build workflows without a new explicit owner request. Debug signing is not a production upgrade/signing solution. Historical PR #27 and its rationale remain in Git history.
+
 ## Defect and corrective-decision index
 
 | Symptom / decision | Fix and verification |

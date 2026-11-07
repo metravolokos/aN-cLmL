@@ -6,13 +6,15 @@
 
 - Verify ownership/authorization for all committed source, icons, illustrations, samples and bundled binaries. Confirm no personal music files, real cloud identifiers or secrets are committed, including **the full Git history**. Independently run a secret scanner on all refs; rotate exposed credentials if found.
 - Generate a third-party Dart/Flutter/native dependency inventory from exact pubspec.lock and platform resolution, including direct/transitive licenses and system/native components. In particular review media_kit/libmpv/FFmpeg codec licensing, `dbus` MPL-2.0 and Rust/Cargokit dependencies; provide applicable notices/source offers if required. Do not guess LGPL/GPL compliance.
-- Reproduce analyzer, tests, formatting, layer checks and Quality+Android+Windows+Linux on the exact release commit; Android GMS runtime graph and manifest audit, Flatpak sandbox/direct ELF smoke.
+- For the active Android-only project, reproduce formatter, analyzer, tests, layer checks and the single standard Android APK build on the exact release commit; verify the GMS/Firebase runtime graph and manifest. Desktop checks belong to historical or separate projects.
 
 ## Platform artifacts and manual gates
 
+Only the Android row below describes an **active** build in this repository. The Windows/Linux rows are retained as historical handover information; these platform artifacts are not produced by the Android-only CI.
+
 | Platform | Current CI artifact | Release blocker |
 | --- | --- | --- |
-| Android ARM64 | `android-arm64-preview.yml` builds release-mode APK using an **ephemeral debug key**; debug APK from `flutter.yml` | Dedicated owner-managed signing key stored outside Git, consistent package/applicationId, versionCode/update path, GMS-free AOSP install and Huawei playback/headset/media-panel acceptance |
+| Android (standard APK) | `flutter.yml` builds one `app-debug.apk` (`an-clml-android-debug` artifact), without GMS/Firebase runtime dependencies; no ABI-specific preview pipeline | Dedicated owner-managed release signing stored outside Git, consistent package/applicationId, versionCode/update path, GMS-free installation and real-device playback/headset/media-panel acceptance |
 | Windows x64 | `flutter.yml` produces a Flutter release folder | Validate complete portable ZIP/installer, all native libraries and VC runtime, app display metadata, SmartScreen/signing policy and Windows 11 secure-store/SMTC/audio acceptance |
 | Linux x86_64 | GNOME 51 Flatpak in `linux-flatpak-preview.yml`, 14-day CI artifact | Verify actual GNOME 51 Wayland launch, libmpv dynamic loading, sound, Secret Service persistence, MPRIS, sandbox policy and licensing/attribution before signing/distribution |
 

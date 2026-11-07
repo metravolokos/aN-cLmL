@@ -18,6 +18,7 @@ This repository is the **Android-only continuation** of https://github.com/metra
 - Android Media3 + just_audio + audio_service + audio_session, system audio mixer. Windows/Linux integrations are historical; do not restore them in Android startup.
 - Password only entered in UI and kept in platform secure storage. Never store secrets, private filenames, real credentials, URLs with auth, account identifiers or unsanitized diagnostic logs in code, PRs or CI. Rotate if a real leak is found.
 - Keep domain/data/presentation free of platform package imports; system integration under `lib/platform/android`. Keep tests and Android CI on exact PR HEAD.
+- Deliver a single standard Android `app-debug.apk` from `.github/workflows/flutter.yml`. No additional ARM64/ABI, Huawei-specific or other APK workflows without an explicit owner instruction (decision 2026-11-07).
 - Preserve original source history, ADR decisions, failed experiments and original spec. If historical rationale is undocumented, say so.
 - No mocks as proof of live hardware acceptance. No speculative large rewrites, mass stress tests or blocking desktop requirements.
 

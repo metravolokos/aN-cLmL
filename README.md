@@ -19,7 +19,7 @@ python -m unittest discover -s tests -v
 flutter build apk --debug
 ```
 
-Android ARM64 preview APKs are built by [GitHub Actions](https://github.com/metravolokos/aN-cLmL/actions). They currently use **ephemeral debug signing**, not a stable release/update signature. Account credentials must be entered only on-device; never provide them via CI/issues.
+A single standard Android APK, `app-debug.apk`, is built by the [Android and quality workflow](https://github.com/metravolokos/aN-cLmL/actions/workflows/flutter.yml) and published as the `an-clml-android-debug` artifact. There is no separate CPU- or vendor-specific build. The test APK uses debug signing, not a stable production/update signature. See [installation instructions](docs/ANDROID_PREVIEW.md). Account credentials must be entered only on-device; never provide them via CI/issues.
 
 ## Sources of truth
 

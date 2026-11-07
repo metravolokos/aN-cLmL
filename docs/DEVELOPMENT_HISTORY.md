@@ -25,7 +25,7 @@ This is a **source-grounded chronological reconstruction** of public PRs and mai
 - PR #24 merged `0b4413a`: responsive album grid and playable sheet.
 - PR #25 merged `92b15d3`: Linux MPRIS.
 - PR #26 merged `f04edd1`: Android music audio focus.
-- PR #27 merged `6a07a48`: CI-built ARM64 **debug-signed** APK preview, runtime GMS check; not production signing.
+- PR #27 merged `6a07a48`: historical CI-built ARM64 **debug-signed** APK preview, runtime GMS check; not production signing. **Superseded 2026-11-07:** on the Android-only `aN-cLmL` project, a new owner decision retires the separate ARM64 workflow in favor of one standard GMS-free `app-debug.apk`. Preserve the historical PR, do not reintroduce the workflow without explicit request.
 
 ## Packaging and artwork on 2026-11-06
 
