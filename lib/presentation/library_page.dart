@@ -481,7 +481,7 @@ class ArtistDetailPage extends ConsumerWidget {
                   ],
                 ),
               ),
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 22),
               child: Column(
                 children: [
                   if (albumGroups.isNotEmpty)
@@ -490,11 +490,11 @@ class ArtistDetailPage extends ConsumerWidget {
                         'artist-hero-${albumGroups.first.first.path}',
                       ),
                       track: albumGroups.first.first,
-                      size: width >= 720 ? 188 : 156,
+                      size: width >= 720 ? 260 : 224,
                     )
                   else
                     const Icon(Icons.person_outline, size: 120),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 20),
                   Text(
                     artist,
                     key: const ValueKey('artist-detail-title'),
@@ -514,7 +514,7 @@ class ArtistDetailPage extends ConsumerWidget {
                         Tooltip(
                           message: strings.play,
                           child: SizedBox(
-                            width: 164,
+                            width: 128,
                             height: 48,
                             child: FilledButton(
                               key: const ValueKey('artist-play-all'),
@@ -529,7 +529,7 @@ class ArtistDetailPage extends ConsumerWidget {
                         Tooltip(
                           message: strings.shuffleOn,
                           child: SizedBox(
-                            width: 60,
+                            width: 56,
                             height: 48,
                             child: OutlinedButton(
                               key: const ValueKey('artist-shuffle'),
@@ -567,16 +567,19 @@ class ArtistDetailPage extends ConsumerWidget {
             sliver: SliverGrid.builder(
               key: const ValueKey('artist-album-grid'),
               gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 200,
-                childAspectRatio: 0.74,
-                mainAxisSpacing: 8,
-                crossAxisSpacing: 8,
+                maxCrossAxisExtent: 210,
+                childAspectRatio: 0.79,
+                mainAxisSpacing: 14,
+                crossAxisSpacing: 12,
               ),
               itemCount: albumGroups.length,
               itemBuilder: (context, index) {
                 final albumTracks = albumGroups[index];
                 final first = albumTracks.first;
                 return Card(
+                  margin: EdgeInsets.zero,
+                  elevation: 0,
+                  color: Colors.transparent,
                   clipBehavior: Clip.antiAlias,
                   child: InkWell(
                     key: ValueKey('artist-album-${first.albumKey}'),
