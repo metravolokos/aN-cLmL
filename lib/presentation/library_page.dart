@@ -336,10 +336,7 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => openLibraryDetail(
                         context,
-                        ArtistDetailPage(
-                          artist: artist,
-                          tracks: artistTracks,
-                        ),
+                        ArtistDetailPage(artist: artist, tracks: artistTracks),
                       ),
                     );
                   },
@@ -409,10 +406,7 @@ class TrackListRow extends ConsumerWidget {
             final albumTracks = queue
                 .where((candidate) => candidate.albumKey == track.albumKey)
                 .toList();
-            openLibraryDetail(
-              context,
-              AlbumDetailPage(tracks: albumTracks),
-            );
+            openLibraryDetail(context, AlbumDetailPage(tracks: albumTracks));
           }
         },
         itemBuilder: (context) => [
@@ -520,8 +514,9 @@ class _ArtistDetailPageState extends ConsumerState<ArtistDetailPage> {
                             left: 8,
                             child: IconButton.filledTonal(
                               key: const ValueKey('artist-detail-back'),
-                              tooltip: MaterialLocalizations.of(context)
-                                  .backButtonTooltip,
+                              tooltip: MaterialLocalizations.of(
+                                context,
+                              ).backButtonTooltip,
                               onPressed: () => Navigator.of(context).maybePop(),
                               icon: const Icon(Icons.arrow_back),
                             ),
