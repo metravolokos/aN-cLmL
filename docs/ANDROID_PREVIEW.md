@@ -1,35 +1,45 @@
-# Android ARM64 preview APK
+# Стандартная тестовая сборка Android APK
 
-The `.github/workflows/android-arm64-preview.yml` workflow builds an ARM64
-APK for sideloading on an Android test device with **no Google Play Services**.
-It uses the pinned Flutter SDK and dependencies, checks the release runtime
-dependency graph, validates the final APK's INTERNET permission and verifies
-the APK signature. The APK is retained as a GitHub Actions artifact for 14 days.
+Для этого Android-проекта используется **одна** стандартная APK-сборка,
+без Google Play Services/Firebase и без отдельных архитектурных или
+производительских вариантов.
 
-## Installation
+## Где получить APK
 
-1. In GitHub Actions, open **Android ARM64 test-installable preview** and
-   choose a successful run from the main branch. Download the
-   `cloudmail-player-android-arm64-debug-signed-preview` artifact ZIP.
-2. Extract `app-release.apk` and install on an ARM64 test device, e.g.
-   `adb install app-release.apk`. Android 7+ is the declared minimum.
-3. Enter the Cloud Mail.ru app-specific password through the application's
-   normal on-device secure store UI. Never supply credentials through Actions,
-   source control, issue comments or release artifacts.
-4. Test login, /AllMusic index, FLAC/MP3 playback, Pause/Resume, Seek,
-   Next/Previous, Bluetooth/USB DAC routing, background MediaSession, and
-   interruption/headphone unplug behavior.
+1. Откройте GitHub Actions → **aN-cLmL — Android and quality**:
+   https://github.com/metravolokos/aN-cLmL/actions/workflows/flutter.yml
+2. Выберите успешный запуск для нужного проверенного коммита (предпочтительно
+   из основной ветки, либо из PR для испытания конкретного изменения).
+3. Скачайте артефакт `an-clml-android-debug` и извлеките `app-debug.apk`.
+4. Установите APK обычным способом или командой `adb install app-debug.apk`.
+   Минимальная версия Android в проекте: API 24 (Android 7).
 
-## Important: NOT a signed production release
+## Что проверяет CI
 
-The current Android Gradle release build type uses an **ephemeral CI debug
-keystore**, so the test APK is not a reproducibly signed, trusted, distributable
-production release. Keys may differ across workflow runs and locally built
-debug APKs. `adb install -r` can fail with a signature mismatch; installing
-after uninstalling the previous copy wipes its private app data, including
-saved credentials and its local library index. Do not uninstall without
-accepting that data loss. Never upload a production signing key as source code.
+Общий workflow `.github/workflows/flutter.yml` проверяет форматирование,
+анализ, тесты, Android-сборку `flutter build apk --debug`, отсутствие
+runtime-зависимостей Google Play Services/Firebase, а также разрешение
+INTERNET в манифесте. Результат — один стандартный APK.
 
-A successful CI build is *not* hardware acceptance and does not prove that
-WebDAV credentials, Huawei media panels, USB DAC, Bluetooth or GNOME/Windows
-audio will function on real devices. Record those checks separately.
+Логин и пароль приложения Cloud Mail.ru вводятся только на устройстве
+через штатный интерфейс и безопасное хранилище. Не помещайте их в GitHub,
+CI, issue, артефакты или логи.
+
+## Ограничения и испытания
+
+`app-debug.apk` — **тестовый**, а не подписанный владельцем выпуск
+для распространения. Подпись debug-сборок может отличаться между окружениями.
+При несовпадении подписей `adb install -r` откажет в обновлении; удаление
+предыдущей установки стирает данные приложения, в том числе сохранённые
+учётные данные и локальный индекс. Не удаляйте установленную версию, не
+учитывая потерю данных.
+
+Успешная сборка не является испытанием на телефоне. Отдельно проверяются
+подключение к облаку, индексация /AllMusic, FLAC/MP3, пауза, перемотка,
+следующий/предыдущий трек, фоновый MediaSession, Bluetooth, USB-DAC,
+аудиофокус и поведение при отключении наушников.
+
+По прямому решению владельца проекта от 2026-11-07 отдельный
+`android-arm64-preview.yml` удалён. Не добавлять ABI-specific,
+ARM64, Huawei-specific или другие параллельные APK workflows без нового
+запроса владельца. Предыдущие ARM64-сборки — только исторические артефакты.
