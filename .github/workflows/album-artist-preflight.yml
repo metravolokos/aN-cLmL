@@ -4,6 +4,7 @@ on:
     branches: [feature/android-album-artist-detail-refresh-20261107]
     paths:
       - .github/workflows/album-artist-preflight.yml
+      - test/album_detail_page_test.dart
 permissions:
   contents: write
 jobs:
