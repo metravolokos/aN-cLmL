@@ -108,11 +108,15 @@ class _AppShellState extends ConsumerState<AppShell> {
                 // Detail routes animate only in this inner content navigator.
                 // MiniPlayer and NavigationBar remain outside and never move.
                 Expanded(
-                  child: Navigator(
-                    key: _contentNavigatorKey,
-                    onGenerateRoute: (settings) => MaterialPageRoute<void>(
-                      settings: settings,
-                      builder: (_) => const _ShellContent(),
+                  child: NavigatorPopHandler<void>(
+                    onPopWithResult: (result) =>
+                        _contentNavigatorKey.currentState?.pop(result),
+                    child: Navigator(
+                      key: _contentNavigatorKey,
+                      onGenerateRoute: (settings) => MaterialPageRoute<void>(
+                        settings: settings,
+                        builder: (_) => const _ShellContent(),
+                      ),
                     ),
                   ),
                 ),
