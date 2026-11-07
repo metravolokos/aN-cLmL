@@ -13,6 +13,7 @@ import 'album_cover_thumbnail.dart';
 import 'album_detail_page.dart';
 import 'mini_player.dart';
 import 'app_bottom_navigation_bar.dart';
+import 'collection_summary.dart';
 
 /// Displays the actual cloud catalog. Album/artist names are placeholders
 /// until the bounded FLAC/ID3 tag scanner is enabled; no invented metadata.
@@ -427,9 +428,8 @@ class TrackListRow extends ConsumerWidget {
   }
 }
 
-/// Artist drill-down: albums first, then every track by this artist.
-/// Uses the same album identity and track ordering as the main library.
-/// No additional WebDAV calls or album thumbnails are eagerly fetched.
+/// An artist's own cloud library: factual counts, album cards, and all tracks.
+/// A real artist portrait or popularity ranking is not available in WebDAV tags.
 class ArtistDetailPage extends ConsumerWidget {
   const ArtistDetailPage({
     required this.artist,
@@ -443,6 +443,8 @@ class ArtistDetailPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final strings = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
+    final width = MediaQuery.sizeOf(context).width;
     final albums = <String, List<RemoteTrack>>{};
     for (final track in tracks) {
       albums.putIfAbsent(track.albumKey, () => <RemoteTrack>[]).add(track);
@@ -453,22 +455,107 @@ class ArtistDetailPage extends ConsumerWidget {
     final albumGroups = albums.values.toList()
       ..sort((a, b) => a.first.displayAlbum.compareTo(b.first.displayAlbum));
     final allTracks = <RemoteTrack>[for (final group in albumGroups) ...group];
+    final summary = CollectionSummary.fromTracks(allTracks);
 
     return Scaffold(
-      appBar: AppBar(title: Text(artist)),
+      appBar: AppBar(),
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           const MiniPlayer(),
-          if (MediaQuery.sizeOf(context).width < 720)
+          if (width < 720)
             const AppBottomNavigationBar(returnToShell: true),
         ],
       ),
       body: CustomScrollView(
         key: const ValueKey('artist-detail-scroll'),
         slivers: [
+          SliverToBoxAdapter(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    colors.primary.withValues(alpha: 0.15),
+                    colors.surface,
+                  ],
+                ),
+              ),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+              child: Column(
+                children: [
+                  if (albumGroups.isNotEmpty)
+                    AlbumCoverThumbnail(
+                      key: ValueKey(
+                        'artist-hero-${albumGroups.first.first.path}',
+                      ),
+                      track: albumGroups.first.first,
+                      size: width >= 720 ? 188 : 156,
+                    )
+                  else
+                    const Icon(Icons.person_outline, size: 120),
+                  const SizedBox(height: 14),
+                  Text(
+                    artist,
+                    key: const ValueKey('artist-detail-title'),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 14),
+                  CollectionSummaryChips(
+                    summary: summary,
+                    albumCount: albumGroups.length,
+                  ),
+                  const SizedBox(height: 16),
+                  if (allTracks.isNotEmpty)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Tooltip(
+                          message: strings.play,
+                          child: SizedBox(
+                            width: 164,
+                            height: 48,
+                            child: FilledButton(
+                              key: const ValueKey('artist-play-all'),
+                              onPressed: () => ref
+                                  .read(playbackControllerProvider.notifier)
+                                  .playFromList(allTracks, 0),
+                              child: const Icon(Icons.play_arrow, size: 28),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Tooltip(
+                          message: strings.shuffleOn,
+                          child: SizedBox(
+                            width: 60,
+                            height: 48,
+                            child: OutlinedButton(
+                              key: const ValueKey('artist-shuffle'),
+                              style: OutlinedButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                              ),
+                              onPressed: () async {
+                                final controller = ref.read(
+                                  playbackControllerProvider.notifier,
+                                );
+                                await controller.playFromList(allTracks, 0);
+                                controller.setShuffle(true);
+                              },
+                              child: const Icon(Icons.shuffle),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+          ),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
             sliver: SliverToBoxAdapter(
               child: Text(
                 strings.albums,
@@ -480,9 +567,9 @@ class ArtistDetailPage extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             sliver: SliverGrid.builder(
               key: const ValueKey('artist-album-grid'),
-              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 180,
-                childAspectRatio: 0.75,
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 200,
+                childAspectRatio: 0.74,
                 mainAxisSpacing: 8,
                 crossAxisSpacing: 8,
               ),
@@ -502,15 +589,35 @@ class ArtistDetailPage extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Expanded(
-                          child: AlbumCoverThumbnail(track: first, size: 160),
+                        AspectRatio(
+                          aspectRatio: 1,
+                          child: LayoutBuilder(
+                            builder: (context, constraints) =>
+                                AlbumCoverThumbnail(
+                                  key: ValueKey(
+                                    'artist-album-cover-${first.path}',
+                                  ),
+                                  track: first,
+                                  size: constraints.maxWidth,
+                                ),
+                          ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.fromLTRB(8, 7, 8, 0),
                           child: Text(
                             first.displayAlbum,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Text(
+                            strings.collectionTracksCount(albumTracks.length),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ),
                       ],
@@ -521,7 +628,7 @@ class ArtistDetailPage extends ConsumerWidget {
             ),
           ),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
+            padding: const EdgeInsets.fromLTRB(16, 22, 16, 8),
             sliver: SliverToBoxAdapter(
               child: Text(
                 strings.tracks,
@@ -531,9 +638,12 @@ class ArtistDetailPage extends ConsumerWidget {
           ),
           SliverList.builder(
             itemCount: allTracks.length,
-            itemBuilder: (context, index) =>
-                TrackListRow(track: allTracks[index], queue: allTracks),
+            itemBuilder: (context, index) => TrackListRow(
+              track: allTracks[index],
+              queue: allTracks,
+            ),
           ),
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
       ),
     );
