@@ -328,6 +328,7 @@ class _PlayerSeekBarState extends ConsumerState<_PlayerSeekBar> {
               secondaryTrackValue: totalMs > 0
                   ? (totalMs * widget.bufferedFraction.clamp(0.0, 1.0))
                       .clamp(0.0, totalMs.toDouble())
+                      .toDouble()
                   : null,
               min: 0,
               max: totalMs > 0 ? totalMs.toDouble() : 1,
