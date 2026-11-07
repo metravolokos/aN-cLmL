@@ -349,7 +349,7 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
               return ListView.builder(
                 itemCount: filtered.length,
                 itemBuilder: (context, index) =>
-                    _TrackTile(track: filtered[index], queue: filtered),
+                    TrackListRow(track: filtered[index], queue: filtered),
               );
             },
           ),
@@ -359,32 +359,68 @@ class _CloudLibraryPageState extends ConsumerState<CloudLibraryPage> {
   }
 }
 
-class _TrackTile extends ConsumerWidget {
-  const _TrackTile({required this.track, required this.queue});
+/// Artwork-first two-line row shared by the track and artist lists.
+/// Keep the list lazy so only visible artwork is requested from WebDAV.
+class TrackListRow extends ConsumerWidget {
+  const TrackListRow({required this.track, required this.queue, super.key});
+
   final RemoteTrack track;
   final List<RemoteTrack> queue;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppLocalizations.of(context)!;
+    void play() {
+      ref.read(playbackControllerProvider.notifier).playFromList(
+        queue,
+        queue.indexWhere((item) => item.path == track.path),
+      );
+    }
+
     return ListTile(
-      leading: const Icon(Icons.audiotrack),
+      key: ValueKey('track-row-${track.path}'),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+      minVerticalPadding: 8,
+      leading: AlbumCoverThumbnail(
+        key: ValueKey('track-cover-${track.path}:${track.etag}'),
+        track: track,
+        size: 52,
+      ),
       title: Text(
         track.displayTitle,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
       subtitle: Text(
-        track.fileName,
+        track.displayArtist,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
       ),
-      trailing: const Icon(Icons.play_arrow),
-      onTap: () => ref
-          .read(playbackControllerProvider.notifier)
-          .playFromList(
-            queue,
-            queue.indexWhere((item) => item.path == track.path),
-          ),
+      trailing: PopupMenuButton<String>(
+        key: ValueKey('track-more-${track.path}'),
+        tooltip: MaterialLocalizations.of(context).moreButtonTooltip,
+        icon: const Icon(Icons.more_vert),
+        onSelected: (action) {
+          if (action == 'play') {
+            play();
+          } else if (action == 'album') {
+            final albumTracks = queue
+                .where((candidate) => candidate.albumKey == track.albumKey)
+                .toList();
+            Navigator.of(context).push<void>(
+              MaterialPageRoute<void>(
+                builder: (_) => AlbumDetailPage(tracks: albumTracks),
+              ),
+            );
+          }
+        },
+        itemBuilder: (context) => [
+          PopupMenuItem(value: 'play', child: Text(strings.play)),
+          PopupMenuItem(value: 'album', child: Text(strings.albums)),
+        ],
+      ),
+      onTap: play,
     );
   }
 }
@@ -494,7 +530,7 @@ class ArtistDetailPage extends ConsumerWidget {
           SliverList.builder(
             itemCount: allTracks.length,
             itemBuilder: (context, index) =>
-                _TrackTile(track: allTracks[index], queue: allTracks),
+                TrackListRow(track: allTracks[index], queue: allTracks),
           ),
         ],
       ),
