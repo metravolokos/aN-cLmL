@@ -1,6 +1,6 @@
 # teStPlaYclouDE — traceability of the authoritative user specification
 
-**Audit date:** 2026-11-06. Full requirements are in `docs/USER_SPEC_RU.md`; this register is a source-level review of main around `8aa1550` and is **not** a device/cloud acceptance report. Status: **implemented-source** = code/CI exists, **partial** = functionality missing, **unverified** = no credible live evidence, **non-goal** = expressly excluded by the user. Main source tree and PR #1–#30 were checked via GitHub; no local build or physical device was available during this audit.
+**Audit date:** 2026-11-06. **Current Android delivery update (2026-11-07):** one standard `app-debug.apk` from `.github/workflows/flutter.yml` replaces the retired ARM64-specific workflow. The cross-platform evidence below is historical; it does not define active Android CI. Full requirements are in `docs/USER_SPEC_RU.md`; this register is a source-level review of main around `8aa1550` and is **not** a device/cloud acceptance report. Status: **implemented-source** = code/CI exists, **partial** = functionality missing, **unverified** = no credible live evidence, **non-goal** = expressly excluded by the user. Main source tree and PR #1–#30 were checked via GitHub; no local build or physical device was available during this audit.
 
 | Full spec section | Implementation evidence | Status / remaining requirement |
 | --- | --- | --- |
@@ -17,7 +17,7 @@
 | K. UI | Material 3, Russian ARB, albums/artist/tracks, responsive navigation, mini-player/Now Playing | **Partial**: current navigation threshold 720 dp vs spec below 600; no go_router ShellRoute, About/license/version screen, full cache settings, tested 50k scroll/Wayland fractional scaling |
 | L. Security/settings | OS secure storage, account invalidation PRs #13/#23, Settings cloud form | **Partial**: password never in source/CI; no demonstrated Flatpak keyring persistence or non-Secret-Service fallback; theme persistence, settings store and full-history secret scan pending |
 | M. Testing / CI | `flutter.yml` 4 jobs, offline Flutter/Python tests, GMS Gradle graph checks; Android/Flatpak workflows | **Partial**: no measured >=80% queue/cache/grouping coverage, integration_test/WsgiDAV on all platforms, standalone `check_no_gms` shell/PowerShell or full no-secret history gate; device tests pending. Dependabot monitoring configured in public handover |
-| N. Delivery | ARM64 debug-signed release-mode APK preview, Windows release folder, GNOME 51 preview Flatpak PRs #27/#29/#30 | **Partial**: no production APK signing/update path, Windows installer/MSIX, production Flatpak provenance, native codec license clearance, formal tagged changelog release |
+| N. Delivery | Historically ARM64 debug-signed release-mode preview, Windows release folder, GNOME 51 Flatpak PRs #27/#29/#30; **now one standard Android debug APK only** | **Partial**: no production APK signing/update path, Windows installer/MSIX, production Flatpak provenance, native codec license clearance, formal tagged changelog release |
 
 ## Hard acceptance criteria not to infer from green CI
 
