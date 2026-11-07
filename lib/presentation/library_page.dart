@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -428,9 +430,11 @@ class TrackListRow extends ConsumerWidget {
   }
 }
 
-/// An artist's own cloud library: factual counts, album cards, and all tracks.
-/// A real artist portrait or popularity ranking is not available in WebDAV tags.
-class ArtistDetailPage extends ConsumerWidget {
+/// An artist's own cloud library, arranged like the approved Android
+/// concept: atmospheric wide hero, tracks first, then the album collection.
+/// The banner uses an existing album cover; WebDAV supplies no artist portrait
+/// or reliable popularity ranking, so neither is fabricated.
+class ArtistDetailPage extends ConsumerStatefulWidget {
   const ArtistDetailPage({
     required this.artist,
     required this.tracks,
@@ -441,12 +445,19 @@ class ArtistDetailPage extends ConsumerWidget {
   final List<RemoteTrack> tracks;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ArtistDetailPage> createState() => _ArtistDetailPageState();
+}
+
+class _ArtistDetailPageState extends ConsumerState<ArtistDetailPage> {
+  bool _allTracksExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
     final width = MediaQuery.sizeOf(context).width;
     final albums = <String, List<RemoteTrack>>{};
-    for (final track in tracks) {
+    for (final track in widget.tracks) {
       albums.putIfAbsent(track.albumKey, () => <RemoteTrack>[]).add(track);
     }
     for (final group in albums.values) {
@@ -455,7 +466,11 @@ class ArtistDetailPage extends ConsumerWidget {
     final albumGroups = albums.values.toList()
       ..sort((a, b) => a.first.displayAlbum.compareTo(b.first.displayAlbum));
     final allTracks = <RemoteTrack>[for (final group in albumGroups) ...group];
+    final visibleTracks = _allTracksExpanded
+        ? allTracks
+        : allTracks.take(5).toList();
     final summary = CollectionSummary.fromTracks(allTracks);
+    final artworkTrack = albumGroups.isEmpty ? null : albumGroups.first.first;
 
     return Scaffold(
       appBar: AppBar(),
@@ -470,100 +485,177 @@ class ArtistDetailPage extends ConsumerWidget {
         key: const ValueKey('artist-detail-scroll'),
         slivers: [
           SliverToBoxAdapter(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    colors.primary.withValues(alpha: 0.15),
-                    colors.surface,
-                  ],
-                ),
-              ),
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 22),
-              child: Column(
-                children: [
-                  if (albumGroups.isNotEmpty)
-                    AlbumCoverThumbnail(
-                      key: ValueKey(
-                        'artist-hero-${albumGroups.first.first.path}',
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(22),
+                    child: SizedBox(
+                      key: const ValueKey('artist-landscape-hero'),
+                      width: double.infinity,
+                      height: width >= 720 ? 310 : 230,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          if (artworkTrack != null)
+                            ImageFiltered(
+                              imageFilter: ui.ImageFilter.blur(
+                                sigmaX: 8,
+                                sigmaY: 8,
+                              ),
+                              child: AlbumCoverThumbnail(
+                                key: ValueKey(
+                                  'artist-hero-${artworkTrack.path}',
+                                ),
+                                track: artworkTrack,
+                                size: width,
+                              ),
+                            )
+                          else
+                            ColoredBox(color: colors.primaryContainer),
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                stops: const [0, 0.36, 1],
+                                colors: [
+                                  colors.surface.withValues(alpha: 0.14),
+                                  colors.surface.withValues(alpha: 0.46),
+                                  colors.surface.withValues(alpha: 0.98),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: 22,
+                            right: 22,
+                            bottom: 22,
+                            child: Text(
+                              widget.artist,
+                              key: const ValueKey('artist-detail-title'),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineLarge
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
                       ),
-                      track: albumGroups.first.first,
-                      size: width >= 720 ? 260 : 224,
-                    )
-                  else
-                    const Icon(Icons.person_outline, size: 120),
-                  const SizedBox(height: 20),
-                  Text(
-                    artist,
-                    key: const ValueKey('artist-detail-title'),
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                   ),
-                  const SizedBox(height: 14),
-                  CollectionSummaryChips(
+                ),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  child: CollectionSummaryChips(
                     summary: summary,
                     albumCount: albumGroups.length,
                   ),
-                  const SizedBox(height: 16),
-                  if (allTracks.isNotEmpty)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Tooltip(
-                          message: strings.play,
-                          child: SizedBox(
-                            width: 128,
-                            height: 48,
-                            child: FilledButton(
-                              key: const ValueKey('artist-play-all'),
-                              onPressed: () => ref
-                                  .read(playbackControllerProvider.notifier)
-                                  .playFromList(allTracks, 0),
-                              child: const Icon(Icons.play_arrow, size: 28),
-                            ),
+                ),
+                const SizedBox(height: 18),
+                if (allTracks.isNotEmpty)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Tooltip(
+                        message: strings.play,
+                        child: SizedBox(
+                          width: 184,
+                          height: 48,
+                          child: FilledButton(
+                            key: const ValueKey('artist-play-all'),
+                            onPressed: () => ref
+                                .read(playbackControllerProvider.notifier)
+                                .playFromList(allTracks, 0),
+                            child: const Icon(Icons.play_arrow, size: 28),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Tooltip(
-                          message: strings.shuffleOn,
-                          child: SizedBox(
-                            width: 56,
-                            height: 48,
-                            child: OutlinedButton(
-                              key: const ValueKey('artist-shuffle'),
-                              style: OutlinedButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                              ),
-                              onPressed: () async {
-                                final controller = ref.read(
-                                  playbackControllerProvider.notifier,
-                                );
-                                await controller.playFromList(allTracks, 0);
-                                controller.setShuffle(true);
-                              },
-                              child: const Icon(Icons.shuffle),
+                      ),
+                      const SizedBox(width: 12),
+                      Tooltip(
+                        message: strings.shuffleOn,
+                        child: SizedBox(
+                          width: 60,
+                          height: 48,
+                          child: OutlinedButton(
+                            key: const ValueKey('artist-shuffle'),
+                            style: OutlinedButton.styleFrom(
+                              padding: EdgeInsets.zero,
                             ),
+                            onPressed: () async {
+                              final controller = ref.read(
+                                playbackControllerProvider.notifier,
+                              );
+                              await controller.playFromList(allTracks, 0);
+                              controller.setShuffle(true);
+                            },
+                            child: const Icon(Icons.shuffle),
                           ),
                         ),
-                      ],
-                    ),
-                ],
-              ),
+                      ),
+                    ],
+                  ),
+                const SizedBox(height: 18),
+              ],
             ),
           ),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+            sliver: SliverToBoxAdapter(
+              child: Text(
+                strings.tracks,
+                key: const ValueKey('artist-track-preview-heading'),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          SliverList.builder(
+            itemCount: visibleTracks.length,
+            itemBuilder: (context, index) => TrackListRow(
+              track: visibleTracks[index],
+              queue: allTracks,
+            ),
+          ),
+          if (allTracks.length > 5)
+            SliverToBoxAdapter(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  key: const ValueKey('artist-expand-tracks'),
+                  onPressed: () => setState(
+                    () => _allTracksExpanded = !_allTracksExpanded,
+                  ),
+                  icon: Icon(
+                    _allTracksExpanded
+                        ? Icons.expand_less
+                        : Icons.expand_more,
+                  ),
+                  label: Text(
+                    strings.collectionTracksCount(allTracks.length),
+                  ),
+                ),
+              ),
+            ),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
             sliver: SliverToBoxAdapter(
               child: Text(
                 strings.albums,
-                style: Theme.of(context).textTheme.titleLarge,
+                key: const ValueKey('artist-albums-heading'),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
           SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             sliver: SliverGrid.builder(
               key: const ValueKey('artist-album-grid'),
               gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
@@ -605,7 +697,7 @@ class ArtistDetailPage extends ConsumerWidget {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(8, 7, 8, 0),
+                          padding: const EdgeInsets.fromLTRB(4, 7, 4, 0),
                           child: Text(
                             first.displayAlbum,
                             maxLines: 1,
@@ -614,7 +706,7 @@ class ArtistDetailPage extends ConsumerWidget {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
                           child: Text(
                             strings.collectionTracksCount(albumTracks.length),
                             maxLines: 1,
@@ -629,21 +721,7 @@ class ArtistDetailPage extends ConsumerWidget {
               },
             ),
           ),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 22, 16, 8),
-            sliver: SliverToBoxAdapter(
-              child: Text(
-                strings.tracks,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ),
-          ),
-          SliverList.builder(
-            itemCount: allTracks.length,
-            itemBuilder: (context, index) =>
-                TrackListRow(track: allTracks[index], queue: allTracks),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          const SliverToBoxAdapter(child: SizedBox(height: 28)),
         ],
       ),
     );
