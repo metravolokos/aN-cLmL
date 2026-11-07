@@ -2,7 +2,7 @@ name: aN-cLmL — Android and quality
 
 on:
   push:
-    branches: [main, fix/android-standard-buffered-seek-20261107]
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -27,11 +27,6 @@ jobs:
       - run: flutter pub get --enforce-lockfile
       - run: flutter gen-l10n
       - run: dart format --output=none --set-exit-if-changed lib test
-      - name: Diagnostic formatting diff (temporary)
-        if: failure()
-        run: |
-          dart format lib/presentation/now_playing_page.dart
-          git diff -- lib/presentation/now_playing_page.dart
       - run: flutter analyze
       - run: flutter test
       - run: python -m unittest discover -s tests -v
