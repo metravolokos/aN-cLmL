@@ -109,8 +109,8 @@ class _AppShellState extends ConsumerState<AppShell> {
                 // MiniPlayer and NavigationBar remain outside and never move.
                 Expanded(
                   child: NavigatorPopHandler<void>(
-                    onPopWithResult: (result) =>
-                        _contentNavigatorKey.currentState?.pop(result),
+                    onPopWithResult: (_) =>
+                        _contentNavigatorKey.currentState?.pop(),
                     child: Navigator(
                       key: _contentNavigatorKey,
                       onGenerateRoute: (settings) => MaterialPageRoute<void>(
