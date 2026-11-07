@@ -26,9 +26,11 @@ class _Thumbnails extends CloudMusicService {
   Future<Uint8List?> readThumbnail(RemoteTrack track) async {
     requests.add(track.path);
     if (!artworkAvailable) return null;
-    return Uint8List.fromList(base64Decode(
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lX8AAAAASUVORK5CYII=',
-    ));
+    return Uint8List.fromList(
+      base64Decode(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lX8AAAAASUVORK5CYII=',
+      ),
+    );
   }
 }
 
@@ -61,8 +63,10 @@ void main() {
     expect(find.text('Имя исполнителя'), findsOneWidget);
     expect(find.text('track.flac'), findsNothing);
     expect(find.byType(Image), findsOneWidget);
-    expect(find.byKey(const ValueKey('track-more-/AllMusic/track.flac')),
-        findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('track-more-/AllMusic/track.flac')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('missing embedded artwork shows a safe placeholder', (

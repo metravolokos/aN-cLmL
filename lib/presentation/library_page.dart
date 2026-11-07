@@ -371,10 +371,12 @@ class TrackListRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final strings = AppLocalizations.of(context)!;
     void play() {
-      ref.read(playbackControllerProvider.notifier).playFromList(
-        queue,
-        queue.indexWhere((item) => item.path == track.path),
-      );
+      ref
+          .read(playbackControllerProvider.notifier)
+          .playFromList(
+            queue,
+            queue.indexWhere((item) => item.path == track.path),
+          );
     }
 
     return ListTile(

@@ -51,15 +51,19 @@ void main() {
     expect(find.byKey(const ValueKey('buffered-seek-track')), findsOneWidget);
     expect(find.byKey(const ValueKey('buffered-waveform')), findsNothing);
     expect(
-      tester.widget<FractionallySizedBox>(
-        find.byKey(const ValueKey('seek-buffered-fill')),
-      ).widthFactor,
+      tester
+          .widget<FractionallySizedBox>(
+            find.byKey(const ValueKey('seek-buffered-fill')),
+          )
+          .widthFactor,
       0.75,
     );
     expect(
-      tester.widget<FractionallySizedBox>(
-        find.byKey(const ValueKey('seek-played-fill')),
-      ).widthFactor,
+      tester
+          .widget<FractionallySizedBox>(
+            find.byKey(const ValueKey('seek-played-fill')),
+          )
+          .widthFactor,
       closeTo(12 / 45, 0.001),
     );
     expect(find.byKey(const ValueKey('now-playing-seek')), findsOneWidget);
