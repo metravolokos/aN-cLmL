@@ -205,15 +205,13 @@ class HomePage extends ConsumerWidget {
           key: const ValueKey('home-settings'),
           icon: const Icon(Icons.settings_outlined),
           label: Text(strings.settings),
-          onPressed: () => Navigator.of(
-            context,
-            rootNavigator: true,
-          ).push<void>(
-            MaterialPageRoute<void>(
-              builder: (_) =>
-                  Scaffold(appBar: AppBar(), body: const SettingsPage()),
-            ),
-          ),
+          onPressed: () =>
+              Navigator.of(context, rootNavigator: true).push<void>(
+                MaterialPageRoute<void>(
+                  builder: (_) =>
+                      Scaffold(appBar: AppBar(), body: const SettingsPage()),
+                ),
+              ),
         ),
       ],
     );
