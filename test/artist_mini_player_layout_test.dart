@@ -107,4 +107,41 @@ void main() {
     expect(find.text('Второй альбом'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+  testWidgets('artist preview expands to show the full factual track list', (
+    tester,
+  ) async {
+    final tracks = [
+      for (var i = 1; i <= 7; i++)
+        RemoteTrack(
+          path: 'track$i.flac',
+          sizeBytes: 200,
+          title: 'Композиция $i',
+          artist: 'Артист',
+          album: 'Альбом',
+          trackNumber: i,
+        ),
+    ];
+    await tester.pumpWidget(
+      _app(ArtistDetailPage(artist: 'Артист', tracks: tracks)),
+    );
+    await tester.pump();
+    final scrollable = find.byType(Scrollable);
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('artist-expand-tracks')),
+      160,
+      scrollable: scrollable,
+    );
+    await tester.tap(find.byKey(const ValueKey('artist-expand-tracks')));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Композиция 7'),
+      160,
+      scrollable: scrollable,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Композиция 7'), findsOneWidget);
+    expect(find.byKey(const ValueKey('artist-album-grid')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
 }
