@@ -48,25 +48,19 @@ void main() {
     expect(find.text('Альбом'), findsOneWidget);
     expect(find.text('0:12'), findsOneWidget);
     expect(find.text('0:45'), findsOneWidget);
-    expect(find.byKey(const ValueKey('buffered-seek-track')), findsOneWidget);
+    final seek = find.byKey(const ValueKey('now-playing-seek'));
+    final slider = tester.widget<Slider>(seek);
+    expect(slider.value, 12000);
+    expect(slider.secondaryTrackValue, 33750);
+    expect(slider.secondaryActiveColor, isNull);
+    expect(find.byKey(const ValueKey('buffered-seek-track')), findsNothing);
     expect(find.byKey(const ValueKey('buffered-waveform')), findsNothing);
-    expect(
-      tester
-          .widget<FractionallySizedBox>(
-            find.byKey(const ValueKey('seek-buffered-fill')),
-          )
-          .widthFactor,
-      0.75,
+    final theme = tester.widget<SliderTheme>(
+      find.ancestor(of: seek, matching: find.byType(SliderTheme)).first,
     );
-    expect(
-      tester
-          .widget<FractionallySizedBox>(
-            find.byKey(const ValueKey('seek-played-fill')),
-          )
-          .widthFactor,
-      closeTo(12 / 45, 0.001),
-    );
-    expect(find.byKey(const ValueKey('now-playing-seek')), findsOneWidget);
+    expect(theme.data.trackHeight, 10);
+    expect(theme.data.trackShape, isA<RoundedRectSliderTrackShape>());
+    expect(theme.data.secondaryActiveTrackColor, isNotNull);
     expect(find.byType(LinearProgressIndicator), findsNothing);
     expect(tester.takeException(), isNull);
   });
