@@ -317,10 +317,12 @@ class _PlayerSeekBarState extends ConsumerState<_PlayerSeekBar> {
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 18),
               activeTrackColor: Theme.of(context).colorScheme.primary,
-              inactiveTrackColor:
-                  Theme.of(context).colorScheme.surfaceContainerHighest,
-              secondaryActiveTrackColor:
-                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.45),
+              inactiveTrackColor: Theme.of(
+                context,
+              ).colorScheme.surfaceContainerHighest,
+              secondaryActiveTrackColor: Theme.of(
+                context,
+              ).colorScheme.primary.withValues(alpha: 0.45),
               showValueIndicator: ShowValueIndicator.never,
             ),
             child: Slider(
