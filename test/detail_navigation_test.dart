@@ -28,9 +28,7 @@ Future<void> openLibraryTab(WidgetTester tester, String tab) async {
 
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [
-        cloudCatalogProvider.overrideWith(_CatalogFixture.new),
-      ],
+      overrides: [cloudCatalogProvider.overrideWith(_CatalogFixture.new)],
       child: const MaterialApp(
         locale: Locale('ru'),
         supportedLocales: AppLocalizations.supportedLocales,
@@ -45,49 +43,50 @@ Future<void> openLibraryTab(WidgetTester tester, String tab) async {
 }
 
 void main() {
-  testWidgets('album slides up below one immobile bottom bar and slides down on Back', (
-    tester,
-  ) async {
-    await openLibraryTab(tester, 'albums');
-    final bar = find.byKey(const ValueKey('navigation-bar'));
-    final originalElement = tester.element(bar);
-    final originalTop = tester.getTopLeft(bar);
-    expect(find.byKey(const ValueKey('album-grid')), findsOneWidget);
+  testWidgets(
+    'album slides up below one immobile bottom bar and slides down on Back',
+    (tester) async {
+      await openLibraryTab(tester, 'albums');
+      final bar = find.byKey(const ValueKey('navigation-bar'));
+      final originalElement = tester.element(bar);
+      final originalTop = tester.getTopLeft(bar);
+      expect(find.byKey(const ValueKey('album-grid')), findsOneWidget);
 
-    await tester.tap(find.byKey(ValueKey('album-open-${_track.albumKey}')));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
-    final risingTop = tester.getTopLeft(
-      find.byKey(const ValueKey('library-detail-slide')),
-    );
-    await tester.pumpAndSettle();
-    final settledTop = tester.getTopLeft(
-      find.byKey(const ValueKey('library-detail-slide')),
-    );
+      await tester.tap(find.byKey(ValueKey('album-open-${_track.albumKey}')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      final risingTop = tester.getTopLeft(
+        find.byKey(const ValueKey('library-detail-slide')),
+      );
+      await tester.pumpAndSettle();
+      final settledTop = tester.getTopLeft(
+        find.byKey(const ValueKey('library-detail-slide')),
+      );
 
-    expect(risingTop.dy, greaterThan(settledTop.dy + 10));
-    expect(find.byKey(const ValueKey('album-detail-scroll')), findsOneWidget);
-    expect(find.byKey(const ValueKey('album-detail-back')), findsOneWidget);
-    expect(find.byType(AppBar), findsNothing);
-    expect(bar, findsOneWidget);
-    expect(identical(tester.element(bar), originalElement), isTrue);
-    expect(tester.getTopLeft(bar), originalTop);
+      expect(risingTop.dy, greaterThan(settledTop.dy + 10));
+      expect(find.byKey(const ValueKey('album-detail-scroll')), findsOneWidget);
+      expect(find.byKey(const ValueKey('album-detail-back')), findsOneWidget);
+      expect(find.byType(AppBar), findsNothing);
+      expect(bar, findsOneWidget);
+      expect(identical(tester.element(bar), originalElement), isTrue);
+      expect(tester.getTopLeft(bar), originalTop);
 
-    await tester.tap(find.byKey(const ValueKey('album-detail-back')));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('album-detail-scroll')), findsNothing);
-    expect(find.byKey(const ValueKey('album-grid')), findsOneWidget);
-    expect(identical(tester.element(bar), originalElement), isTrue);
-    expect(tester.getTopLeft(bar), originalTop);
+      await tester.tap(find.byKey(const ValueKey('album-detail-back')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('album-detail-scroll')), findsNothing);
+      expect(find.byKey(const ValueKey('album-grid')), findsOneWidget);
+      expect(identical(tester.element(bar), originalElement), isTrue);
+      expect(tester.getTopLeft(bar), originalTop);
 
-    // Selecting the already active tab also closes a detail page.
-    await tester.tap(find.byKey(ValueKey('album-open-${_track.albumKey}')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('nav-albums')));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('album-detail-scroll')), findsNothing);
-    expect(bar, findsOneWidget);
-  });
+      // Selecting the already active tab also closes a detail page.
+      await tester.tap(find.byKey(ValueKey('album-open-${_track.albumKey}')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('nav-albums')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('album-detail-scroll')), findsNothing);
+      expect(bar, findsOneWidget);
+    },
+  );
 
   testWidgets('artist details and nested album keep the same shell bar', (
     tester,
