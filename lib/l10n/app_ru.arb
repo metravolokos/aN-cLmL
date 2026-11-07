@@ -89,5 +89,48 @@
   "shuffleOff": "Перемешивание выключено",
   "repeatOff": "Повтор выключен",
   "repeatAll": "Повтор очереди",
-  "repeatOne": "Повтор одного трека"
+  "repeatOne": "Повтор одного трека",
+  "collectionTracksCount": "Треков: {count}",
+  "@collectionTracksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "collectionAlbumsCount": "Альбомов: {count}",
+  "@collectionAlbumsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "collectionDurationMinutes": "{minutes} мин",
+  "@collectionDurationMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "collectionDurationHoursMinutes": "{hours} ч {minutes} мин",
+  "@collectionDurationHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "albumDiscNumber": "Диск {number}",
+  "@albumDiscNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  }
 }

@@ -69,9 +69,30 @@ void main() {
     );
     await tester.pump();
     expect(find.text('Артист'), findsWidgets);
+    expect(find.byKey(const ValueKey('artist-detail-title')), findsOneWidget);
+    expect(find.byKey(const ValueKey('artist-play-all')), findsOneWidget);
+    expect(find.byKey(const ValueKey('artist-shuffle')), findsOneWidget);
+    expect(find.text('Альбомов: 2'), findsOneWidget);
+    expect(find.text('Треков: 2'), findsOneWidget);
     expect(find.byKey(const ValueKey('artist-album-grid')), findsOneWidget);
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const ValueKey('artist-play-all')))
+          .child,
+      isA<Icon>(),
+    );
+    await tester.drag(
+      find.byKey(const ValueKey('artist-detail-scroll')),
+      const Offset(0, -420),
+    );
+    await tester.pumpAndSettle();
     expect(find.text('Первый альбом'), findsOneWidget);
     expect(find.text('Второй альбом'), findsOneWidget);
+    await tester.drag(
+      find.byKey(const ValueKey('artist-detail-scroll')),
+      const Offset(0, -340),
+    );
+    await tester.pumpAndSettle();
     expect(find.text('Первый трек'), findsOneWidget);
     expect(find.text('Второй трек'), findsOneWidget);
     expect(tester.takeException(), isNull);
