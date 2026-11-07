@@ -639,9 +639,9 @@ class _ArtistDetailPageState extends ConsumerState<ArtistDetailPage> {
               child: Text(
                 strings.albums,
                 key: const ValueKey('artist-albums-heading'),
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
             ),
           ),
