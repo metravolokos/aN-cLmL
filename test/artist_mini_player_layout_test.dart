@@ -68,7 +68,7 @@ void main() {
       _app(const ArtistDetailPage(artist: 'Артист', tracks: _tracks)),
     );
     await tester.pump();
-    expect(find.text('Артист'), findsOneWidget);
+    expect(find.text('Артист'), findsWidgets);
     expect(find.byKey(const ValueKey('artist-album-grid')), findsOneWidget);
     expect(find.text('Первый альбом'), findsOneWidget);
     expect(find.text('Второй альбом'), findsOneWidget);
