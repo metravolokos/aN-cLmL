@@ -27,6 +27,11 @@ jobs:
       - run: flutter pub get --enforce-lockfile
       - run: flutter gen-l10n
       - run: dart format --output=none --set-exit-if-changed lib test
+      - name: Diagnostic Dart formatting diff (temporary)
+        if: failure()
+        run: |
+          dart format lib/app/shell.dart lib/presentation/album_detail_page.dart lib/presentation/detail_route.dart lib/presentation/library_page.dart test/detail_navigation_test.dart
+          git diff -- lib/app/shell.dart lib/presentation/album_detail_page.dart lib/presentation/detail_route.dart lib/presentation/library_page.dart test/detail_navigation_test.dart
       - run: flutter analyze
       - run: flutter test
       - run: python -m unittest discover -s tests -v
