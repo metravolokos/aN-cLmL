@@ -10,7 +10,7 @@ import '../domain/remote_track.dart';
 import '../domain/track_queue.dart';
 import '../l10n/app_localizations.dart';
 import 'album_detail_page.dart';
-import 'buffered_waveform.dart';
+import 'buffered_seek_track.dart';
 import 'library_page.dart';
 
 /// Responsive single-session player: portrait on phones, two columns on desktop.
@@ -315,7 +315,7 @@ class _PlayerSeekBarState extends ConsumerState<_PlayerSeekBar> {
                 left: 20,
                 right: 20,
                 child: IgnorePointer(
-                  child: BufferedWaveform(
+                  child: BufferedSeekTrack(
                     played: totalMs > 0 ? sliderValue / totalMs : 0,
                     buffered: widget.bufferedFraction,
                   ),
@@ -327,7 +327,7 @@ class _PlayerSeekBarState extends ConsumerState<_PlayerSeekBar> {
                   activeTrackColor: Colors.transparent,
                   inactiveTrackColor: Colors.transparent,
                   thumbShape: const RoundSliderThumbShape(
-                    enabledThumbRadius: 5,
+                    enabledThumbRadius: 7,
                   ),
                   overlayShape: SliderComponentShape.noOverlay,
                 ),
