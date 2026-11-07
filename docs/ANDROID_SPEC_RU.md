@@ -21,7 +21,7 @@ Priorities: (1) reliable on-device Cloud Mail.ru login/index/playback on Huawei 
 ## Android acceptance gates
 
 1. Quality CI: formatter, analyze, Flutter/Python tests, layer isolation; Android debug APK build, GMS/Firebase runtime graph audit and manifest permission checks on exact HEAD.
-2. ARM64 test-installable APK artifact, signature checked; current ephemeral debug signing is NOT a production upgrade path.
+2. One standard test-installable Android artifact: `an-clml-android-debug` / `app-debug.apk` from `.github/workflows/flutter.yml`, with debug signing; **no** separate ARM64, Huawei-specific, or other CPU-targeted APK workflow. Stable production signing and in-place update path remain separate unfinished work. A different build may be added only on explicit owner request.
 3. Actual Huawei no-GMS test: sign in with app password entered locally; list and index /AllMusic, observe progress, metadata and album art, play FLAC/MP3 audibly, seek, switch tracks, pause, resume and stop without stale playback.
 4. Exercise background screen-off playback, Android media panel/media keys, audio focus, calls, unplug, phone speaker/BT/USB DAC with system mixer. OEM lock-screen limitations are reported separately, not silently considered implemented.
 5. Record device model, OS/version, artifact SHA and sanitized result for each test. No private filenames, credentials or authorization headers in evidence.
