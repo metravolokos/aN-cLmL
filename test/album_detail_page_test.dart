@@ -50,15 +50,15 @@ void main() {
     expect(find.text('7 мин'), findsOneWidget);
     expect(find.text('FLAC'), findsOneWidget);
     expect(
-      tester.widget<FilledButton>(
-        find.byKey(const ValueKey('album-play-all')),
-      ).child,
+      tester
+          .widget<FilledButton>(find.byKey(const ValueKey('album-play-all')))
+          .child,
       isA<Icon>(),
     );
     expect(
-      tester.widget<OutlinedButton>(
-        find.byKey(const ValueKey('album-shuffle')),
-      ).child,
+      tester
+          .widget<OutlinedButton>(find.byKey(const ValueKey('album-shuffle')))
+          .child,
       isA<Icon>(),
     );
     await tester.drag(

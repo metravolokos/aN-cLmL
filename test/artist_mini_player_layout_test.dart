@@ -76,9 +76,9 @@ void main() {
     expect(find.text('Треков: 2'), findsOneWidget);
     expect(find.byKey(const ValueKey('artist-album-grid')), findsOneWidget);
     expect(
-      tester.widget<FilledButton>(
-        find.byKey(const ValueKey('artist-play-all')),
-      ).child,
+      tester
+          .widget<FilledButton>(find.byKey(const ValueKey('artist-play-all')))
+          .child,
       isA<Icon>(),
     );
     await tester.drag(

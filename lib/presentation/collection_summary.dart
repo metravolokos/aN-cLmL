@@ -40,9 +40,7 @@ class CollectionSummary {
     return CollectionSummary(
       trackCount: tracks.length,
       formats: formats,
-      totalDuration: complete
-          ? Duration(milliseconds: milliseconds)
-          : null,
+      totalDuration: complete ? Duration(milliseconds: milliseconds) : null,
     );
   }
 }
@@ -85,10 +83,15 @@ class CollectionSummaryChips extends StatelessWidget {
       alignment: WrapAlignment.center,
       children: [
         if (albumCount != null)
-          chip(Icons.album_outlined, strings.collectionAlbumsCount(albumCount!)),
-        chip(Icons.music_note_outlined, strings.collectionTracksCount(summary.trackCount)),
-        if (durationLabel != null)
-          chip(Icons.schedule_outlined, durationLabel),
+          chip(
+            Icons.album_outlined,
+            strings.collectionAlbumsCount(albumCount!),
+          ),
+        chip(
+          Icons.music_note_outlined,
+          strings.collectionTracksCount(summary.trackCount),
+        ),
+        if (durationLabel != null) chip(Icons.schedule_outlined, durationLabel),
         for (final format in summary.formats)
           Chip(
             label: Text(format),

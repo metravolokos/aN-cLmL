@@ -463,8 +463,7 @@ class ArtistDetailPage extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const MiniPlayer(),
-          if (width < 720)
-            const AppBottomNavigationBar(returnToShell: true),
+          if (width < 720) const AppBottomNavigationBar(returnToShell: true),
         ],
       ),
       body: CustomScrollView(
@@ -638,10 +637,8 @@ class ArtistDetailPage extends ConsumerWidget {
           ),
           SliverList.builder(
             itemCount: allTracks.length,
-            itemBuilder: (context, index) => TrackListRow(
-              track: allTracks[index],
-              queue: allTracks,
-            ),
+            itemBuilder: (context, index) =>
+                TrackListRow(track: allTracks[index], queue: allTracks),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],

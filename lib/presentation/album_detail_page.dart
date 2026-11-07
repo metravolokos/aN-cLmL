@@ -50,8 +50,7 @@ class AlbumDetailPage extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const MiniPlayer(),
-          if (width < 720)
-            const AppBottomNavigationBar(returnToShell: true),
+          if (width < 720) const AppBottomNavigationBar(returnToShell: true),
         ],
       ),
       body: CustomScrollView(
@@ -91,9 +90,9 @@ class AlbumDetailPage extends ConsumerWidget {
                           ? first.albumArtist!
                           : first.displayArtist,
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: colors.primary,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.titleMedium?.copyWith(color: colors.primary),
                     ),
                     const SizedBox(height: 12),
                     CollectionSummaryChips(summary: summary),
@@ -158,7 +157,8 @@ class AlbumDetailPage extends ConsumerWidget {
             itemBuilder: (context, index) {
               final track = sorted[index];
               final number = track.trackNumber ?? index + 1;
-              final discChange = track.discNumber != null &&
+              final discChange =
+                  track.discNumber != null &&
                   (index == 0 ||
                       track.discNumber != sorted[index - 1].discNumber);
               final playing = track.path == playingPath;
@@ -188,8 +188,10 @@ class AlbumDetailPage extends ConsumerWidget {
                           width: 32,
                           child: Center(
                             child: playing
-                                ? Icon(Icons.equalizer_rounded,
-                                    color: colors.primary)
+                                ? Icon(
+                                    Icons.equalizer_rounded,
+                                    color: colors.primary,
+                                  )
                                 : Text('$number'),
                           ),
                         ),
