@@ -71,7 +71,7 @@ class AlbumDetailPage extends ConsumerWidget {
                       child: AlbumCoverThumbnail(
                         key: ValueKey('album-atmosphere-${first.albumKey}'),
                         track: first,
-                        size: math.max(width, 420),
+                        size: math.max(width, 420.0),
                       ),
                     ),
                   ),
