@@ -55,12 +55,11 @@ void main() {
       await tester.tap(find.byKey(ValueKey('album-open-${_track.albumKey}')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
-      final slide = tester.widget<SlideTransition>(
-        find.byKey(const ValueKey('library-detail-slide')),
-      ).position;
-      final risingOffset = slide.value.dy;
+      final slide = find.byKey(const ValueKey('library-detail-slide'));
+      final animation = tester.widget<SlideTransition>(slide).position;
+      final risingOffset = animation.value.dy;
       await tester.pumpAndSettle();
-      final settledOffset = slide.value.dy;
+      final settledOffset = animation.value.dy;
 
       expect(risingOffset, greaterThan(settledOffset + 0.1));
       expect(settledOffset, closeTo(0, 0.001));
