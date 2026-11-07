@@ -64,10 +64,7 @@ class AlbumDetailPage extends ConsumerWidget {
                   child: Opacity(
                     opacity: 0.16,
                     child: ImageFiltered(
-                      imageFilter: ui.ImageFilter.blur(
-                        sigmaX: 24,
-                        sigmaY: 24,
-                      ),
+                      imageFilter: ui.ImageFilter.blur(sigmaX: 24, sigmaY: 24),
                       child: AlbumCoverThumbnail(
                         key: ValueKey('album-atmosphere-${first.albumKey}'),
                         track: first,
@@ -114,9 +111,8 @@ class AlbumDetailPage extends ConsumerWidget {
                             ? first.albumArtist!
                             : first.displayArtist,
                         textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: colors.primary,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(color: colors.primary),
                       ),
                       const SizedBox(height: 18),
                       Row(
