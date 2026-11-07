@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,7 +43,7 @@ class AlbumDetailPage extends ConsumerWidget {
     );
     final colors = Theme.of(context).colorScheme;
     final width = MediaQuery.sizeOf(context).width;
-    final coverSize = math.min(width - 64, width >= 720 ? 300.0 : 280.0);
+    final coverSize = math.min(width - 88, width >= 720 ? 280.0 : 238.0);
 
     return Scaffold(
       appBar: AppBar(),
@@ -57,101 +58,117 @@ class AlbumDetailPage extends ConsumerWidget {
         key: const ValueKey('album-detail-scroll'),
         slivers: [
           SliverToBoxAdapter(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    colors.primary.withValues(alpha: 0.12),
-                    colors.surface,
-                  ],
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Opacity(
+                    opacity: 0.16,
+                    child: ImageFiltered(
+                      imageFilter: ui.ImageFilter.blur(
+                        sigmaX: 24,
+                        sigmaY: 24,
+                      ),
+                      child: AlbumCoverThumbnail(
+                        key: ValueKey('album-atmosphere-${first.albumKey}'),
+                        track: first,
+                        size: math.max(width, 420),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 18),
-                child: Column(
-                  children: [
-                    AlbumCoverThumbnail(
-                      key: ValueKey('album-hero-${first.albumKey}'),
-                      track: first,
-                      size: coverSize,
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          colors.primaryContainer.withValues(alpha: 0.34),
+                          colors.surface.withValues(alpha: 0.66),
+                          colors.surface,
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 20),
-                    Text(
-                      first.displayAlbum,
-                      key: const ValueKey('album-detail-title'),
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      (first.albumArtist?.trim().isNotEmpty ?? false)
-                          ? first.albumArtist!
-                          : first.displayArtist,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.titleMedium?.copyWith(color: colors.primary),
-                    ),
-                    const SizedBox(height: 12),
-                    CollectionSummaryChips(summary: summary),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Tooltip(
-                          message: strings.play,
-                          child: SizedBox(
-                            width: 128,
-                            height: 48,
-                            child: FilledButton(
-                              key: const ValueKey('album-play-all'),
-                              onPressed: () => ref
-                                  .read(playbackControllerProvider.notifier)
-                                  .playFromList(sorted, 0),
-                              child: const Icon(Icons.play_arrow, size: 28),
-                            ),
-                          ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(22, 8, 22, 24),
+                  child: Column(
+                    children: [
+                      AlbumCoverThumbnail(
+                        key: ValueKey('album-hero-${first.albumKey}'),
+                        track: first,
+                        size: coverSize,
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        first.displayAlbum,
+                        key: const ValueKey('album-detail-title'),
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        (first.albumArtist?.trim().isNotEmpty ?? false)
+                            ? first.albumArtist!
+                            : first.displayArtist,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: colors.primary,
                         ),
-                        const SizedBox(width: 12),
-                        Tooltip(
-                          message: strings.shuffleOn,
-                          child: SizedBox(
-                            width: 56,
-                            height: 48,
-                            child: OutlinedButton(
-                              key: const ValueKey('album-shuffle'),
-                              style: OutlinedButton.styleFrom(
-                                padding: EdgeInsets.zero,
+                      ),
+                      const SizedBox(height: 18),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Tooltip(
+                            message: strings.play,
+                            child: SizedBox(
+                              width: 184,
+                              height: 48,
+                              child: FilledButton(
+                                key: const ValueKey('album-play-all'),
+                                onPressed: () => ref
+                                    .read(playbackControllerProvider.notifier)
+                                    .playFromList(sorted, 0),
+                                child: const Icon(Icons.play_arrow, size: 28),
                               ),
-                              onPressed: () async {
-                                final controller = ref.read(
-                                  playbackControllerProvider.notifier,
-                                );
-                                await controller.playFromList(sorted, 0);
-                                controller.setShuffle(true);
-                              },
-                              child: const Icon(Icons.shuffle),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(width: 12),
+                          Tooltip(
+                            message: strings.shuffleOn,
+                            child: SizedBox(
+                              width: 60,
+                              height: 48,
+                              child: OutlinedButton(
+                                key: const ValueKey('album-shuffle'),
+                                style: OutlinedButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                ),
+                                onPressed: () async {
+                                  final controller = ref.read(
+                                    playbackControllerProvider.notifier,
+                                  );
+                                  await controller.playFromList(sorted, 0);
+                                  controller.setShuffle(true);
+                                },
+                                child: const Icon(Icons.shuffle),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      CollectionSummaryChips(summary: summary),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-            sliver: SliverToBoxAdapter(
-              child: Text(
-                strings.tracks,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ),
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 6)),
           SliverList.builder(
             itemCount: sorted.length,
             itemBuilder: (context, index) {
@@ -183,7 +200,11 @@ class AlbumDetailPage extends ConsumerWidget {
                       clipBehavior: Clip.antiAlias,
                       child: ListTile(
                         key: ValueKey('album-track-${track.path}'),
-                        minVerticalPadding: 6,
+                        dense: true,
+                        minVerticalPadding: 2,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                        ),
                         leading: SizedBox(
                           width: 32,
                           child: Center(
