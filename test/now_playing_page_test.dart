@@ -48,7 +48,24 @@ void main() {
     expect(find.text('Альбом'), findsOneWidget);
     expect(find.text('0:12'), findsOneWidget);
     expect(find.text('0:45'), findsOneWidget);
-    expect(find.byKey(const ValueKey('buffered-waveform')), findsOneWidget);
+    expect(find.byKey(const ValueKey('buffered-seek-track')), findsOneWidget);
+    expect(find.byKey(const ValueKey('buffered-waveform')), findsNothing);
+    expect(
+      tester
+          .widget<FractionallySizedBox>(
+            find.byKey(const ValueKey('seek-buffered-fill')),
+          )
+          .widthFactor,
+      0.75,
+    );
+    expect(
+      tester
+          .widget<FractionallySizedBox>(
+            find.byKey(const ValueKey('seek-played-fill')),
+          )
+          .widthFactor,
+      closeTo(12 / 45, 0.001),
+    );
     expect(find.byKey(const ValueKey('now-playing-seek')), findsOneWidget);
     expect(find.byType(LinearProgressIndicator), findsNothing);
     expect(tester.takeException(), isNull);

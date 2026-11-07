@@ -19,15 +19,31 @@ class AlbumCoverThumbnail extends ConsumerStatefulWidget {
 }
 
 class _AlbumCoverThumbnailState extends ConsumerState<AlbumCoverThumbnail> {
-  late final Future<Uint8List?> imageFuture;
+  late Future<Uint8List?> imageFuture;
 
-  @override
-  void initState() {
-    super.initState();
+  void _loadArtwork() {
     imageFuture = ref
         .read(cloudMusicServiceProvider)
         .readThumbnail(widget.track)
         .catchError((Object error, StackTrace stackTrace) => null);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadArtwork();
+  }
+
+  @override
+  void didUpdateWidget(covariant AlbumCoverThumbnail oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final previous = oldWidget.track;
+    final current = widget.track;
+    if (previous.path != current.path ||
+        previous.etag != current.etag ||
+        previous.sizeBytes != current.sizeBytes) {
+      _loadArtwork();
+    }
   }
 
   @override
