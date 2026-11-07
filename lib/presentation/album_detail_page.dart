@@ -7,6 +7,7 @@ import '../domain/remote_track.dart';
 import '../l10n/app_localizations.dart';
 import 'album_cover_thumbnail.dart';
 import 'mini_player.dart';
+import 'app_bottom_navigation_bar.dart';
 
 /// Full album route shared by Android, Windows and Linux.
 /// Opening the album never starts playback; only explicit controls do.
@@ -36,7 +37,14 @@ class AlbumDetailPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(first.displayAlbum)),
-      bottomNavigationBar: const MiniPlayer(),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const MiniPlayer(),
+          if (MediaQuery.sizeOf(context).width < 720)
+            const AppBottomNavigationBar(returnToShell: true),
+        ],
+      ),
       body: CustomScrollView(
         key: const ValueKey('album-detail-scroll'),
         slivers: [
