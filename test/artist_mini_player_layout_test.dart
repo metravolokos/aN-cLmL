@@ -143,5 +143,4 @@ void main() {
     expect(find.byKey(const ValueKey('artist-album-grid')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
-
 }
