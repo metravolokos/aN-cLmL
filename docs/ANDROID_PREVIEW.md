@@ -18,8 +18,8 @@
 
 Общий workflow `.github/workflows/flutter.yml` проверяет форматирование,
 анализ, тесты, Android-сборку `flutter build apk --debug`, отсутствие
-runtime-зависимостей Google Play Services/Firebase, а также разрешение
-INTERNET в манифесте. Результат — один стандартный APK.
+runtime-зависимостей Google Play Services/Firebase, разрешение
+INTERNET в манифесте и подпись получившегося APK. Результат — один стандартный APK.
 
 Логин и пароль приложения Cloud Mail.ru вводятся только на устройстве
 через штатный интерфейс и безопасное хранилище. Не помещайте их в GitHub,
