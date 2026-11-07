@@ -18,6 +18,7 @@ void main() {
         album: 'Наш альбом',
         trackNumber: 2,
         discNumber: 1,
+        duration: const Duration(minutes: 3),
       ),
       const RemoteTrack(
         path: '/AllMusic/01.flac',
@@ -27,6 +28,7 @@ void main() {
         album: 'Наш альбом',
         trackNumber: 1,
         discNumber: 1,
+        duration: const Duration(minutes: 4),
       ),
     ];
     await tester.pumpWidget(
@@ -44,6 +46,26 @@ void main() {
     expect(find.text('Наш альбом'), findsWidgets);
     expect(find.byKey(const ValueKey('album-play-all')), findsOneWidget);
     expect(find.byKey(const ValueKey('album-shuffle')), findsOneWidget);
+    expect(find.text('Треков: 2'), findsOneWidget);
+    expect(find.text('7 мин'), findsOneWidget);
+    expect(find.text('FLAC'), findsOneWidget);
+    expect(
+      tester.widget<FilledButton>(
+        find.byKey(const ValueKey('album-play-all')),
+      ).child,
+      isA<Icon>(),
+    );
+    expect(
+      tester.widget<OutlinedButton>(
+        find.byKey(const ValueKey('album-shuffle')),
+      ).child,
+      isA<Icon>(),
+    );
+    await tester.drag(
+      find.byKey(const ValueKey('album-detail-scroll')),
+      const Offset(0, -400),
+    );
+    await tester.pumpAndSettle();
     expect(find.text('Первая'), findsOneWidget);
     expect(find.text('Вторая'), findsOneWidget);
     expect(
