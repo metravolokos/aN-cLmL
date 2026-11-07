@@ -74,7 +74,7 @@ class CollectionSummaryChips extends StatelessWidget {
     final facts = <String>[
       if (albumCount != null) strings.collectionAlbumsCount(albumCount!),
       strings.collectionTracksCount(summary.trackCount),
-      if (durationLabel != null) durationLabel,
+      ?durationLabel,
       ...summary.formats,
     ];
 
