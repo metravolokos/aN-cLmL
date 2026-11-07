@@ -14,16 +14,14 @@ Future<void> openLibraryDetail(BuildContext context, Widget page) {
       transitionsBuilder: (context, animation, secondaryAnimation, child) =>
           SlideTransition(
             key: const ValueKey('library-detail-slide'),
-            position: Tween<Offset>(
-              begin: const Offset(0, 1),
-              end: Offset.zero,
-            ).animate(
-              CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOutCubic,
-                reverseCurve: Curves.easeInCubic,
-              ),
-            ),
+            position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
+                .animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                    reverseCurve: Curves.easeInCubic,
+                  ),
+                ),
             child: child,
           ),
     ),
