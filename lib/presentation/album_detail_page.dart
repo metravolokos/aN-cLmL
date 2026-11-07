@@ -9,9 +9,7 @@ import '../domain/album_track_order.dart';
 import '../domain/remote_track.dart';
 import '../l10n/app_localizations.dart';
 import 'album_cover_thumbnail.dart';
-import 'app_bottom_navigation_bar.dart';
 import 'collection_summary.dart';
-import 'mini_player.dart';
 
 /// Album artwork, factual metadata and an uninterrupted album queue.
 /// Album cards only navigate here; playback is always an explicit action.
@@ -30,10 +28,7 @@ class AlbumDetailPage extends ConsumerWidget {
     final strings = AppLocalizations.of(context)!;
     final sorted = List<RemoteTrack>.of(tracks)..sort(compareAlbumTracks);
     if (sorted.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(),
-        body: Center(child: Text(strings.libraryEmpty)),
-      );
+      return Scaffold(body: Center(child: Text(strings.libraryEmpty)));
     }
 
     final first = sorted.first;
@@ -46,14 +41,6 @@ class AlbumDetailPage extends ConsumerWidget {
     final coverSize = math.min(width - 88, width >= 720 ? 280.0 : 238.0);
 
     return Scaffold(
-      appBar: AppBar(),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const MiniPlayer(),
-          if (width < 720) const AppBottomNavigationBar(returnToShell: true),
-        ],
-      ),
       body: CustomScrollView(
         key: const ValueKey('album-detail-scroll'),
         slivers: [
@@ -159,6 +146,16 @@ class AlbumDetailPage extends ConsumerWidget {
                       const SizedBox(height: 16),
                       CollectionSummaryChips(summary: summary),
                     ],
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: IconButton.filledTonal(
+                    key: const ValueKey('album-detail-back'),
+                    tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    icon: const Icon(Icons.arrow_back),
                   ),
                 ),
               ],
