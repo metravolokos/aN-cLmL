@@ -7,6 +7,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _ProgressFixture extends PlaybackController {
+  final soughtPositions = <Duration>[];
+
+  @override
+  Future<void> seek(Duration position) async {
+    soughtPositions.add(position);
+  }
+
   @override
   PlaybackView build() => const PlaybackView(
     track: RemoteTrack(
@@ -90,8 +97,26 @@ void main() {
       43000,
     );
 
-    (container.read(playbackControllerProvider.notifier) as _ProgressFixture)
-        .clearDuration();
+    // Drag previews progress locally without issuing repeated player seeks.
+    final controller =
+        container.read(playbackControllerProvider.notifier) as _ProgressFixture;
+    final seekBeforeRelease = tester.widget<Slider>(
+      find.byKey(const ValueKey('now-playing-seek')),
+    );
+    seekBeforeRelease.onChanged!(91000);
+    await tester.pump();
+    expect(controller.soughtPositions, isEmpty);
+    expect(
+      tester.widget<Slider>(find.byKey(const ValueKey('now-playing-seek'))).value,
+      91000,
+    );
+    tester
+        .widget<Slider>(find.byKey(const ValueKey('now-playing-seek')))
+        .onChangeEnd!(91000);
+    await tester.pump();
+    expect(controller.soughtPositions, [const Duration(seconds: 91)]);
+
+    controller.clearDuration();
     await tester.pump();
     expect(find.text('0:43'), findsOneWidget);
     expect(find.text('0:00'), findsOneWidget);
