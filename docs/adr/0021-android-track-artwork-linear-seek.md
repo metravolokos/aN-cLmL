@@ -1,6 +1,6 @@
 # ADR-0021: Track artwork rows and three-layer linear seek bar
 
-Date: 2026-11-07. Status: accepted for Android UI testing.
+Date: 2026-11-07. Status: seek-bar implementation superseded by ADR-0023 (2026-11-07); track artwork decision retained.
 
 ## Decision
 - On the Tracks tab and the artist track list, show an existing account-scoped, bounded `AlbumCoverThumbnail` on the left, followed by the track title and the artist name. The contextual menu contains only supported Play and Open Album actions. Loading remains lazy for visible rows; missing artwork shows an icon rather than triggering an unbounded fallback.
