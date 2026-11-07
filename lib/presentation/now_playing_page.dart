@@ -10,7 +10,6 @@ import '../domain/remote_track.dart';
 import '../domain/track_queue.dart';
 import '../l10n/app_localizations.dart';
 import 'album_detail_page.dart';
-import 'buffered_seek_track.dart';
 import 'library_page.dart';
 
 /// Responsive single-session player: portrait on phones, two columns on desktop.
@@ -306,50 +305,45 @@ class _PlayerSeekBarState extends ConsumerState<_PlayerSeekBar> {
     );
     return Column(
       children: [
+        // Use a single native track for played, cached and unbuffered
+        // regions so its thumb aligns with the actual touch geometry.
         SizedBox(
-          height: 44,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Positioned.fill(
-                left: 20,
-                right: 20,
-                child: IgnorePointer(
-                  child: BufferedSeekTrack(
-                    played: totalMs > 0 ? sliderValue / totalMs : 0,
-                    buffered: widget.bufferedFraction,
-                  ),
-                ),
-              ),
-              SliderTheme(
-                data: SliderTheme.of(context).copyWith(
-                  trackHeight: 0,
-                  activeTrackColor: Colors.transparent,
-                  inactiveTrackColor: Colors.transparent,
-                  thumbShape: const RoundSliderThumbShape(
-                    enabledThumbRadius: 7,
-                  ),
-                  overlayShape: SliderComponentShape.noOverlay,
-                ),
-                child: Slider(
-                  key: const ValueKey('now-playing-seek'),
-                  value: sliderValue,
-                  min: 0,
-                  max: totalMs > 0 ? totalMs.toDouble() : 1,
-                  onChanged: totalMs > 0
-                      ? (value) => setState(() => _draft = value)
-                      : null,
-                  onChangeEnd: totalMs > 0
-                      ? (value) {
-                          setState(() => _draft = null);
-                          ref
-                              .read(playbackControllerProvider.notifier)
-                              .seek(Duration(milliseconds: value.round()));
-                        }
-                      : null,
-                ),
-              ),
-            ],
+          height: 48,
+          child: SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              trackHeight: 10,
+              trackShape: const RoundedRectSliderTrackShape(),
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 18),
+              activeTrackColor: Theme.of(context).colorScheme.primary,
+              inactiveTrackColor:
+                  Theme.of(context).colorScheme.surfaceContainerHighest,
+              secondaryActiveTrackColor:
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.45),
+              showValueIndicator: ShowValueIndicator.never,
+            ),
+            child: Slider(
+              key: const ValueKey('now-playing-seek'),
+              value: sliderValue,
+              secondaryTrackValue: totalMs > 0
+                  ? (totalMs * widget.bufferedFraction.clamp(0.0, 1.0))
+                      .clamp(0.0, totalMs.toDouble())
+                  : null,
+              min: 0,
+              max: totalMs > 0 ? totalMs.toDouble() : 1,
+              semanticFormatterCallback: (value) => _time(value.round()),
+              onChanged: totalMs > 0
+                  ? (value) => setState(() => _draft = value)
+                  : null,
+              onChangeEnd: totalMs > 0
+                  ? (value) {
+                      setState(() => _draft = null);
+                      ref
+                          .read(playbackControllerProvider.notifier)
+                          .seek(Duration(milliseconds: value.round()));
+                    }
+                  : null,
+            ),
           ),
         ),
         Row(
