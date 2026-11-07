@@ -13,6 +13,7 @@ Future<void> openLibraryDetail(BuildContext context, Widget page) {
       pageBuilder: (context, animation, secondaryAnimation) => page,
       transitionsBuilder: (context, animation, secondaryAnimation, child) =>
           SlideTransition(
+            key: const ValueKey('library-detail-slide'),
             position: Tween<Offset>(
               begin: const Offset(0, 1),
               end: Offset.zero,
