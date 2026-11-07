@@ -72,6 +72,12 @@ void main() {
           .value,
       20000,
     );
+    expect(
+      tester
+          .widget<Slider>(find.byKey(const ValueKey('now-playing-seek')))
+          .secondaryTrackValue,
+      117000,
+    );
 
     (container.read(playbackControllerProvider.notifier) as _ProgressFixture)
         .advance();
@@ -89,6 +95,11 @@ void main() {
     await tester.pump();
     expect(find.text('0:43'), findsOneWidget);
     expect(find.text('0:00'), findsOneWidget);
+    final slider = tester.widget<Slider>(
+      find.byKey(const ValueKey('now-playing-seek')),
+    );
+    expect(slider.secondaryTrackValue, isNull);
+    expect(slider.onChanged, isNull);
   });
 
   test('source duration is recovered before falling back to indexed tags', () {
