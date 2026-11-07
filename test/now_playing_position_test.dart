@@ -71,48 +71,25 @@ void main() {
       ),
     );
     await tester.pump();
+    final seekFinder = find.byKey(const ValueKey('now-playing-seek'));
     expect(find.text('0:20'), findsOneWidget);
     expect(find.text('3:15'), findsOneWidget);
-    expect(
-      tester
-          .widget<Slider>(find.byKey(const ValueKey('now-playing-seek')))
-          .value,
-      20000,
-    );
-    expect(
-      tester
-          .widget<Slider>(find.byKey(const ValueKey('now-playing-seek')))
-          .secondaryTrackValue,
-      117000,
-    );
+    expect(tester.widget<Slider>(seekFinder).value, 20000);
+    expect(tester.widget<Slider>(seekFinder).secondaryTrackValue, 117000);
 
-    (container.read(playbackControllerProvider.notifier) as _ProgressFixture)
-        .advance();
-    await tester.pump();
-    expect(find.text('0:43'), findsOneWidget);
-    expect(
-      tester
-          .widget<Slider>(find.byKey(const ValueKey('now-playing-seek')))
-          .value,
-      43000,
-    );
-
-    // Drag previews progress locally without issuing repeated player seeks.
     final controller =
         container.read(playbackControllerProvider.notifier) as _ProgressFixture;
-    final seekBeforeRelease = tester.widget<Slider>(
-      find.byKey(const ValueKey('now-playing-seek')),
-    );
-    seekBeforeRelease.onChanged!(91000);
+    controller.advance();
+    await tester.pump();
+    expect(find.text('0:43'), findsOneWidget);
+    expect(tester.widget<Slider>(seekFinder).value, 43000);
+
+    // Scrubbing previews locally; the player seek is committed on release.
+    tester.widget<Slider>(seekFinder).onChanged!(91000);
     await tester.pump();
     expect(controller.soughtPositions, isEmpty);
-    expect(
-      tester.widget<Slider>(find.byKey(const ValueKey('now-playing-seek'))).value,
-      91000,
-    );
-    tester
-        .widget<Slider>(find.byKey(const ValueKey('now-playing-seek')))
-        .onChangeEnd!(91000);
+    expect(tester.widget<Slider>(seekFinder).value, 91000);
+    tester.widget<Slider>(seekFinder).onChangeEnd!(91000);
     await tester.pump();
     expect(controller.soughtPositions, [const Duration(seconds: 91)]);
 
@@ -120,9 +97,7 @@ void main() {
     await tester.pump();
     expect(find.text('0:43'), findsOneWidget);
     expect(find.text('0:00'), findsOneWidget);
-    final slider = tester.widget<Slider>(
-      find.byKey(const ValueKey('now-playing-seek')),
-    );
+    final slider = tester.widget<Slider>(seekFinder);
     expect(slider.secondaryTrackValue, isNull);
     expect(slider.onChanged, isNull);
   });
