@@ -4,12 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../app/state.dart';
 import '../l10n/app_localizations.dart';
 
-/// One navigation bar shared by the library shell and artist/album details.
-/// Detail routes live above AppShell: selecting a tab returns to that shell.
+/// The single persistent navigation bar owned by AppShell.
+/// Detail pages never create a copy or change this widget's location.
 class AppBottomNavigationBar extends ConsumerWidget {
-  const AppBottomNavigationBar({this.returnToShell = false, super.key});
+  const AppBottomNavigationBar({this.onDestinationSelected, super.key});
 
-  final bool returnToShell;
+  /// Close content-level detail routes after a tab is selected.
+  final VoidCallback? onDestinationSelected;
 
   static const icons = [
     Icons.home_outlined,
@@ -37,9 +38,7 @@ class AppBottomNavigationBar extends ConsumerWidget {
         ref
             .read(destinationProvider.notifier)
             .select(AppDestination.values[index]);
-        if (returnToShell) {
-          Navigator.of(context).popUntil((route) => route.isFirst);
-        }
+        onDestinationSelected?.call();
       },
       destinations: [
         for (var i = 0; i < labels.length; i++)

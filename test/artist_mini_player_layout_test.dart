@@ -61,7 +61,7 @@ void main() {
     expect(find.text('Песня'), findsOneWidget);
   });
 
-  testWidgets('artist detail shows album cards above the track list', (
+  testWidgets('artist detail shows wide hero and tracks before album cards', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -70,6 +70,7 @@ void main() {
     await tester.pump();
     expect(find.text('Артист'), findsWidgets);
     expect(find.byKey(const ValueKey('artist-detail-title')), findsOneWidget);
+    expect(find.byKey(const ValueKey('artist-landscape-hero')), findsOneWidget);
     expect(find.byKey(const ValueKey('artist-play-all')), findsOneWidget);
     expect(find.byKey(const ValueKey('artist-shuffle')), findsOneWidget);
     expect(find.text('Альбомов: 2'), findsOneWidget);
@@ -81,9 +82,20 @@ void main() {
       isA<Icon>(),
     );
 
-    // A taller artist hero can put the lazily built album grid below the fold.
-    // Scroll to the content rather than assuming fixed pixel offsets.
+    // The concept puts a short track preview before the album grid.
     final scrollable = find.byType(Scrollable);
+    await tester.scrollUntilVisible(
+      find.text('Второй трек'),
+      160,
+      scrollable: scrollable,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Первый трек'), findsOneWidget);
+    expect(find.text('Второй трек'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('artist-track-preview-heading')),
+      findsOneWidget,
+    );
     await tester.scrollUntilVisible(
       find.byKey(const ValueKey('artist-album-grid')),
       160,
@@ -93,14 +105,42 @@ void main() {
     expect(find.byKey(const ValueKey('artist-album-grid')), findsOneWidget);
     expect(find.text('Первый альбом'), findsOneWidget);
     expect(find.text('Второй альбом'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets('artist preview expands to show the full factual track list', (
+    tester,
+  ) async {
+    final tracks = [
+      for (var i = 1; i <= 7; i++)
+        RemoteTrack(
+          path: 'track$i.flac',
+          sizeBytes: 200,
+          title: 'Композиция $i',
+          artist: 'Артист',
+          album: 'Альбом',
+          trackNumber: i,
+        ),
+    ];
+    await tester.pumpWidget(
+      _app(ArtistDetailPage(artist: 'Артист', tracks: tracks)),
+    );
+    await tester.pump();
+    final scrollable = find.byType(Scrollable);
     await tester.scrollUntilVisible(
-      find.text('Второй трек'),
+      find.byKey(const ValueKey('artist-expand-tracks')),
+      160,
+      scrollable: scrollable,
+    );
+    await tester.tap(find.byKey(const ValueKey('artist-expand-tracks')));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Композиция 7'),
       160,
       scrollable: scrollable,
     );
     await tester.pumpAndSettle();
-    expect(find.text('Первый трек'), findsOneWidget);
-    expect(find.text('Второй трек'), findsOneWidget);
+    expect(find.text('Композиция 7'), findsOneWidget);
+    expect(find.byKey(const ValueKey('artist-album-grid')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

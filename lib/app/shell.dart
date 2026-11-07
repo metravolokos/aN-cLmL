@@ -22,6 +22,12 @@ class AppShell extends ConsumerStatefulWidget {
 }
 
 class _AppShellState extends ConsumerState<AppShell> {
+  final _contentNavigatorKey = GlobalKey<NavigatorState>();
+
+  void _showLibraryBase() {
+    _contentNavigatorKey.currentState?.popUntil((route) => route.isFirst);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -61,13 +67,12 @@ class _AppShellState extends ConsumerState<AppShell> {
       strings.artists,
     ];
     final destination = ref.watch(destinationProvider);
-    void select(int index) => ref
-        .read(destinationProvider.notifier)
-        .select(AppDestination.values[index]);
-
-    final page = destination == AppDestination.home
-        ? const HomePage()
-        : CloudLibraryPage(destination: destination);
+    void select(int index) {
+      ref
+          .read(destinationProvider.notifier)
+          .select(AppDestination.values[index]);
+      _showLibraryBase();
+    }
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -100,8 +105,21 @@ class _AppShellState extends ConsumerState<AppShell> {
                   ),
                   const VerticalDivider(width: 1),
                 ],
-                // Keep the catalog edge-to-edge beneath its own compact header.
-                Expanded(child: page),
+                // Detail routes animate only in this inner content navigator.
+                // MiniPlayer and NavigationBar remain outside and never move.
+                Expanded(
+                  child: NavigatorPopHandler<void>(
+                    onPopWithResult: (_) =>
+                        _contentNavigatorKey.currentState?.pop(),
+                    child: Navigator(
+                      key: _contentNavigatorKey,
+                      onGenerateRoute: (settings) => MaterialPageRoute<void>(
+                        settings: settings,
+                        builder: (_) => const _ShellContent(),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -109,12 +127,27 @@ class _AppShellState extends ConsumerState<AppShell> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const MiniPlayer(),
-              if (!wide) const AppBottomNavigationBar(),
+              if (!wide)
+                AppBottomNavigationBar(onDestinationSelected: _showLibraryBase),
             ],
           ),
         );
       },
     );
+  }
+}
+
+/// The base route is reactive to tab selection even while its Navigator lives
+/// across AppShell rebuilds. Detail pages push above this stable base route.
+class _ShellContent extends ConsumerWidget {
+  const _ShellContent();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final destination = ref.watch(destinationProvider);
+    return destination == AppDestination.home
+        ? const HomePage()
+        : CloudLibraryPage(destination: destination);
   }
 }
 
@@ -172,12 +205,13 @@ class HomePage extends ConsumerWidget {
           key: const ValueKey('home-settings'),
           icon: const Icon(Icons.settings_outlined),
           label: Text(strings.settings),
-          onPressed: () => Navigator.of(context).push<void>(
-            MaterialPageRoute<void>(
-              builder: (_) =>
-                  Scaffold(appBar: AppBar(), body: const SettingsPage()),
-            ),
-          ),
+          onPressed: () =>
+              Navigator.of(context, rootNavigator: true).push<void>(
+                MaterialPageRoute<void>(
+                  builder: (_) =>
+                      Scaffold(appBar: AppBar(), body: const SettingsPage()),
+                ),
+              ),
         ),
       ],
     );
