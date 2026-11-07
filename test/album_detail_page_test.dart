@@ -18,7 +18,7 @@ void main() {
         album: 'Наш альбом',
         trackNumber: 2,
         discNumber: 1,
-        duration: const Duration(minutes: 3),
+        duration: Duration(minutes: 3),
       ),
       const RemoteTrack(
         path: '/AllMusic/01.flac',
@@ -28,7 +28,7 @@ void main() {
         album: 'Наш альбом',
         trackNumber: 1,
         discNumber: 1,
-        duration: const Duration(minutes: 4),
+        duration: Duration(minutes: 4),
       ),
     ];
     await tester.pumpWidget(
