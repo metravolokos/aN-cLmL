@@ -303,6 +303,7 @@ class _PlayerSeekBarState extends ConsumerState<_PlayerSeekBar> {
       0.0,
       totalMs > 0 ? totalMs.toDouble() : 1.0,
     );
+    final bufferedMs = totalMs * widget.bufferedFraction.clamp(0.0, 1.0);
     return Column(
       children: [
         // Use a single native track for played, cached and unbuffered
@@ -325,11 +326,7 @@ class _PlayerSeekBarState extends ConsumerState<_PlayerSeekBar> {
             child: Slider(
               key: const ValueKey('now-playing-seek'),
               value: sliderValue,
-              secondaryTrackValue: totalMs > 0
-                  ? (totalMs * widget.bufferedFraction.clamp(0.0, 1.0))
-                      .clamp(0.0, totalMs.toDouble())
-                      .toDouble()
-                  : null,
+              secondaryTrackValue: totalMs > 0 ? bufferedMs : null,
               min: 0,
               max: totalMs > 0 ? totalMs.toDouble() : 1,
               semanticFormatterCallback: (value) => _time(value.round()),
