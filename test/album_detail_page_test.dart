@@ -44,7 +44,7 @@ void main() {
     await tester.pump();
     expect(find.byKey(const ValueKey('album-detail-title')), findsOneWidget);
     expect(
-      find.byKey(const ValueKey('album-atmosphere-${tracks.first.albumKey}')),
+      find.byKey(ValueKey('album-atmosphere-${tracks.first.albumKey}')),
       findsOneWidget,
     );
     expect(find.text('Наш альбом'), findsWidgets);
