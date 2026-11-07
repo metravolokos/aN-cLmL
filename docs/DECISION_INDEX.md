@@ -20,6 +20,7 @@ The ADR filename is the durable citation key. **Historical collisions are preser
 | 0012-persistent-cover-thumbnails | pure Dart image isolate, 640px JPEG, 64 MiB persistent LRU | Merged PR #28; memory/performance live verification pending |
 | 0013-public-identity-and-distribution | public name, stable internal IDs, publication and release/attribution boundaries | Adopted PR #31 |
 | 0014-opaque-android-media-ids | Hash Android MediaSession track identity rather than expose private WebDAV filename | Merged PR #37; OS media surface hardware acceptance pending |
+| 0023-android-integrated-seek-slider | Single native rounded Slider shows played, cached, and unloaded regions; seek on release | Draft Android visual correction; supersedes the custom overlaid seek control in ADR-0021, awaiting CI and Huawei review |
 
 ## Active Android APK build policy (owner decision, 2026-11-07)
 

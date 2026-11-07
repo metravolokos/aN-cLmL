@@ -7,6 +7,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _ProgressFixture extends PlaybackController {
+  final soughtPositions = <Duration>[];
+
+  @override
+  Future<void> seek(Duration position) async {
+    soughtPositions.add(position);
+  }
+
   @override
   PlaybackView build() => const PlaybackView(
     track: RemoteTrack(
@@ -64,31 +71,35 @@ void main() {
       ),
     );
     await tester.pump();
+    final seekFinder = find.byKey(const ValueKey('now-playing-seek'));
     expect(find.text('0:20'), findsOneWidget);
     expect(find.text('3:15'), findsOneWidget);
-    expect(
-      tester
-          .widget<Slider>(find.byKey(const ValueKey('now-playing-seek')))
-          .value,
-      20000,
-    );
+    expect(tester.widget<Slider>(seekFinder).value, 20000);
+    expect(tester.widget<Slider>(seekFinder).secondaryTrackValue, 117000);
 
-    (container.read(playbackControllerProvider.notifier) as _ProgressFixture)
-        .advance();
+    final controller =
+        container.read(playbackControllerProvider.notifier) as _ProgressFixture;
+    controller.advance();
     await tester.pump();
     expect(find.text('0:43'), findsOneWidget);
-    expect(
-      tester
-          .widget<Slider>(find.byKey(const ValueKey('now-playing-seek')))
-          .value,
-      43000,
-    );
+    expect(tester.widget<Slider>(seekFinder).value, 43000);
 
-    (container.read(playbackControllerProvider.notifier) as _ProgressFixture)
-        .clearDuration();
+    // Scrubbing previews locally; the player seek is committed on release.
+    tester.widget<Slider>(seekFinder).onChanged!(91000);
+    await tester.pump();
+    expect(controller.soughtPositions, isEmpty);
+    expect(tester.widget<Slider>(seekFinder).value, 91000);
+    tester.widget<Slider>(seekFinder).onChangeEnd!(91000);
+    await tester.pump();
+    expect(controller.soughtPositions, [const Duration(seconds: 91)]);
+
+    controller.clearDuration();
     await tester.pump();
     expect(find.text('0:43'), findsOneWidget);
     expect(find.text('0:00'), findsOneWidget);
+    final slider = tester.widget<Slider>(seekFinder);
+    expect(slider.secondaryTrackValue, isNull);
+    expect(slider.onChanged, isNull);
   });
 
   test('source duration is recovered before falling back to indexed tags', () {
