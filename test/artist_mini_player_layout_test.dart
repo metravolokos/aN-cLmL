@@ -74,23 +74,29 @@ void main() {
     expect(find.byKey(const ValueKey('artist-shuffle')), findsOneWidget);
     expect(find.text('Альбомов: 2'), findsOneWidget);
     expect(find.text('Треков: 2'), findsOneWidget);
-    expect(find.byKey(const ValueKey('artist-album-grid')), findsOneWidget);
     expect(
       tester
           .widget<FilledButton>(find.byKey(const ValueKey('artist-play-all')))
           .child,
       isA<Icon>(),
     );
-    await tester.drag(
-      find.byKey(const ValueKey('artist-detail-scroll')),
-      const Offset(0, -420),
+
+    // A taller artist hero can put the lazily built album grid below the fold.
+    // Scroll to the content rather than assuming fixed pixel offsets.
+    final scrollable = find.byType(Scrollable);
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('artist-album-grid')),
+      160,
+      scrollable: scrollable,
     );
     await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('artist-album-grid')), findsOneWidget);
     expect(find.text('Первый альбом'), findsOneWidget);
     expect(find.text('Второй альбом'), findsOneWidget);
-    await tester.drag(
-      find.byKey(const ValueKey('artist-detail-scroll')),
-      const Offset(0, -340),
+    await tester.scrollUntilVisible(
+      find.text('Второй трек'),
+      160,
+      scrollable: scrollable,
     );
     await tester.pumpAndSettle();
     expect(find.text('Первый трек'), findsOneWidget);
