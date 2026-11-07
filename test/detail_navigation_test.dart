@@ -55,15 +55,24 @@ void main() {
       await tester.tap(find.byKey(ValueKey('album-open-${_track.albumKey}')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
-      final risingTop = tester.getTopLeft(
-        find.byKey(const ValueKey('library-detail-slide')),
-      );
+      final risingOffset = tester
+          .widget<SlideTransition>(
+            find.byKey(const ValueKey('library-detail-slide')),
+          )
+          .position
+          .value
+          .dy;
       await tester.pumpAndSettle();
-      final settledTop = tester.getTopLeft(
-        find.byKey(const ValueKey('library-detail-slide')),
-      );
+      final settledOffset = tester
+          .widget<SlideTransition>(
+            find.byKey(const ValueKey('library-detail-slide')),
+          )
+          .position
+          .value
+          .dy;
 
-      expect(risingTop.dy, greaterThan(settledTop.dy + 10));
+      expect(risingOffset, greaterThan(settledOffset + 0.1));
+      expect(settledOffset, closeTo(0, 0.001));
       expect(find.byKey(const ValueKey('album-detail-scroll')), findsOneWidget);
       expect(find.byKey(const ValueKey('album-detail-back')), findsOneWidget);
       expect(find.byType(AppBar), findsNothing);
