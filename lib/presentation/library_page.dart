@@ -12,6 +12,7 @@ import '../l10n/app_localizations.dart';
 import 'album_cover_thumbnail.dart';
 import 'album_detail_page.dart';
 import 'mini_player.dart';
+import 'app_bottom_navigation_bar.dart';
 
 /// Displays the actual cloud catalog. Album/artist names are placeholders
 /// until the bounded FLAC/ID3 tag scanner is enabled; no invented metadata.
@@ -417,7 +418,14 @@ class ArtistDetailPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(artist)),
-      bottomNavigationBar: const MiniPlayer(),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const MiniPlayer(),
+          if (MediaQuery.sizeOf(context).width < 720)
+            const AppBottomNavigationBar(returnToShell: true),
+        ],
+      ),
       body: CustomScrollView(
         key: const ValueKey('artist-detail-scroll'),
         slivers: [

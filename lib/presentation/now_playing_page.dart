@@ -298,7 +298,7 @@ class _PlayerSeekBarState extends ConsumerState<_PlayerSeekBar> {
     final totalMs = widget.duration.inMilliseconds;
     final current = widget.position.inMilliseconds.clamp(
       0,
-      totalMs > 0 ? totalMs : 0,
+      totalMs > 0 ? totalMs : widget.position.inMilliseconds,
     );
     final sliderValue = (_draft ?? current.toDouble()).clamp(
       0.0,
@@ -354,7 +354,10 @@ class _PlayerSeekBarState extends ConsumerState<_PlayerSeekBar> {
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [Text(_time(sliderValue.round())), Text(_time(totalMs))],
+          children: [
+            Text(_time(totalMs > 0 ? sliderValue.round() : current)),
+            Text(_time(totalMs)),
+          ],
         ),
       ],
     );

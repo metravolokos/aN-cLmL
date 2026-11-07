@@ -74,6 +74,20 @@ bool acceptsActiveAudioEvent({
   required bool hasTrack,
 }) => !disposed && !switchingTrack && hasQueue && hasTrack;
 
+/// The source's initial duration event can arrive while the old source is
+/// being replaced and is deliberately ignored. Recover its duration from the
+/// completed setAudioSource call, the player, or the already indexed tags.
+Duration resolvedPlaybackDuration({
+  Duration? sourceDuration,
+  Duration? playerDuration,
+  Duration? taggedDuration,
+}) {
+  for (final value in [sourceDuration, playerDuration, taggedDuration]) {
+    if (value != null && value > Duration.zero) return value;
+  }
+  return Duration.zero;
+}
+
 class PlaybackController extends Notifier<PlaybackView> {
   AudioPlayer? _player;
   Future<TwoTrackAudioCache>? _cacheFuture;
@@ -190,6 +204,7 @@ class PlaybackController extends Notifier<PlaybackView> {
     state = PlaybackView(
       track: track,
       loading: true,
+      duration: resolvedPlaybackDuration(taggedDuration: track.duration),
       shuffled: _queue?.shuffled ?? false,
       repeatMode: _queue?.repeatMode ?? PlayerRepeatMode.off,
     );
@@ -240,7 +255,7 @@ class PlaybackController extends Notifier<PlaybackView> {
       if (_closed || generation != _operationGeneration) return;
       final cache = activeCache;
       final player = _ensurePlayer();
-      await player.setAudioSource(
+      final sourceDuration = await player.setAudioSource(
         CloudRangeAudioSource(
           track,
           cache == null
@@ -270,7 +285,17 @@ class PlaybackController extends Notifier<PlaybackView> {
       }
       // Reflect the user's requested Play immediately. Some backends emit a
       // delayed/duplicate "playing=false" while replacing their source.
-      state = state.withUpdates(playing: true, loading: false, failed: false);
+      state = state.withUpdates(
+        playing: true,
+        loading: false,
+        failed: false,
+        position: player.position,
+        duration: resolvedPlaybackDuration(
+          sourceDuration: sourceDuration,
+          playerDuration: player.duration,
+          taggedDuration: track.duration,
+        ),
+      );
       unawaited(
         player.play().catchError((Object _) {
           if (!_closed && generation == _operationGeneration) {
