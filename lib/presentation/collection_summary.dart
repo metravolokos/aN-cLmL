@@ -69,35 +69,33 @@ class CollectionSummaryChips extends StatelessWidget {
           )
         : strings.collectionDurationMinutes(duration.inMinutes);
 
-    Widget chip(IconData icon, String label) => Chip(
-      avatar: Icon(icon, size: 16),
-      label: Text(label),
-      visualDensity: VisualDensity.compact,
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-    );
+    // Present facts as one quiet caption line rather than a group of
+    // prominent Material chips competing with the cover and album title.
+    final facts = <String>[
+      if (albumCount != null) strings.collectionAlbumsCount(albumCount!),
+      strings.collectionTracksCount(summary.trackCount),
+      ?durationLabel,
+      ...summary.formats,
+    ];
 
+    final captionStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
     return Wrap(
       key: const ValueKey('collection-summary-chips'),
-      spacing: 8,
-      runSpacing: 4,
       alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 0,
+      runSpacing: 6,
       children: [
-        if (albumCount != null)
-          chip(
-            Icons.album_outlined,
-            strings.collectionAlbumsCount(albumCount!),
-          ),
-        chip(
-          Icons.music_note_outlined,
-          strings.collectionTracksCount(summary.trackCount),
-        ),
-        if (durationLabel != null) chip(Icons.schedule_outlined, durationLabel),
-        for (final format in summary.formats)
-          Chip(
-            label: Text(format),
-            visualDensity: VisualDensity.compact,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
+        for (var i = 0; i < facts.length; i++) ...[
+          if (i != 0)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text('·', style: captionStyle),
+            ),
+          Text(facts[i], style: captionStyle),
+        ],
       ],
     );
   }

@@ -42,7 +42,7 @@ class AlbumDetailPage extends ConsumerWidget {
     );
     final colors = Theme.of(context).colorScheme;
     final width = MediaQuery.sizeOf(context).width;
-    final coverSize = math.min(width - 76, width >= 720 ? 270.0 : 250.0);
+    final coverSize = math.min(width - 64, width >= 720 ? 300.0 : 280.0);
 
     return Scaffold(
       appBar: AppBar(),
@@ -69,7 +69,7 @@ class AlbumDetailPage extends ConsumerWidget {
                 ),
               ),
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 18),
                 child: Column(
                   children: [
                     AlbumCoverThumbnail(
@@ -77,7 +77,7 @@ class AlbumDetailPage extends ConsumerWidget {
                       track: first,
                       size: coverSize,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
                     Text(
                       first.displayAlbum,
                       key: const ValueKey('album-detail-title'),
@@ -103,7 +103,7 @@ class AlbumDetailPage extends ConsumerWidget {
                         Tooltip(
                           message: strings.play,
                           child: SizedBox(
-                            width: 164,
+                            width: 128,
                             height: 48,
                             child: FilledButton(
                               key: const ValueKey('album-play-all'),
@@ -118,7 +118,7 @@ class AlbumDetailPage extends ConsumerWidget {
                         Tooltip(
                           message: strings.shuffleOn,
                           child: SizedBox(
-                            width: 60,
+                            width: 56,
                             height: 48,
                             child: OutlinedButton(
                               key: const ValueKey('album-shuffle'),
