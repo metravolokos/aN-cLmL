@@ -1,8 +1,8 @@
+import 'package:cloudmail_player/app/shell.dart';
 import 'package:cloudmail_player/app/state.dart';
+import 'package:cloudmail_player/data/library/cloud_music_service.dart';
 import 'package:cloudmail_player/domain/remote_track.dart';
 import 'package:cloudmail_player/l10n/app_localizations.dart';
-import 'package:cloudmail_player/presentation/album_detail_page.dart';
-import 'package:cloudmail_player/presentation/library_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,7 +15,12 @@ const _track = RemoteTrack(
   album: 'Album',
 );
 
-Future<void> openDetail(WidgetTester tester, Widget detail) async {
+class _CatalogFixture extends CloudCatalogController {
+  @override
+  List<RemoteTrack> build() => const [_track];
+}
+
+Future<void> openLibraryTab(WidgetTester tester, String tab) async {
   tester.view.devicePixelRatio = 1;
   tester.view.physicalSize = const Size(390, 844);
   addTearDown(tester.view.resetPhysicalSize);
@@ -23,68 +28,110 @@ Future<void> openDetail(WidgetTester tester, Widget detail) async {
 
   await tester.pumpWidget(
     ProviderScope(
-      child: MaterialApp(
-        locale: const Locale('ru'),
+      overrides: [
+        cloudCatalogProvider.overrideWith(_CatalogFixture.new),
+      ],
+      child: const MaterialApp(
+        locale: Locale('ru'),
         supportedLocales: AppLocalizations.supportedLocales,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
-        home: Builder(
-          builder: (context) => Scaffold(
-            body: Center(
-              child: FilledButton(
-                key: const ValueKey('open-detail'),
-                onPressed: () => Navigator.of(
-                  context,
-                ).push<void>(MaterialPageRoute<void>(builder: (_) => detail)),
-                child: const Text('Open detail'),
-              ),
-            ),
-          ),
-        ),
+        home: AppShell(),
       ),
     ),
   );
   await tester.pumpAndSettle();
-  await tester.tap(find.byKey(const ValueKey('open-detail')));
+  await tester.tap(find.byKey(ValueKey('nav-$tab')));
   await tester.pumpAndSettle();
 }
 
 void main() {
-  testWidgets('album keeps all four tabs and returns to selected destination', (
+  testWidgets('album slides up below one immobile bottom bar and slides down on Back', (
     tester,
   ) async {
-    await openDetail(tester, const AlbumDetailPage(tracks: [_track]));
-    expect(find.byKey(const ValueKey('album-detail-scroll')), findsOneWidget);
-    final bar = tester.widget<NavigationBar>(
-      find.byKey(const ValueKey('navigation-bar')),
-    );
-    expect(bar.destinations, hasLength(4));
-    expect(bar.labelBehavior, NavigationDestinationLabelBehavior.alwaysHide);
-    await tester.tap(find.byKey(const ValueKey('nav-tracks')));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('open-detail')), findsOneWidget);
-    expect(find.byKey(const ValueKey('album-detail-scroll')), findsNothing);
-    final container = ProviderScope.containerOf(
-      tester.element(find.byKey(const ValueKey('open-detail'))),
-    );
-    expect(container.read(destinationProvider), AppDestination.tracks);
-  });
+    await openLibraryTab(tester, 'albums');
+    final bar = find.byKey(const ValueKey('navigation-bar'));
+    final originalElement = tester.element(bar);
+    final originalTop = tester.getTopLeft(bar);
+    expect(find.byKey(const ValueKey('album-grid')), findsOneWidget);
 
-  testWidgets('artist keeps tab navigation with the mini-player slot', (
-    tester,
-  ) async {
-    await openDetail(
-      tester,
-      const ArtistDetailPage(artist: 'Artist', tracks: [_track]),
+    await tester.tap(find.byKey(ValueKey('album-open-${_track.albumKey}')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    final risingTop = tester.getTopLeft(
+      find.byKey(const ValueKey('library-detail-slide')),
     );
-    expect(find.byKey(const ValueKey('artist-detail-scroll')), findsOneWidget);
-    expect(find.byKey(const ValueKey('navigation-bar')), findsOneWidget);
+    await tester.pumpAndSettle();
+    final settledTop = tester.getTopLeft(
+      find.byKey(const ValueKey('library-detail-slide')),
+    );
+
+    expect(risingTop.dy, greaterThan(settledTop.dy + 10));
+    expect(find.byKey(const ValueKey('album-detail-scroll')), findsOneWidget);
+    expect(find.byKey(const ValueKey('album-detail-back')), findsOneWidget);
+    expect(find.byType(AppBar), findsNothing);
+    expect(bar, findsOneWidget);
+    expect(identical(tester.element(bar), originalElement), isTrue);
+    expect(tester.getTopLeft(bar), originalTop);
+
+    await tester.tap(find.byKey(const ValueKey('album-detail-back')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('album-detail-scroll')), findsNothing);
+    expect(find.byKey(const ValueKey('album-grid')), findsOneWidget);
+    expect(identical(tester.element(bar), originalElement), isTrue);
+    expect(tester.getTopLeft(bar), originalTop);
+
+    // Selecting the already active tab also closes a detail page.
+    await tester.tap(find.byKey(ValueKey('album-open-${_track.albumKey}')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('nav-albums')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('open-detail')), findsOneWidget);
-    final container = ProviderScope.containerOf(
-      tester.element(find.byKey(const ValueKey('open-detail'))),
+    expect(find.byKey(const ValueKey('album-detail-scroll')), findsNothing);
+    expect(bar, findsOneWidget);
+  });
+
+  testWidgets('artist details and nested album keep the same shell bar', (
+    tester,
+  ) async {
+    await openLibraryTab(tester, 'artists');
+    final bar = find.byKey(const ValueKey('navigation-bar'));
+    final originalElement = tester.element(bar);
+    final originalTop = tester.getTopLeft(bar);
+
+    await tester.tap(find.byKey(const ValueKey('artist-open-Artist')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('artist-detail-scroll')), findsOneWidget);
+    expect(find.byKey(const ValueKey('artist-detail-back')), findsOneWidget);
+    expect(find.byType(AppBar), findsNothing);
+    expect(bar, findsOneWidget);
+    expect(identical(tester.element(bar), originalElement), isTrue);
+
+    final scrollable = find.byType(Scrollable);
+    await tester.scrollUntilVisible(
+      find.byKey(ValueKey('artist-album-${_track.albumKey}')),
+      140,
+      scrollable: scrollable,
     );
-    expect(container.read(destinationProvider), AppDestination.albums);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(ValueKey('artist-album-${_track.albumKey}')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('album-detail-scroll')), findsOneWidget);
+    expect(bar, findsOneWidget);
+    expect(identical(tester.element(bar), originalElement), isTrue);
+    expect(tester.getTopLeft(bar), originalTop);
+
+    await tester.tap(find.byKey(const ValueKey('album-detail-back')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('artist-detail-scroll')), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('artist-detail-scroll')), findsNothing);
+    expect(find.byKey(const ValueKey('artist-list')), findsOneWidget);
+    expect(bar, findsOneWidget);
+    expect(identical(tester.element(bar), originalElement), isTrue);
+
+    final container = ProviderScope.containerOf(tester.element(bar));
+    expect(container.read(destinationProvider), AppDestination.artists);
     expect(tester.takeException(), isNull);
   });
 }
