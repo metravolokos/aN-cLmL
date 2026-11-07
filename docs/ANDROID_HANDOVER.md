@@ -25,7 +25,7 @@ These remain temporarily to avoid claiming an untested dependency/lockfile migra
 1. Remove unused desktop adapters, runners, Flatpak packaging and desktop-only tests from the **current tree**, keeping original Git history intact.
 2. Remove desktop-only dependencies from `pubspec.yaml`, regenerate `pubspec.lock` using pinned Flutter/Dart, and verify `flutter pub get --enforce-lockfile`.
 3. Retire desktop-only workflows and update old three-platform assertions in current documentation, while preserving them in historical originals.
-4. Run quality + Android CI on exact PR HEAD; build a test-installable ARM64 APK; perform device/cloud verification independently of CI.
+4. Run quality + Android CI on exact PR HEAD; produce only the standard `app-debug.apk` from `.github/workflows/flutter.yml`; perform device/cloud verification independently of CI. Do not reinstate a separate ARM64 or vendor-specific workflow unless explicitly requested.
 
 ## Merge gates
 
